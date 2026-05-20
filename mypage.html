@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>마이페이지 · 빡세</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--deep:#04111e;--ocean:#0369a1;--sky:#0ea5e9;--cyan:#06b6d4;--aqua:#22d3ee;--foam:#bae6fd;--line:rgba(14,165,233,.18);--muted:rgba(186,230,253,.6);--card:rgba(7,24,40,.88)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;background:var(--deep);overflow-x:hidden}
+.bg{position:fixed;inset:0;background:radial-gradient(ellipse 60% 45% at 20% 5%,rgba(14,165,233,.18),transparent 55%),radial-gradient(ellipse 50% 40% at 85% 90%,rgba(6,182,212,.14),transparent 50%),linear-gradient(170deg,#04111e,#071828);z-index:0}
+
+/* TOP BAR */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:300;backdrop-filter:blur(20px);background:rgba(4,17,30,.92);border-bottom:1px solid var(--line)}
+.topbar-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 18px}
+.topbar-title{font-family:'Black Han Sans',sans-serif;font-size:19px;letter-spacing:-.3px}
+.topbar-title em{color:var(--aqua);font-style:normal}
+.logout-btn{padding:7px 14px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid var(--line);color:rgba(255,255,255,.6);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer}
+
+.content{position:relative;z-index:5;padding:80px 16px 100px}
+
+/* 프로필 카드 */
+.profile-card{background:linear-gradient(135deg,rgba(14,165,233,.15),rgba(6,182,212,.08));border:1px solid rgba(14,165,233,.28);border-radius:24px;padding:24px 20px;margin-bottom:16px;backdrop-filter:blur(16px);position:relative;overflow:hidden}
+.profile-card::before{content:'';position:absolute;top:-30%;right:-10%;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(14,165,233,.12),transparent 65%);pointer-events:none}
+.profile-top{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+.avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--ocean),var(--aqua));display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;border:3px solid rgba(255,255,255,.2);flex-shrink:0;overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.profile-info{flex:1}
+.profile-nick{font-family:'Black Han Sans',sans-serif;font-size:22px;letter-spacing:-.5px}
+.profile-skill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.25);font-size:11px;font-weight:700;color:var(--aqua);margin-top:5px}
+.profile-join{font-size:12px;color:var(--muted);margin-top:5px;font-weight:300}
+.profile-cars{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.car-chip{padding:5px 10px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);font-size:12px;font-weight:700;color:rgba(255,255,255,.7)}
+
+/* 포인트 카드 */
+.point-card{background:linear-gradient(135deg,rgba(251,191,36,.14),rgba(245,158,11,.07));border:1px solid rgba(251,191,36,.25);border-radius:22px;padding:22px 20px;margin-bottom:16px;backdrop-filter:blur(12px)}
+.point-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.point-title{font-family:'Black Han Sans',sans-serif;font-size:17px}
+.point-badge{padding:5px 11px;border-radius:8px;background:rgba(251,191,36,.15);border:1px solid rgba(251,191,36,.3);font-size:11px;font-weight:700;color:#fbbf24}
+.point-main{display:flex;align-items:baseline;gap:6px;margin-bottom:14px}
+.point-num{font-family:'Black Han Sans',sans-serif;font-size:44px;color:#fbbf24;letter-spacing:-2px}
+.point-unit{font-size:16px;color:#fbbf24;font-weight:700}
+.point-desc{font-size:12px;color:rgba(255,255,255,.5);font-weight:300}
+.earn-list{display:flex;flex-direction:column;gap:7px;margin-bottom:16px}
+.earn-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}
+.earn-left{display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.75);font-weight:400}
+.earn-pts{font-size:13px;font-weight:900;color:#fbbf24}
+
+/* 포인트 교환소 */
+.reward-section{margin-bottom:16px}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.section-title{font-family:'Black Han Sans',sans-serif;font-size:17px}
+.section-title em{color:var(--aqua);font-style:normal}
+.reward-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.reward-item{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;text-align:center;backdrop-filter:blur(10px);cursor:pointer;transition:.2s}
+.reward-item:active{transform:scale(.98)}
+.reward-icon{font-size:30px;margin-bottom:8px}
+.reward-name{font-size:13px;font-weight:700;margin-bottom:4px}
+.reward-pts{font-size:12px;color:#fbbf24;font-weight:700;margin-bottom:10px}
+.reward-btn{width:100%;padding:8px 0;border-radius:10px;border:none;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,var(--sky),var(--aqua));color:#fff;transition:.2s}
+.reward-btn.disabled{background:rgba(255,255,255,.07);color:rgba(255,255,255,.35);cursor:not-allowed}
+
+/* 활동 섹션 */
+.activity-section{margin-bottom:16px}
+.activity-tabs{display:flex;gap:0;margin-bottom:14px;background:rgba(255,255,255,.05);border-radius:12px;padding:4px}
+.at-btn{flex:1;padding:8px;border:none;border-radius:9px;background:none;color:rgba(255,255,255,.45);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:.2s}
+.at-btn.active{background:rgba(14,165,233,.2);color:var(--aqua)}
+.activity-item{display:flex;align-items:center;gap:12px;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:16px;margin-bottom:8px;backdrop-filter:blur(10px)}
+.ai-icon{width:40px;height:40px;border-radius:12px;background:rgba(14,165,233,.12);border:1px solid rgba(14,165,233,.2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.ai-info{flex:1}
+.ai-title{font-size:13px;font-weight:700;margin-bottom:3px}
+.ai-sub{font-size:12px;color:var(--muted);font-weight:300}
+.ai-date{font-size:11px;color:rgba(255,255,255,.35);font-weight:300;white-space:nowrap}
+
+/* 빈 상태 */
+.empty{text-align:center;padding:40px 20px;color:rgba(255,255,255,.35)}
+.empty-icon{font-size:44px;margin-bottom:12px}
+.empty-txt{font-size:14px;font-weight:700}
+.empty-sub{font-size:12px;margin-top:6px;font-weight:300}
+
+/* 비로그인 상태 */
+.guest-box{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:36px 24px;text-align:center;backdrop-filter:blur(12px)}
+.guest-icon{font-size:56px;margin-bottom:16px}
+.guest-title{font-family:'Black Han Sans',sans-serif;font-size:22px;letter-spacing:-.5px;margin-bottom:10px}
+.guest-sub{font-size:14px;color:var(--muted);margin-bottom:24px;font-weight:300;line-height:1.7}
+.guest-btns{display:flex;gap:10px}
+.g-btn{flex:1;min-height:50px;border-radius:15px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;text-decoration:none;border:none;transition:.2s}
+.g-btn.primary{background:linear-gradient(135deg,var(--sky),var(--aqua));color:#fff}
+.g-btn.ghost{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#fff}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:600;display:flex;background:rgba(4,17,30,.97);border-top:1px solid var(--line);backdrop-filter:blur(20px)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;text-decoration:none;color:rgba(255,255,255,.35);transition:.15s;gap:3px}
+.nav-item.active{color:var(--aqua)}
+.nav-item-icon{font-size:22px}
+.nav-item-label{font-size:10px;font-weight:700}
+.nav-item.dim{opacity:.35;pointer-events:none}
+
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(12px);background:rgba(16,185,129,.9);color:#fff;padding:11px 20px;border-radius:13px;font-size:13px;font-weight:700;opacity:0;transition:.3s;z-index:999}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.warn{background:rgba(239,68,68,.9)}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-title">내 <em>마이페이지</em></div>
+    <button class="logout-btn" onclick="doLogout()">로그아웃</button>
+  </div>
+</div>
+
+<div class="content" id="content"></div>
+
+<nav class="bottom-nav">
+  <a href="map.html" class="nav-item"><div class="nav-item-icon">🗺️</div><div class="nav-item-label">지도</div></a>
+  <a href="community.html" class="nav-item"><div class="nav-item-icon">⚡</div><div class="nav-item-label">커뮤니티</div></a>
+  <a href="#" class="nav-item dim"><div class="nav-item-icon">🛒</div><div class="nav-item-label">커머스</div></a>
+  <a href="mypage.html" class="nav-item active"><div class="nav-item-icon">👤</div><div class="nav-item-label">마이페이지</div></a>
+</nav>
+<div class="toast" id="toast"></div>
+
+<script>
+const skillLabel={beginner:'🌱 세린이',mid:'💨 폼건은 기본이죠',pro:'✨ 디테일링 직접 함',maniac:'🫧 3시간은 기본 아닌가?'};
+const carLabel={sedan:'🚗 세단',suv:'🚙 SUV',sports:'🏎️ 스포츠',ev:'⚡ 전기차',coupe:'🚘 쿠페',truck:'🛻 트럭',van:'🚐 밴',other:'🚔 기타'};
+
+const rewards = [
+  {id:1,icon:'🧼',name:'셀프세차권',pts:5000,desc:'제휴 세차장 1회 이용'},
+  {id:2,icon:'⛽',name:'주유 쿠폰',pts:8000,desc:'GS·SK 1만원 교환권'},
+  {id:3,icon:'🫧',name:'폼건 케미컬',pts:3000,desc:'케미컬 제품 50ml 쿠폰'},
+  {id:4,icon:'✨',name:'디테일링 할인',pts:12000,desc:'디테일링샵 20% 할인권'},
+];
+
+const earnGuide = [
+  {icon:'✍️', label:'리뷰 작성', pts:'+50P'},
+  {icon:'⭐', label:'별점 5점 리뷰', pts:'+30P'},
+  {icon:'⚡', label:'번개 주최', pts:'+100P'},
+  {icon:'👥', label:'번개 참가', pts:'+20P'},
+  {icon:'📝', label:'커뮤니티 글 작성', pts:'+10P'},
+];
+
+const dummyLightning = [
+  {icon:'⚡', title:'강남 테헤란 셀프세차 번개!', sub:'워터드롭 강남점 · 참가 완료', date:'2일 전'},
+  {icon:'⚡', title:'야간 셀프세차 번개 🌙', sub:'폼아트 광진점 · 참가 완료', date:'1주 전'},
+];
+const dummyPosts = [
+  {icon:'📝', title:'무광 차량 폼건 주의사항 정리', sub:'자유게시판 · 좋아요 42개', date:'3일 전'},
+  {icon:'📝', title:'강남 근처 디테일링샵 비교', sub:'자유게시판 · 좋아요 87개', date:'1주 전'},
+];
+
+let actTab = 'lightning';
+
+function render() {
+  const user = JSON.parse(localStorage.getItem('ppaxseUser')||'null');
+  const content = document.getElementById('content');
+
+  if(!user) {
+    content.innerHTML = `
+      <div class="guest-box">
+        <div class="guest-icon">💧</div>
+        <div class="guest-title">빡세에 로그인하세요</div>
+        <div class="guest-sub">로그인하면 포인트 리워드, 번개 참가,<br>내 활동 기록을 모두 이용할 수 있어요.</div>
+        <div class="guest-btns">
+          <a href="login.html" class="g-btn primary">💧 로그인</a>
+          <a href="join.html" class="g-btn ghost">가입하기</a>
+        </div>
+      </div>`;
+    return;
+  }
+
+  const pts = user.points || 1240; // 데모용 기본 포인트
+  const joinDate = user.joinDate ? new Date(user.joinDate).toLocaleDateString('ko-KR') : '2026.05.20';
+  const avatarContent = user.avatar
+    ? `<img src="${user.avatar}" alt="프로필">`
+    : (user.guest ? '👤' : (user.userNick?.[0] || 'P'));
+  const carChips = (user.cars||[]).map(c=>`<div class="car-chip">${carLabel[c]||c}</div>`).join('');
+
+  content.innerHTML = `
+    <!-- 프로필 카드 -->
+    <div class="profile-card">
+      <div class="profile-top">
+        <div class="avatar">${avatarContent}</div>
+        <div class="profile-info">
+          <div class="profile-nick">${user.userNick || user.userName || '빡세 유저'}</div>
+          <div class="profile-skill">${skillLabel[user.skill]||'🌱 세린이'}</div>
+          <div class="profile-join">가입일 · ${joinDate}</div>
+        </div>
+      </div>
+      ${carChips ? `<div class="profile-cars">${carChips}</div>` : ''}
+    </div>
+
+    <!-- 포인트 카드 -->
+    <div class="point-card">
+      <div class="point-header">
+        <div class="point-title">💧 빡세 포인트</div>
+        <div class="point-badge">리워드 교환 가능</div>
+      </div>
+      <div class="point-main">
+        <div class="point-num">${pts.toLocaleString()}</div>
+        <div class="point-unit">P</div>
+      </div>
+      <div class="point-desc" style="margin-bottom:14px">활동으로 포인트를 적립하고 세차권으로 교환하세요!</div>
+      <div class="earn-list">
+        ${earnGuide.map(e=>`<div class="earn-item"><div class="earn-left"><span>${e.icon}</span>${e.label}</div><div class="earn-pts">${e.pts}</div></div>`).join('')}
+      </div>
+    </div>
+
+    <!-- 포인트 교환소 -->
+    <div class="reward-section">
+      <div class="section-header">
+        <div class="section-title">🎁 포인트 <em>교환소</em></div>
+        <div style="font-size:12px;color:var(--muted);font-weight:300">보유 ${pts.toLocaleString()}P</div>
+      </div>
+      <div class="reward-grid">
+        ${rewards.map(r => {
+          const canUse = pts >= r.pts;
+          return `<div class="reward-item" onclick="redeemReward(${r.id},${r.pts},'${r.name}')">
+            <div class="reward-icon">${r.icon}</div>
+            <div class="reward-name">${r.name}</div>
+            <div class="reward-pts">${r.pts.toLocaleString()}P</div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:10px;font-weight:300">${r.desc}</div>
+            <button class="reward-btn ${canUse?'':'disabled'}">${canUse?'교환하기':'포인트 부족'}</button>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <!-- 활동 내역 -->
+    <div class="activity-section">
+      <div class="section-header">
+        <div class="section-title">📋 나의 <em>활동</em></div>
+      </div>
+      <div class="activity-tabs">
+        <button class="at-btn ${actTab==='lightning'?'active':''}" onclick="switchActTab('lightning')">⚡ 참가 번개</button>
+        <button class="at-btn ${actTab==='posts'?'active':''}" onclick="switchActTab('posts')">📝 내가 쓴 글</button>
+        <button class="at-btn ${actTab==='reserve'?'active':''}" onclick="switchActTab('reserve')">📅 예약 내역</button>
+      </div>
+      <div id="activityContent">${renderActivity()}</div>
+    </div>`;
+}
+
+function renderActivity() {
+  if(actTab==='lightning') {
+    return dummyLightning.map(a=>`
+      <div class="activity-item">
+        <div class="ai-icon">${a.icon}</div>
+        <div class="ai-info"><div class="ai-title">${a.title}</div><div class="ai-sub">${a.sub}</div></div>
+        <div class="ai-date">${a.date}</div>
+      </div>`).join('');
+  }
+  if(actTab==='posts') {
+    return dummyPosts.map(a=>`
+      <div class="activity-item">
+        <div class="ai-icon">${a.icon}</div>
+        <div class="ai-info"><div class="ai-title">${a.title}</div><div class="ai-sub">${a.sub}</div></div>
+        <div class="ai-date">${a.date}</div>
+      </div>`).join('');
+  }
+  return `<div class="empty"><div class="empty-icon">📅</div><div class="empty-txt">예약 내역이 없습니다</div><div class="empty-sub">Phase 2에서 예약 기능이 오픈됩니다</div></div>`;
+}
+
+function switchActTab(tab) {
+  actTab = tab;
+  document.getElementById('activityContent').innerHTML = renderActivity();
+  document.querySelectorAll('.at-btn').forEach((b,i)=>{
+    b.classList.toggle('active', ['lightning','posts','reserve'][i]===tab);
+  });
+}
+
+function redeemReward(id, pts, name) {
+  const user = JSON.parse(localStorage.getItem('ppaxseUser')||'null');
+  const curPts = user.points || 1240;
+  if(curPts < pts) { showToast('포인트가 부족합니다', true); return; }
+  if(!confirm(`${name} 교환을 신청하시겠습니까?\n(${pts.toLocaleString()}P 차감)`)) return;
+  user.points = curPts - pts;
+  localStorage.setItem('ppaxseUser', JSON.stringify(user));
+  showToast(`${name} 교환 신청 완료! 🎁`);
+  render();
+}
+
+function doLogout() {
+  if(!confirm('로그아웃 하시겠습니까?')) return;
+  localStorage.removeItem('ppaxseUser');
+  location.href = 'landing.html';
+}
+
+function showToast(msg, warn=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${warn?'warn':''} show`;
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+render();
+</script>
+</body>
+</html>

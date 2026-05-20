@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>빡세 — 세차 마니아를 위한 플랫폼</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --deep:#04111e;--deep2:#071828;--water:#0c4a6e;--ocean:#0369a1;
+  --sky:#0ea5e9;--cyan:#06b6d4;--aqua:#22d3ee;--foam:#bae6fd;
+  --mist:#f0f9ff;--white:#fff;
+  --line:rgba(14,165,233,.18);--glass:rgba(7,24,40,.72);--muted:rgba(186,230,253,.6);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%;font-family:'Noto Sans KR',sans-serif;color:var(--white);background:var(--deep);overflow-x:hidden}
+
+/* ── BG MESH ── */
+.bg{position:fixed;inset:0;z-index:0;overflow:hidden}
+.bg-gradient{position:absolute;inset:0;background:
+  radial-gradient(ellipse 80% 60% at 15% -5%,rgba(6,182,212,.22) 0%,transparent 60%),
+  radial-gradient(ellipse 60% 50% at 90% 95%,rgba(3,105,161,.28) 0%,transparent 55%),
+  radial-gradient(ellipse 40% 40% at 50% 50%,rgba(14,165,233,.07) 0%,transparent 70%),
+  linear-gradient(175deg,#04111e 0%,#071828 50%,#04111e 100%)}
+.bg-grid{position:absolute;inset:0;background-image:
+  linear-gradient(rgba(14,165,233,.04) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(14,165,233,.04) 1px,transparent 1px);
+  background-size:60px 60px}
+
+/* 물방울 애니메이션 */
+.drops{position:absolute;inset:0;pointer-events:none}
+.drop{position:absolute;border-radius:50% 50% 50% 0;transform:rotate(-45deg);animation:dropFall linear infinite;opacity:0}
+.drop:nth-child(1){width:6px;height:6px;left:8%;animation-duration:9s;animation-delay:0s;background:rgba(34,211,238,.35)}
+.drop:nth-child(2){width:10px;height:10px;left:22%;animation-duration:13s;animation-delay:2s;background:rgba(14,165,233,.3)}
+.drop:nth-child(3){width:5px;height:5px;left:40%;animation-duration:8s;animation-delay:5s;background:rgba(6,182,212,.4)}
+.drop:nth-child(4){width:8px;height:8px;left:62%;animation-duration:11s;animation-delay:1s;background:rgba(186,230,253,.25)}
+.drop:nth-child(5){width:7px;height:7px;left:80%;animation-duration:10s;animation-delay:3s;background:rgba(34,211,238,.3)}
+.drop:nth-child(6){width:4px;height:4px;left:92%;animation-duration:7s;animation-delay:6s;background:rgba(14,165,233,.4)}
+@keyframes dropFall{
+  0%{opacity:0;top:-20px}
+  10%{opacity:.8}
+  80%{opacity:.4}
+  100%{opacity:0;top:110vh}
+}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);background:rgba(4,17,30,.6);border-bottom:1px solid var(--line)}
+.nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.nav-logo{width:38px;height:38px;border-radius:14px;background:linear-gradient(135deg,var(--ocean),var(--aqua));display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 20px rgba(6,182,212,.35)}
+.nav-name{font-family:'Black Han Sans',sans-serif;font-size:20px;color:var(--white);letter-spacing:-.5px}
+.nav-name em{color:var(--aqua);font-style:normal}
+.nav-links{display:flex;gap:8px}
+.nav-btn{padding:8px 18px;border-radius:12px;font-size:13px;font-weight:700;font-family:inherit;text-decoration:none;cursor:pointer;border:none;transition:.2s}
+.nav-btn.ghost{background:rgba(255,255,255,.06);border:1px solid var(--line);color:rgba(255,255,255,.8)}
+.nav-btn.fill{background:linear-gradient(135deg,var(--sky),var(--aqua));color:var(--white);box-shadow:0 4px 16px rgba(14,165,233,.35)}
+
+/* ── MAIN ── */
+main{position:relative;z-index:5}
+
+/* ── HERO ── */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:110px 24px 60px;text-align:center}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:7px;padding:6px 14px;border-radius:999px;background:rgba(6,182,212,.12);border:1px solid rgba(6,182,212,.35);font-size:12px;font-weight:700;color:var(--aqua);letter-spacing:1.5px;margin-bottom:28px;animation:fadeUp .7s ease both}
+.hero-eyebrow svg{width:14px;height:14px;fill:var(--aqua)}
+.hero-title{font-family:'Black Han Sans',sans-serif;font-size:clamp(44px,11vw,82px);line-height:1;letter-spacing:-2px;margin-bottom:20px;animation:fadeUp .7s .1s ease both}
+.hero-title .t1{display:block;color:var(--white)}
+.hero-title .t2{display:block;background:linear-gradient(90deg,var(--sky),var(--aqua) 50%,var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:16px;line-height:1.8;color:var(--muted);max-width:440px;margin:0 auto 40px;font-weight:300;animation:fadeUp .7s .2s ease both}
+.hero-sub b{color:var(--foam);font-weight:700}
+.hero-cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;animation:fadeUp .7s .3s ease both}
+.cta-btn{display:flex;align-items:center;gap:9px;padding:16px 30px;border-radius:18px;font-size:15px;font-weight:700;font-family:inherit;text-decoration:none;cursor:pointer;border:none;transition:.25s}
+.cta-btn.primary{background:linear-gradient(135deg,var(--sky),var(--aqua));color:var(--white);box-shadow:0 14px 40px rgba(14,165,233,.38)}
+.cta-btn.primary:active{transform:scale(.97)}
+.cta-btn.outline{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.16);color:var(--white)}
+
+.hero-kpi{display:flex;gap:28px;justify-content:center;margin-top:56px;animation:fadeUp .7s .45s ease both;flex-wrap:wrap}
+.kpi-item{text-align:center;padding:0 8px}
+.kpi-num{font-family:'Black Han Sans',sans-serif;font-size:30px;color:var(--white)}
+.kpi-num span{color:var(--aqua)}
+.kpi-label{font-size:11px;color:var(--muted);font-weight:700;margin-top:4px;letter-spacing:.5px}
+
+/* ── FEATURES ── */
+.section{padding:88px 20px;max-width:1000px;margin:0 auto}
+.sec-kicker{font-size:11px;font-weight:700;color:var(--aqua);letter-spacing:2px;text-align:center;margin-bottom:10px}
+.sec-title{font-family:'Black Han Sans',sans-serif;font-size:clamp(26px,5vw,40px);text-align:center;letter-spacing:-1px;margin-bottom:48px}
+.sec-title em{color:var(--aqua);font-style:normal}
+
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+.feat-card{padding:30px 26px;border-radius:24px;background:rgba(7,24,40,.75);border:1px solid var(--line);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);position:relative;overflow:hidden;transition:.3s}
+.feat-card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(14,165,233,.05),transparent 60%);pointer-events:none}
+.feat-card:hover{border-color:rgba(6,182,212,.45);transform:translateY(-4px);box-shadow:0 24px 56px rgba(0,0,0,.4)}
+.feat-icon-wrap{width:56px;height:56px;border-radius:18px;background:linear-gradient(135deg,rgba(14,165,233,.2),rgba(34,211,238,.12));border:1px solid rgba(14,165,233,.22);display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:18px}
+.feat-name{font-family:'Black Han Sans',sans-serif;font-size:18px;margin-bottom:9px;letter-spacing:-.3px}
+.feat-desc{font-size:13px;color:var(--muted);line-height:1.7;font-weight:300}
+
+/* ── ROADMAP ── */
+.roadmap-bg{padding:88px 20px;background:rgba(6,182,212,.04);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.roadmap-inner{max-width:760px;margin:0 auto}
+.phase-list{margin-top:44px;display:flex;flex-direction:column;gap:0;position:relative}
+.phase-list::before{content:'';position:absolute;left:24px;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,var(--sky),var(--aqua),rgba(34,211,238,.1))}
+.phase{display:flex;gap:26px;padding-bottom:44px}
+.phase-dot{width:50px;height:50px;min-width:50px;border-radius:50%;background:linear-gradient(135deg,var(--ocean),var(--aqua));display:flex;align-items:center;justify-content:center;font-family:'Black Han Sans',sans-serif;font-size:16px;box-shadow:0 4px 22px rgba(14,165,233,.4);position:relative;z-index:1}
+.phase-body{padding-top:10px}
+.phase-tag{font-size:10px;font-weight:700;color:var(--aqua);letter-spacing:1.5px;margin-bottom:6px}
+.phase-name{font-family:'Black Han Sans',sans-serif;font-size:19px;margin-bottom:7px}
+.phase-desc{font-size:13px;color:var(--muted);line-height:1.7;font-weight:300}
+
+/* ── SKILL BADGES ── */
+.skill-section{padding:88px 20px;max-width:960px;margin:0 auto;text-align:center}
+.skill-grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:32px}
+.skill-chip{display:flex;align-items:center;gap:7px;padding:10px 18px;border-radius:999px;background:rgba(7,24,40,.8);border:1px solid var(--line);font-size:13px;font-weight:700;color:var(--foam);backdrop-filter:blur(12px)}
+.skill-dot{width:8px;height:8px;border-radius:50%;background:var(--aqua)}
+
+/* ── BOTTOM CTA ── */
+.cta-section{padding:88px 20px;text-align:center}
+.cta-box{max-width:580px;margin:0 auto;padding:54px 36px;border-radius:32px;background:linear-gradient(135deg,rgba(14,165,233,.14),rgba(6,182,212,.07));border:1px solid rgba(14,165,233,.3);position:relative;overflow:hidden;backdrop-filter:blur(20px)}
+.cta-box::before{content:'';position:absolute;top:-60%;left:-10%;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(14,165,233,.15),transparent 65%);pointer-events:none}
+.cta-box-title{font-family:'Black Han Sans',sans-serif;font-size:30px;letter-spacing:-1px;margin-bottom:14px}
+.cta-box-sub{font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:30px;font-weight:300}
+
+footer{padding:28px 20px;text-align:center;font-size:11px;color:rgba(255,255,255,.25);font-weight:700;letter-spacing:.5px;border-top:1px solid var(--line)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+@media(max-width:480px){
+  .hero-kpi{gap:16px}.kpi-num{font-size:24px}
+  .hero-cta{flex-direction:column;align-items:center}.cta-btn{width:100%;justify-content:center}
+  .nav-btn.ghost{display:none}
+}
+</style>
+</head>
+<body>
+<div class="bg">
+  <div class="bg-gradient"></div>
+  <div class="bg-grid"></div>
+  <div class="drops">
+    <div class="drop"></div><div class="drop"></div><div class="drop"></div>
+    <div class="drop"></div><div class="drop"></div><div class="drop"></div>
+  </div>
+</div>
+
+<nav>
+  <a href="landing.html" class="nav-brand">
+    <div class="nav-logo">💧</div>
+    <div class="nav-name">빡<em>세</em></div>
+  </a>
+  <div class="nav-links">
+    <a href="login.html" class="nav-btn ghost">로그인</a>
+    <a href="join.html" class="nav-btn fill">무료 가입</a>
+  </div>
+</nav>
+
+<main>
+  <section class="hero">
+    <div class="hero-eyebrow">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+      WATER &amp; FOAM · 세차 마니아 전용 플랫폼
+    </div>
+    <h1 class="hero-title">
+      <span class="t1">세차에 진심인 당신,</span>
+      <span class="t2">빡세게 즐기세요.</span>
+    </h1>
+    <p class="hero-sub">
+      내 주변 셀프세차장을 <b>지도</b>에서 바로 · <b>수압·폼·시설</b>을 세차 마니아가 직접 평가<br>
+      세차 번개·동호회·포인트 리워드까지 한 곳에
+    </p>
+    <div class="hero-cta">
+      <a href="map.html" class="cta-btn primary">🗺️ 세차장 찾기</a>
+      <a href="community.html" class="cta-btn outline">⚡ 커뮤니티 보기</a>
+    </div>
+    <div class="hero-kpi">
+      <div class="kpi-item"><div class="kpi-num">2,400<span>+</span></div><div class="kpi-label">등록 세차장</div></div>
+      <div class="kpi-item"><div class="kpi-num">18K<span>+</span></div><div class="kpi-label">빡세 회원</div></div>
+      <div class="kpi-item"><div class="kpi-num">4.9<span>★</span></div><div class="kpi-label">평균 앱 평점</div></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="sec-kicker">CORE FEATURES</div>
+    <h2 class="sec-title">빡세가 <em>다른 이유</em></h2>
+    <div class="feat-grid">
+      <div class="feat-card">
+        <div class="feat-icon-wrap">🗺️</div>
+        <div class="feat-name">카카오 지도 세차장 검색</div>
+        <div class="feat-desc">내 주변 셀프세차장·디테일링샵을 실제 지도로 확인. 폼건·하부세차·실내베이·24시간 필터로 딱 맞는 곳만 골라냅니다.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon-wrap">💧</div>
+        <div class="feat-name">세차 마니아 리뷰 & 평점</div>
+        <div class="feat-desc">수압·폼 품질·시설 관리까지 세차 마니아만 아는 포인트로 평가. 숙련도 배지로 신뢰도가 다릅니다.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon-wrap">⚡</div>
+        <div class="feat-name">세차 번개 & 동호회</div>
+        <div class="feat-desc">"오늘 저녁 8시 번개!" 지도 핀으로 참가자 모집. 차종별 동호회 게시판에서 같은 차 오너들과 소통.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon-wrap">📅</div>
+        <div class="feat-name">베이 & 디테일링 예약</div>
+        <div class="feat-desc">타임슬롯 방식으로 원하는 베이 예약. 디테일링샵은 코스·차종 선택 후 바로 결제. (Phase 2)</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon-wrap">🎁</div>
+        <div class="feat-name">포인트 리워드</div>
+        <div class="feat-desc">리뷰 작성·번개 주최로 포인트 적립. 세차권·주유권으로 즉시 교환. 성실한 활동이 보상받는 구조.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon-wrap">🛒</div>
+        <div class="feat-name">세차용품 커머스</div>
+        <div class="feat-desc">리뷰에 언급된 케미컬·장비를 바로 구매. 내 차 도장 상태에 맞는 용품을 AI가 추천. (Phase 3)</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="roadmap-bg">
+    <div class="roadmap-inner">
+      <div class="sec-kicker">ROADMAP</div>
+      <h2 class="sec-title">단계별 <em>성장 플랜</em></h2>
+      <div class="phase-list">
+        <div class="phase">
+          <div class="phase-dot">1</div>
+          <div class="phase-body">
+            <div class="phase-tag">현재 · PHASE 1</div>
+            <div class="phase-name">세차장 지도 + 커뮤니티</div>
+            <div class="phase-desc">카카오 지도 기반 전국 셀프세차장 검색과 번개·동호회 커뮤니티로 실제 마니아 트래픽을 확보합니다. Firebase 무료 플랜으로 비용 없이 운영.</div>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="phase-dot">2</div>
+          <div class="phase-body">
+            <div class="phase-tag">PHASE 2</div>
+            <div class="phase-name">예약 시스템 + 포인트 고도화</div>
+            <div class="phase-desc">모인 유저를 바탕으로 점주 제휴, 디테일링 & 베이 예약 기능 오픈. 포인트 파트너십 확장.</div>
+          </div>
+        </div>
+        <div class="phase" style="padding-bottom:0">
+          <div class="phase-dot">3</div>
+          <div class="phase-body">
+            <div class="phase-tag">PHASE 3</div>
+            <div class="phase-name">맞춤 커머스 & 데이터</div>
+            <div class="phase-desc">예약·차량 데이터 기반 AI 맞춤 세차용품 커머스로 수익 극대화. B2B 점주 광고 플랫폼 출시.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="skill-section">
+    <div class="sec-kicker">SKILL LEVELS</div>
+    <h2 class="sec-title">당신의 세차 <em>숙련도</em>는?</h2>
+    <div class="skill-grid">
+      <div class="skill-chip"><div class="skill-dot" style="background:#34d399"></div>세린이 — 아직 배우는 중이에요</div>
+      <div class="skill-chip"><div class="skill-dot" style="background:#60a5fa"></div>폼건은 기본이죠 — 중수 입장</div>
+      <div class="skill-chip"><div class="skill-dot" style="background:#f59e0b"></div>디테일링 직접 함 — 고수</div>
+      <div class="skill-chip"><div class="skill-dot" style="background:var(--aqua)"></div>3시간은 기본 아닌가? — 빡세환자</div>
+    </div>
+  </section>
+
+  <div class="cta-section">
+    <div class="cta-box">
+      <h2 class="cta-box-title">지금 바로 시작하세요 💧</h2>
+      <p class="cta-box-sub">세차를 취미로 즐기는 사람들의 공간, 빡세에서<br>내 주변 최고의 세차장을 찾아보세요.</p>
+      <a href="join.html" class="cta-btn primary" style="justify-content:center;max-width:280px;margin:0 auto">무료로 가입하기 →</a>
+    </div>
+  </div>
+</main>
+
+<footer>© 2026 빡세(Ppaxse) · 세차 마니아를 위한 플랫폼</footer>
+</body>
+</html>

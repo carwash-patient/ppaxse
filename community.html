@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>커뮤니티 · 빡세</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--deep:#04111e;--ocean:#0369a1;--sky:#0ea5e9;--cyan:#06b6d4;--aqua:#22d3ee;--foam:#bae6fd;--line:rgba(14,165,233,.18);--muted:rgba(186,230,253,.6);--card:rgba(7,24,40,.88)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;background:var(--deep);overflow-x:hidden}
+.bg{position:fixed;inset:0;background:radial-gradient(ellipse 60% 45% at 10% 10%,rgba(14,165,233,.15),transparent 55%),radial-gradient(ellipse 50% 40% at 90% 90%,rgba(6,182,212,.12),transparent 50%),linear-gradient(170deg,#04111e,#071828);z-index:0}
+
+/* TOP BAR */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:300;backdrop-filter:blur(20px);background:rgba(4,17,30,.92);border-bottom:1px solid var(--line)}
+.topbar-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 18px}
+.topbar-title{font-family:'Black Han Sans',sans-serif;font-size:19px;letter-spacing:-.3px}
+.topbar-title em{color:var(--aqua);font-style:normal}
+.fab{width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,var(--sky),var(--aqua));border:none;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 14px rgba(14,165,233,.35)}
+
+/* SUB TABS */
+.sub-tabs{position:fixed;top:62px;left:0;right:0;z-index:290;background:rgba(4,17,30,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);display:flex;overflow-x:auto;padding:0 8px}
+.sub-tabs::-webkit-scrollbar{display:none}
+.tab-btn{padding:13px 16px;font-size:13px;font-weight:700;color:rgba(255,255,255,.45);white-space:nowrap;cursor:pointer;border:none;background:none;font-family:inherit;position:relative;transition:.2s;flex-shrink:0}
+.tab-btn.active{color:var(--aqua)}
+.tab-btn.active::after{content:'';position:absolute;bottom:0;left:12px;right:12px;height:2.5px;border-radius:99px;background:linear-gradient(90deg,var(--sky),var(--aqua))}
+
+/* CONTENT */
+.content{position:relative;z-index:5;padding:130px 16px 100px}
+
+/* 탭 패널 */
+.tab-panel{display:none}.tab-panel.active{display:block}
+
+/* ── 번개 모집 ── */
+.lightning-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.section-title{font-family:'Black Han Sans',sans-serif;font-size:18px;letter-spacing:-.3px}
+.section-title em{color:var(--aqua);font-style:normal}
+.new-lightning-btn{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:12px;background:linear-gradient(135deg,var(--sky),var(--aqua));border:none;color:#fff;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(14,165,233,.3)}
+
+.lightning-card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;margin-bottom:12px;backdrop-filter:blur(12px);position:relative;overflow:hidden}
+.lightning-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#fbbf24,#f59e0b)}
+.lc-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.lc-emoji{width:44px;height:44px;border-radius:14px;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.25);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.lc-info{flex:1}
+.lc-title{font-size:15px;font-weight:900;letter-spacing:-.3px;margin-bottom:3px}
+.lc-host{font-size:12px;color:var(--muted);font-weight:300}
+.lc-d-day{background:rgba(251,191,36,.15);border:1px solid rgba(251,191,36,.3);color:#fbbf24;font-size:11px;font-weight:700;padding:4px 9px;border-radius:8px;flex-shrink:0}
+.lc-meta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.lc-meta-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);font-weight:300}
+.lc-meta-item b{color:#fff;font-weight:700}
+.lc-spots{display:flex;align-items:center;justify-content:space-between}
+.lc-progress{flex:1;height:6px;background:rgba(255,255,255,.08);border-radius:99px;margin-right:12px;overflow:hidden}
+.lc-progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--sky),var(--aqua));transition:.3s}
+.lc-count{font-size:12px;font-weight:700;color:var(--aqua);white-space:nowrap;margin-right:10px}
+.lc-join-btn{padding:7px 16px;border-radius:10px;font-size:12px;font-weight:700;font-family:inherit;border:none;cursor:pointer;transition:.2s}
+.lc-join-btn.join{background:linear-gradient(135deg,var(--sky),var(--aqua));color:#fff}
+.lc-join-btn.joined{background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);color:#34d399}
+.lc-join-btn.full{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4);cursor:not-allowed}
+
+/* ── 자유게시판 / 동호회 ── */
+.post-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:10px;cursor:pointer;transition:.2s;backdrop-filter:blur(10px)}
+.post-card:active{transform:scale(.99)}
+.post-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.post-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--ocean),var(--aqua));display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;flex-shrink:0}
+.post-author{flex:1}
+.post-nick{font-size:13px;font-weight:900}
+.post-skill{font-size:10px;color:var(--aqua);font-weight:700;margin-left:5px}
+.post-date{font-size:11px;color:rgba(255,255,255,.35);font-weight:300;margin-left:auto}
+.post-title{font-size:14px;font-weight:700;margin-bottom:5px;letter-spacing:-.2px;line-height:1.4}
+.post-preview{font-size:13px;color:var(--muted);line-height:1.6;font-weight:300;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.post-footer{display:flex;align-items:center;gap:14px;margin-top:10px}
+.post-stat{font-size:12px;color:rgba(255,255,255,.4);display:flex;align-items:center;gap:4px;font-weight:700}
+.post-tag{padding:3px 8px;border-radius:6px;background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.18);font-size:11px;color:var(--aqua);font-weight:700;margin-left:auto}
+
+/* 차종 필터 (동호회) */
+.cartype-tabs{display:flex;gap:7px;overflow-x:auto;padding-bottom:12px;margin-bottom:14px}
+.cartype-tabs::-webkit-scrollbar{display:none}
+.ct-chip{padding:7px 14px;border-radius:999px;border:1.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);font-size:12px;font-weight:700;color:rgba(255,255,255,.6);white-space:nowrap;cursor:pointer;transition:.2s;flex-shrink:0}
+.ct-chip.on{border-color:var(--sky);background:rgba(14,165,233,.17);color:#fff}
+
+/* ── 리뷰 탭 ── */
+.review-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:10px;backdrop-filter:blur(10px)}
+.rc-place{font-size:12px;color:var(--aqua);font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.rc-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.rc-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--ocean),var(--aqua));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;flex-shrink:0}
+.rc-nick{font-size:13px;font-weight:900}
+.rc-skill{font-size:10px;color:var(--aqua);font-weight:700;margin-left:5px}
+.rc-date{font-size:11px;color:rgba(255,255,255,.35);margin-left:auto;font-weight:300}
+.rc-stars{font-size:13px;color:#fbbf24;margin-bottom:7px}
+.rc-text{font-size:13px;color:var(--muted);line-height:1.7;font-weight:300}
+.rc-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+.rc-tag{padding:3px 8px;border-radius:6px;background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.18);font-size:11px;color:var(--aqua);font-weight:700}
+
+/* 번개 모달 */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);align-items:flex-end;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{width:100%;max-width:500px;background:linear-gradient(180deg,#0d1e35,#071828);border-radius:26px 26px 0 0;border-top:1px solid var(--line);padding:28px 22px 50px;animation:slideUp .35s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:none}}
+.modal-title{font-family:'Black Han Sans',sans-serif;font-size:20px;letter-spacing:-.5px;margin-bottom:20px}
+.modal-title em{color:var(--aqua);font-style:normal}
+.m-field{margin-bottom:14px}
+.m-label{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:7px;display:block;letter-spacing:.3px}
+.m-input{width:100%;min-height:48px;border:1.5px solid rgba(255,255,255,.1);border-radius:13px;background:rgba(4,17,30,.7);color:#fff;padding:0 14px;font-family:inherit;font-size:14px;outline:none;transition:.2s}
+.m-input::placeholder{color:rgba(255,255,255,.28)}
+.m-input:focus{border-color:rgba(14,165,233,.65);background:rgba(14,165,233,.07)}
+.m-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal-actions{display:flex;gap:10px;margin-top:6px}
+.modal-btn{flex:1;min-height:50px;border:none;border-radius:15px;font-family:inherit;font-size:14px;font-weight:900;cursor:pointer}
+.modal-btn.cancel{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.7)}
+.modal-btn.submit{background:linear-gradient(135deg,var(--sky),var(--aqua));color:#fff;box-shadow:0 8px 24px rgba(14,165,233,.3)}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:600;display:flex;background:rgba(4,17,30,.97);border-top:1px solid var(--line);backdrop-filter:blur(20px)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;text-decoration:none;color:rgba(255,255,255,.35);transition:.15s;gap:3px}
+.nav-item.active{color:var(--aqua)}
+.nav-item-icon{font-size:22px}
+.nav-item-label{font-size:10px;font-weight:700}
+.nav-item.dim{opacity:.35;pointer-events:none}
+
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(12px);background:rgba(16,185,129,.9);color:#fff;padding:11px 20px;border-radius:13px;font-size:13px;font-weight:700;opacity:0;transition:.3s;z-index:999}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-title">빡세 <em>커뮤니티</em></div>
+    <button class="fab" onclick="openModal()">✏️</button>
+  </div>
+</div>
+
+<div class="sub-tabs">
+  <button class="tab-btn active" data-tab="lightning">⚡ 세차 번개</button>
+  <button class="tab-btn" data-tab="free">📝 자유게시판</button>
+  <button class="tab-btn" data-tab="club">🚗 동호회</button>
+  <button class="tab-btn" data-tab="reviews">💧 세차장 리뷰</button>
+</div>
+
+<div class="content">
+  <!-- 번개 탭 -->
+  <div class="tab-panel active" id="panel-lightning">
+    <div class="lightning-header">
+      <div class="section-title">세차 <em>번개</em> 모집</div>
+      <button class="new-lightning-btn" onclick="openModal('lightning')">⚡ 번개 개설</button>
+    </div>
+    <div id="lightningList"></div>
+  </div>
+
+  <!-- 자유게시판 탭 -->
+  <div class="tab-panel" id="panel-free">
+    <div class="lightning-header" style="margin-bottom:16px">
+      <div class="section-title">자유 <em>게시판</em></div>
+      <button class="new-lightning-btn" onclick="openModal('post')">✏️ 글쓰기</button>
+    </div>
+    <div id="freeList"></div>
+  </div>
+
+  <!-- 동호회 탭 -->
+  <div class="tab-panel" id="panel-club">
+    <div class="section-title" style="margin-bottom:14px">차종별 <em>동호회</em></div>
+    <div class="cartype-tabs" id="cartypeTabs">
+      <div class="ct-chip on" data-ct="all">전체</div>
+      <div class="ct-chip" data-ct="sedan">🚗 세단</div>
+      <div class="ct-chip" data-ct="suv">🚙 SUV</div>
+      <div class="ct-chip" data-ct="sports">🏎️ 스포츠</div>
+      <div class="ct-chip" data-ct="ev">⚡ 전기차</div>
+      <div class="ct-chip" data-ct="coupe">🚘 쿠페</div>
+      <div class="ct-chip" data-ct="truck">🛻 트럭</div>
+    </div>
+    <div id="clubList"></div>
+  </div>
+
+  <!-- 리뷰 탭 -->
+  <div class="tab-panel" id="panel-reviews">
+    <div class="section-title" style="margin-bottom:16px">솔직 세차장 <em>리뷰</em></div>
+    <div id="reviewList"></div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <a href="map.html" class="nav-item"><div class="nav-item-icon">🗺️</div><div class="nav-item-label">지도</div></a>
+  <a href="community.html" class="nav-item active"><div class="nav-item-icon">⚡</div><div class="nav-item-label">커뮤니티</div></a>
+  <a href="#" class="nav-item dim"><div class="nav-item-icon">🛒</div><div class="nav-item-label">커머스</div></a>
+  <a href="mypage.html" class="nav-item"><div class="nav-item-icon">👤</div><div class="nav-item-label">마이페이지</div></a>
+</nav>
+
+<!-- 번개/글쓰기 모달 -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">번개 <em>개설하기</em></div>
+    <div id="modalBody"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeModal()">취소</button>
+      <button class="modal-btn submit" id="modalSubmit">등록하기</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const skillLabel={beginner:'🌱세린이',mid:'💨중수',pro:'✨고수',maniac:'🫧세차환자'};
+const carLabel={sedan:'🚗세단',suv:'🚙SUV',sports:'🏎️스포츠',ev:'⚡전기차',coupe:'🚘쿠페',truck:'🛻트럭',van:'🚐밴',other:'🚔기타'};
+
+// ── 샘플 데이터 ──
+let lightnings = [
+  {id:1,title:'강남 테헤란 셀프세차 번개!',host:'세차왕민준',skill:'maniac',date:'2026.05.24 (토) 14:00',place:'워터드롭 셀프세차 강남점',limit:8,joined:5,joinedMe:false,cartype:'suv',desc:'이번 주 토요일 오후 2시! SUV 오너들 같이 셀프세차 어때요? 폼건 쓰면서 같이 즐겨봅시다 🫧'},
+  {id:2,title:'서초 디테일링 단체 예약 모집',host:'코팅덕후',skill:'pro',date:'2026.05.31 (토) 10:00',place:'하이글로스 디테일링 서초',limit:4,joined:3,joinedMe:false,cartype:'sports',desc:'하이글로스 단체 예약 할인 받아요! 유리막 코팅 생각중인 분들 모여라'},
+  {id:3,title:'광진 야간 셀프세차 번개 🌙',host:'야간세차마스터',skill:'mid',date:'2026.06.01 (일) 21:00',place:'폼아트 셀프세차 광진점',limit:6,joined:6,joinedMe:false,cartype:'sedan',desc:'야간 세차 좋아하는 분들! 24시간 세차장에서 한밤중 번개. 시원한 밤에 세차하고 야식까지!'},
+];
+
+let freePosts = [
+  {id:1,nick:'세차왕민준',skill:'maniac',date:'1시간 전',title:'무광 차량에 폼건 쓸 때 주의사항 정리해봤습니다',preview:'무광 도장은 일반 광택 차량이랑 다르게 관리해야 해요. 특히 폼건 케미컬 선택이 중요한데...',likes:42,comments:18,cartype:'sports'},
+  {id:2,nick:'거품중독자',skill:'pro',date:'3시간 전',title:'셀프세차 루틴 공유 - 3시간 코스 (사진포함)',preview:'오늘 3시간 코스로 세차했는데 결과물 너무 만족스럽네요. 순서는 하부세차 → 폼건 → 손세차 → ...',likes:87,comments:33,cartype:'suv'},
+  {id:3,nick:'코팅덕후',skill:'pro',date:'6시간 전',title:'강남 근처 디테일링샵 비교 후기 (3곳)',preview:'이번 달에 세 곳 다니면서 PPF, 유리막 코팅 견적 받아봤어요. 가격대도 많이 다르고...',likes:156,comments:52,cartype:'sedan'},
+  {id:4,nick:'야간세차마스터',skill:'mid',date:'1일 전',title:'24시간 셀프세차장 야간 이용 팁',preview:'야간에 혼자 세차하시는 분들을 위해 준비했습니다. 조명 팁, 안전 팁, 추천 시간대까지...',likes:31,comments:9,cartype:'sedan'},
+];
+
+let clubPosts = [
+  {id:1,nick:'세차왕민준',skill:'maniac',date:'30분 전',title:'[SUV] 팰리세이드 루프랙 세차할 때 물 빼는 꿀팁',preview:'팰리세이드 루프랙 틈새에 물이 고이는 문제 해결했습니다. 블로어 방향이 핵심인데요...',likes:28,comments:11,cartype:'suv'},
+  {id:2,nick:'코팅덕후',skill:'pro',date:'2시간 전',title:'[스포츠] 포르쉐 무광 GT3 전용 케미컬 추천',preview:'무광 GT3 관리 1년째 되어서 케미컬 총정리합니다. 제일 중요한 건 pH 중성...',likes:64,comments:24,cartype:'sports'},
+  {id:3,nick:'야간세차마스터',skill:'mid',date:'5시간 전',title:'[세단] 소나타 하부세차 주기 어떻게 하세요?',preview:'요즘 비가 자주 와서 하부 신경 쓰이는데 다들 얼마나 자주 하부세차 하시나요?',likes:15,comments:22,cartype:'sedan'},
+  {id:4,nick:'거품중독자',skill:'pro',date:'1일 전',title:'[전기차] 아이오닉6 세차 시 배터리 하부 보호 팁',preview:'전기차 하부세차 할 때 배터리 팩 방향으로 강한 수압 직접 쏘면 안 된다는 거 아시죠?',likes:43,comments:17,cartype:'ev'},
+];
+
+let allReviews = [
+  {place:'워터드롭 셀프세차 강남점',nick:'세차왕민준',skill:'maniac',stars:5,date:'2주 전',text:'수압 진짜 미침!! 폼건 거품량도 장난 아니고 베이 간격이 넓어서 SUV도 여유롭게 세차 가능',tags:['수압최고','거품풍성','넓은베이']},
+  {place:'하이글로스 디테일링 서초',nick:'코팅덕후',skill:'pro',stars:5,date:'3일 전',text:'유리막 코팅 퀄리티 대박. 사장님이 직접 작업하시고 진행 상황도 공유해주심. 예약 필수!',tags:['코팅맛집','친절','예약필수']},
+  {place:'클린스팟 무인세차 역삼',nick:'스피드세차',skill:'mid',stars:4,date:'5일 전',text:'24시간이라 새벽에 가도 돼서 좋음. 무인이라 빠르게 끝남. 셀프보단 퀄리티 좀 낮지만 급할 때 최고',tags:['24시간','빠름','편의성']},
+  {place:'버블팩토리 셀프세차 삼성',nick:'실내베이매니아',skill:'maniac',stars:5,date:'1주 전',text:'실내 베이가 있어서 비 올 때도 세차 가능. 환기 잘 되고 조명 밝아서 디테일 작업하기 딱 좋음',tags:['실내베이','비올때OK','밝은조명']},
+];
+
+let activeCartypeFilter = 'all';
+let modalMode = 'lightning';
+
+// ── 탭 전환 ──
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+    if(btn.dataset.tab === 'club') renderClub();
+  };
+});
+
+// ── 번개 렌더 ──
+function renderLightning() {
+  document.getElementById('lightningList').innerHTML = lightnings.map(l => {
+    const pct = Math.round((l.joined/l.limit)*100);
+    const full = l.joined >= l.limit;
+    return `<div class="lightning-card">
+      <div class="lc-top">
+        <div class="lc-emoji">⚡</div>
+        <div class="lc-info">
+          <div class="lc-title">${l.title}</div>
+          <div class="lc-host">주최: ${l.host} <span style="color:var(--aqua);font-size:10px;font-weight:700;margin-left:4px">${skillLabel[l.skill]||''}</span></div>
+        </div>
+        <div class="lc-d-day">${l.joinedMe?'✅참가중':'신청가능'}</div>
+      </div>
+      <div class="lc-meta">
+        <div class="lc-meta-item">📅 <b>${l.date}</b></div>
+        <div class="lc-meta-item">📍 <b>${l.place}</b></div>
+        <div class="lc-meta-item">🚗 <b>${carLabel[l.cartype]||l.cartype}</b></div>
+      </div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.6;font-weight:300">${l.desc}</p>
+      <div class="lc-spots">
+        <div class="lc-progress"><div class="lc-progress-fill" style="width:${pct}%"></div></div>
+        <div class="lc-count">${l.joined}/${l.limit}명</div>
+        <button class="lc-join-btn ${l.joinedMe?'joined':full?'full':'join'}" onclick="joinLightning(${l.id})">
+          ${l.joinedMe?'✅ 참가중':full?'마감':'⚡ 참가하기'}
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function joinLightning(id) {
+  const user = JSON.parse(localStorage.getItem('ppaxseUser')||'null');
+  if(!user||user.guest) { alert('로그인이 필요합니다'); location.href='login.html'; return; }
+  const l = lightnings.find(x=>x.id===id);
+  if(!l || l.joined>=l.limit) return;
+  if(l.joinedMe) { l.joinedMe=false; l.joined--; showToast('참가를 취소했습니다'); }
+  else { l.joinedMe=true; l.joined++; showToast('번개에 참가했습니다! ⚡'); }
+  renderLightning();
+}
+
+// ── 자유게시판 렌더 ──
+function renderFree() {
+  document.getElementById('freeList').innerHTML = freePosts.map(p => `
+    <div class="post-card" onclick="alert('게시글 상세 페이지 연동 예정')">
+      <div class="post-top">
+        <div class="post-avatar">${p.nick[0]}</div>
+        <div class="post-author">
+          <div><span class="post-nick">${p.nick}</span><span class="post-skill">${skillLabel[p.skill]||''}</span></div>
+        </div>
+        <div class="post-date">${p.date}</div>
+      </div>
+      <div class="post-title">${p.title}</div>
+      <div class="post-preview">${p.preview}</div>
+      <div class="post-footer">
+        <div class="post-stat">❤️ ${p.likes}</div>
+        <div class="post-stat">💬 ${p.comments}</div>
+        <div class="post-tag">${carLabel[p.cartype]||''}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ── 동호회 렌더 ──
+function renderClub() {
+  const filtered = activeCartypeFilter==='all' ? clubPosts : clubPosts.filter(p=>p.cartype===activeCartypeFilter);
+  // 내 차종이 있으면 상단에 표시
+  const user = JSON.parse(localStorage.getItem('ppaxseUser')||'null');
+  let header = '';
+  if(user && user.cars && user.cars.length) {
+    header = `<div style="padding:10px 14px;background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.2);border-radius:14px;margin-bottom:14px;font-size:13px;color:var(--aqua);font-weight:700">
+      💧 내 차종 보드: ${user.cars.map(c=>carLabel[c]||c).join(' · ')}
+    </div>`;
+  }
+  document.getElementById('clubList').innerHTML = header + filtered.map(p => `
+    <div class="post-card" onclick="alert('동호회 게시글 상세 연동 예정')">
+      <div class="post-top">
+        <div class="post-avatar">${p.nick[0]}</div>
+        <div class="post-author">
+          <div><span class="post-nick">${p.nick}</span><span class="post-skill">${skillLabel[p.skill]||''}</span></div>
+        </div>
+        <div class="post-date">${p.date}</div>
+      </div>
+      <div class="post-title">${p.title}</div>
+      <div class="post-preview">${p.preview}</div>
+      <div class="post-footer">
+        <div class="post-stat">❤️ ${p.likes}</div>
+        <div class="post-stat">💬 ${p.comments}</div>
+        <div class="post-tag">${carLabel[p.cartype]||''}</div>
+      </div>
+    </div>`).join('');
+}
+
+document.querySelectorAll('.ct-chip').forEach(chip => {
+  chip.onclick = () => {
+    document.querySelectorAll('.ct-chip').forEach(c=>c.classList.remove('on'));
+    chip.classList.add('on');
+    activeCartypeFilter = chip.dataset.ct;
+    renderClub();
+  };
+});
+
+// ── 리뷰 렌더 ──
+function renderReviews() {
+  document.getElementById('reviewList').innerHTML = allReviews.map(r => `
+    <div class="review-card">
+      <div class="rc-place">📍 ${r.place}</div>
+      <div class="rc-top">
+        <div class="rc-avatar">${r.nick[0]}</div>
+        <div><span class="rc-nick">${r.nick}</span><span class="rc-skill">${skillLabel[r.skill]||''}</span></div>
+        <div class="rc-date">${r.date}</div>
+      </div>
+      <div class="rc-stars">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</div>
+      <div class="rc-text">${r.text}</div>
+      <div class="rc-tags">${r.tags.map(t=>`<span class="rc-tag">#${t}</span>`).join('')}</div>
+    </div>`).join('');
+}
+
+// ── 모달 ──
+function openModal(mode='lightning') {
+  const user = JSON.parse(localStorage.getItem('ppaxseUser')||'null');
+  if(!user||user.guest) { alert('로그인이 필요합니다'); location.href='login.html'; return; }
+  modalMode = mode;
+  const overlay = document.getElementById('modalOverlay');
+  if(mode==='lightning') {
+    document.getElementById('modalTitle').innerHTML = '번개 <em>개설하기</em>';
+    document.getElementById('modalBody').innerHTML = `
+      <div class="m-field"><label class="m-label">번개 제목</label><input class="m-input" id="mTitle" placeholder="예: 강남 토요일 오후 번개 같이해요!"></div>
+      <div class="m-row">
+        <div class="m-field"><label class="m-label">날짜/시간</label><input class="m-input" id="mDate" type="datetime-local"></div>
+        <div class="m-field"><label class="m-label">인원 제한</label><input class="m-input" id="mLimit" type="number" placeholder="최대 인원" min="2" max="20"></div>
+      </div>
+      <div class="m-field"><label class="m-label">세차장 이름</label><input class="m-input" id="mPlace" placeholder="세차장 이름을 입력하세요"></div>
+      <div class="m-field"><label class="m-label">한 줄 소개</label><input class="m-input" id="mDesc" placeholder="번개 소개를 적어주세요"></div>`;
+    document.getElementById('modalSubmit').onclick = submitLightning;
+  } else {
+    document.getElementById('modalTitle').innerHTML = '글 <em>작성하기</em>';
+    document.getElementById('modalBody').innerHTML = `
+      <div class="m-field"><label class="m-label">제목</label><input class="m-input" id="mPostTitle" placeholder="제목을 입력하세요"></div>
+      <div class="m-field"><label class="m-label">내용</label><textarea class="m-input" id="mPostContent" rows="4" placeholder="내용을 입력하세요" style="padding:12px;resize:none;height:120px"></textarea></div>`;
+    document.getElementById('modalSubmit').onclick = submitPost;
+  }
+  overlay.classList.add('open');
+}
+
+function closeModal(e) {
+  if(!e || e.target===document.getElementById('modalOverlay')) {
+    document.getElementById('modalOverlay').classList.remove('open');
+  }
+}
+
+function submitLightning() {
+  const title = document.getElementById('mTitle').value.trim();
+  const place = document.getElementById('mPlace').value.trim();
+  const limit = parseInt(document.getElementById('mLimit').value) || 6;
+  if(!title||!place) { showToast('제목과 세차장을 입력해주세요'); return; }
+  const user = JSON.parse(localStorage.getItem('ppaxseUser')||'null');
+  const date = document.getElementById('mDate').value || '날짜 미정';
+  lightnings.unshift({
+    id: Date.now(), title, host: user.userNick, skill: user.skill||'mid',
+    date, place, limit, joined: 1, joinedMe: true,
+    cartype: (user.cars&&user.cars[0])||'sedan',
+    desc: document.getElementById('mDesc').value||''
+  });
+  closeModal();
+  renderLightning();
+  showToast('번개가 개설되었습니다! ⚡');
+}
+
+function submitPost() {
+  const title = document.getElementById('mPostTitle').value.trim();
+  const content = document.getElementById('mPostContent').value.trim();
+  if(!title||!content) { showToast('제목과 내용을 입력해주세요'); return; }
+  const user = JSON.parse(localStorage.getItem('ppaxseUser')||'null');
+  freePosts.unshift({
+    id: Date.now(), nick: user.userNick, skill: user.skill||'mid',
+    date: '방금 전', title, preview: content,
+    likes:0, comments:0, cartype:(user.cars&&user.cars[0])||'sedan'
+  });
+  closeModal();
+  // 자유게시판 탭으로 전환
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelector('[data-tab="free"]').classList.add('active');
+  document.getElementById('panel-free').classList.add('active');
+  renderFree();
+  showToast('게시글이 등록되었습니다! 📝');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// 초기 렌더
+renderLightning();
+renderFree();
+renderClub();
+renderReviews();
+</script>
+</body>
+</html>

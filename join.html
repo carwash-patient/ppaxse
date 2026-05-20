@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>회원가입 · 빡세</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--deep:#04111e;--deep2:#071828;--ocean:#0369a1;--sky:#0ea5e9;--cyan:#06b6d4;--aqua:#22d3ee;--foam:#bae6fd;--line:rgba(14,165,233,.18);--glass:rgba(7,24,40,.72);--muted:rgba(186,230,253,.6)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;background:var(--deep);overflow-x:hidden}
+.bg{position:fixed;inset:0;background:radial-gradient(ellipse 70% 50% at 20% 10%,rgba(6,182,212,.2),transparent 55%),radial-gradient(ellipse 50% 40% at 85% 90%,rgba(3,105,161,.22),transparent 50%),linear-gradient(170deg,#04111e,#071828)}
+.page{position:relative;z-index:5;padding:28px 20px 60px;max-width:500px;margin:0 auto}
+.back{display:inline-flex;align-items:center;gap:7px;color:var(--muted);font-size:13px;font-weight:700;text-decoration:none;margin-bottom:28px}
+
+.brand{text-align:center;margin-bottom:32px}
+.brand-icon{width:68px;height:68px;border-radius:22px;background:linear-gradient(135deg,var(--ocean),var(--aqua));display:flex;align-items:center;justify-content:center;font-size:34px;margin:0 auto 14px;box-shadow:0 12px 40px rgba(6,182,212,.35)}
+.brand-name{font-family:'Black Han Sans',sans-serif;font-size:26px;letter-spacing:-.5px}
+.brand-name em{color:var(--aqua);font-style:normal}
+.brand-sub{font-size:13px;color:var(--muted);margin-top:6px;font-weight:300}
+
+.card{background:rgba(7,24,40,.78);border:1px solid var(--line);border-radius:28px;padding:28px 24px;box-shadow:0 32px 80px rgba(0,0,0,.45);backdrop-filter:blur(20px)}
+
+.step-bar{display:flex;align-items:center;gap:0;margin-bottom:28px}
+.step-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0;transition:.3s}
+.step-dot.done{background:linear-gradient(135deg,var(--sky),var(--aqua));color:#fff}
+.step-dot.active{background:var(--sky);color:#fff;box-shadow:0 0 0 3px rgba(14,165,233,.25)}
+.step-dot.todo{background:rgba(255,255,255,.08);border:1px solid var(--line);color:rgba(255,255,255,.3)}
+.step-line{flex:1;height:2px;background:rgba(255,255,255,.08);margin:0 4px}
+.step-line.done{background:linear-gradient(90deg,var(--sky),var(--aqua))}
+
+/* 단계 패널 */
+.step-panel{display:none}.step-panel.active{display:block}
+.step-title{font-family:'Black Han Sans',sans-serif;font-size:20px;letter-spacing:-.5px;margin-bottom:6px}
+.step-sub{font-size:12px;color:var(--muted);margin-bottom:22px;font-weight:300}
+
+/* 프로필 이미지 업로더 */
+.avatar-upload{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:22px}
+.avatar-circle{width:90px;height:90px;border-radius:50%;background:rgba(14,165,233,.12);border:2px dashed rgba(14,165,233,.35);display:flex;align-items:center;justify-content:center;font-size:36px;cursor:pointer;overflow:hidden;position:relative;transition:.2s}
+.avatar-circle:hover{border-color:var(--sky)}
+.avatar-circle img{width:100%;height:100%;object-fit:cover;display:none;border-radius:50%}
+.avatar-label{font-size:12px;color:var(--muted);font-weight:700}
+#avatarInput{display:none}
+
+/* 필드 */
+.field{margin-bottom:14px}
+.field-label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:7px;letter-spacing:.3px}
+.field-label span{color:#f87171;margin-left:2px}
+.field input,.field select{width:100%;min-height:50px;border:1.5px solid rgba(255,255,255,.1);border-radius:14px;background:rgba(4,17,30,.6);color:#fff;padding:0 16px;font-family:inherit;font-size:14px;outline:none;transition:.2s;appearance:none;-webkit-appearance:none}
+.field input::placeholder{color:rgba(255,255,255,.28)}
+.field input:focus,.field select:focus{border-color:rgba(14,165,233,.7);background:rgba(14,165,233,.07);box-shadow:0 0 0 4px rgba(14,165,233,.1)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pw-wrap{position:relative}
+.pw-wrap input{padding-right:44px}
+.pw-eye{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:18px;padding:0}
+
+/* 숙련도 선택 */
+.skill-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:0}
+.skill-card{padding:16px 14px;border-radius:16px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);cursor:pointer;transition:.25s;position:relative}
+.skill-card.selected{border-color:var(--sky);background:rgba(14,165,233,.12)}
+.skill-card input[type=radio]{position:absolute;opacity:0;pointer-events:none}
+.skill-emoji{font-size:22px;margin-bottom:7px}
+.skill-level{font-size:11px;font-weight:700;color:var(--aqua);letter-spacing:.5px;margin-bottom:4px}
+.skill-name{font-size:13px;font-weight:700;color:#fff;line-height:1.3}
+.skill-desc{font-size:11px;color:var(--muted);margin-top:3px;font-weight:300}
+.skill-check{position:absolute;top:10px;right:10px;width:20px;height:20px;border-radius:50%;background:var(--sky);display:flex;align-items:center;justify-content:center;font-size:11px;opacity:0;transition:.2s}
+.skill-card.selected .skill-check{opacity:1}
+
+/* 차종 칩 */
+.cartype-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:0}
+.cartype-chip{padding:8px 14px;border-radius:999px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);font-size:12px;font-weight:700;color:rgba(255,255,255,.7);cursor:pointer;transition:.2s}
+.cartype-chip.on{border-color:var(--sky);background:rgba(14,165,233,.15);color:#fff}
+
+/* 동의 */
+.agree-list{display:flex;flex-direction:column;gap:10px;margin-top:4px}
+.agree-item{display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03)}
+.agree-item input[type=checkbox]{display:none}
+.agree-box{width:22px;height:22px;border-radius:7px;border:1.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.2s;font-size:12px}
+.agree-item input:checked ~ .agree-box{background:var(--sky);border-color:var(--sky)}
+.agree-text{font-size:13px;color:rgba(255,255,255,.75)}
+.agree-text b{color:var(--aqua)}
+
+/* 버튼 */
+.btn{width:100%;min-height:54px;border:none;border-radius:16px;font-family:inherit;font-size:15px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:.2s;letter-spacing:-.2px;margin-top:6px}
+.btn-primary{background:linear-gradient(135deg,var(--sky),var(--aqua));color:#fff;box-shadow:0 12px 32px rgba(14,165,233,.35)}
+.btn-primary:active{transform:scale(.98)}
+.btn-back{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.7)}
+.btn-row{display:grid;grid-template-columns:1fr 2fr;gap:10px;margin-top:6px}
+
+.divider{text-align:center;margin:18px 0;color:rgba(255,255,255,.25);font-size:12px;position:relative}
+.divider::before,.divider::after{content:'';position:absolute;top:50%;width:40%;height:1px;background:rgba(255,255,255,.1)}
+.divider::before{left:0}.divider::after{right:0}
+
+.login-link{text-align:center;margin-top:18px;font-size:13px;color:var(--muted)}
+.login-link a{color:var(--sky);font-weight:700;text-decoration:none}
+
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:rgba(239,68,68,.9);color:#fff;padding:12px 22px;border-radius:14px;font-size:13px;font-weight:700;opacity:0;transition:.3s;z-index:999;white-space:nowrap;backdrop-filter:blur(10px)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="page">
+  <a href="landing.html" class="back">← 돌아가기</a>
+
+  <div class="brand">
+    <div class="brand-icon">💧</div>
+    <div class="brand-name">빡<em>세</em></div>
+    <div class="brand-sub">세차 마니아들의 플랫폼 — 함께 즐깁시다</div>
+  </div>
+
+  <div class="card">
+    <!-- 스텝 바 -->
+    <div class="step-bar" id="stepBar">
+      <div class="step-dot active" id="sd0">1</div>
+      <div class="step-line" id="sl0"></div>
+      <div class="step-dot todo" id="sd1">2</div>
+      <div class="step-line" id="sl1"></div>
+      <div class="step-dot todo" id="sd2">3</div>
+    </div>
+
+    <!-- STEP 1: 기본 정보 + 프로필 -->
+    <div class="step-panel active" id="step0">
+      <div class="step-title">기본 정보 입력</div>
+      <div class="step-sub">빡세에서 사용할 정보를 입력해주세요</div>
+
+      <div class="avatar-upload">
+        <div class="avatar-circle" onclick="document.getElementById('avatarInput').click()">
+          <span id="avatarEmoji">📷</span>
+          <img id="avatarPreview" alt="프로필">
+        </div>
+        <div class="avatar-label">프로필 사진 업로드 (선택)</div>
+        <input type="file" id="avatarInput" accept="image/*">
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">아이디<span>*</span></label>
+          <input type="text" id="userId" placeholder="영문+숫자">
+        </div>
+        <div class="field">
+          <label class="field-label">닉네임<span>*</span></label>
+          <input type="text" id="userNick" placeholder="세차왕○○">
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">이름<span>*</span></label>
+        <input type="text" id="userName" placeholder="실명">
+      </div>
+      <div class="field">
+        <label class="field-label">비밀번호<span>*</span></label>
+        <div class="pw-wrap">
+          <input type="password" id="userPw" placeholder="8자 이상">
+          <button class="pw-eye" onclick="togglePw('userPw')">👁</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">비밀번호 확인<span>*</span></label>
+        <div class="pw-wrap">
+          <input type="password" id="userPw2" placeholder="동일하게 입력">
+          <button class="pw-eye" onclick="togglePw('userPw2')">👁</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">연락처<span>*</span></label>
+        <input type="tel" id="userPhone" placeholder="010-0000-0000">
+      </div>
+      <button class="btn btn-primary" onclick="goStep(1)">다음 단계 →</button>
+    </div>
+
+    <!-- STEP 2: 차종 + 숙련도 -->
+    <div class="step-panel" id="step1">
+      <div class="step-title">차종 & 세차 숙련도</div>
+      <div class="step-sub">동호회 게시판 자동 연동 + 커뮤니티 맞춤 추천에 활용됩니다</div>
+
+      <div class="field">
+        <label class="field-label">보유 차종<span>*</span> (다중 선택 가능)</label>
+        <div class="cartype-grid" id="cartypeGrid">
+          <div class="cartype-chip" data-v="sedan">🚗 세단</div>
+          <div class="cartype-chip" data-v="suv">🚙 SUV</div>
+          <div class="cartype-chip" data-v="sports">🏎️ 스포츠카</div>
+          <div class="cartype-chip" data-v="truck">🛻 트럭/픽업</div>
+          <div class="cartype-chip" data-v="van">🚐 밴/미니밴</div>
+          <div class="cartype-chip" data-v="coupe">🚘 쿠페</div>
+          <div class="cartype-chip" data-v="ev">⚡ 전기차</div>
+          <div class="cartype-chip" data-v="other">🚔 기타</div>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:20px">
+        <label class="field-label">세차 숙련도<span>*</span> — 솔직하게 선택해주세요!</label>
+        <div class="skill-grid" id="skillGrid">
+          <label class="skill-card" onclick="selectSkill(this,'beginner')">
+            <input type="radio" name="skill" value="beginner">
+            <div class="skill-check">✓</div>
+            <div class="skill-emoji">🌱</div>
+            <div class="skill-level">BEGINNER</div>
+            <div class="skill-name">세린이</div>
+            <div class="skill-desc">아직 배우는 중이에요</div>
+          </label>
+          <label class="skill-card" onclick="selectSkill(this,'mid')">
+            <input type="radio" name="skill" value="mid">
+            <div class="skill-check">✓</div>
+            <div class="skill-emoji">💨</div>
+            <div class="skill-level">INTERMEDIATE</div>
+            <div class="skill-name">폼건은 기본이죠</div>
+            <div class="skill-desc">중수 입장</div>
+          </label>
+          <label class="skill-card" onclick="selectSkill(this,'pro')">
+            <input type="radio" name="skill" value="pro">
+            <div class="skill-check">✓</div>
+            <div class="skill-emoji">✨</div>
+            <div class="skill-level">EXPERT</div>
+            <div class="skill-name">디테일링 직접 함</div>
+            <div class="skill-desc">고수 코스</div>
+          </label>
+          <label class="skill-card" onclick="selectSkill(this,'maniac')">
+            <input type="radio" name="skill" value="maniac">
+            <div class="skill-check">✓</div>
+            <div class="skill-emoji">🫧</div>
+            <div class="skill-level">MANIAC</div>
+            <div class="skill-name">3시간은 기본 아닌가?</div>
+            <div class="skill-desc">세차환자 레벨</div>
+          </label>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-back" onclick="goStep(0)">← 이전</button>
+        <button class="btn btn-primary" onclick="goStep(2)">다음 단계 →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: 약관 동의 + 완료 -->
+    <div class="step-panel" id="step2">
+      <div class="step-title">약관 동의 및 가입 완료</div>
+      <div class="step-sub">아래 약관에 동의하시면 빡세 회원이 됩니다 💧</div>
+
+      <div class="agree-list">
+        <label class="agree-item">
+          <input type="checkbox" id="agreeAll" onchange="agreeAllToggle(this)">
+          <div class="agree-box" id="agreeAllBox">✓</div>
+          <div class="agree-text"><b>전체 동의</b></div>
+        </label>
+        <label class="agree-item">
+          <input type="checkbox" class="agreeItem">
+          <div class="agree-box">✓</div>
+          <div class="agree-text">서비스 이용약관 동의 <b>(필수)</b></div>
+        </label>
+        <label class="agree-item">
+          <input type="checkbox" class="agreeItem">
+          <div class="agree-box">✓</div>
+          <div class="agree-text">개인정보 수집·이용 동의 <b>(필수)</b></div>
+        </label>
+        <label class="agree-item">
+          <input type="checkbox" class="agreeItem">
+          <div class="agree-box">✓</div>
+          <div class="agree-text">마케팅 정보 수신 동의 (선택)</div>
+        </label>
+      </div>
+
+      <div class="btn-row" style="margin-top:20px">
+        <button class="btn btn-back" onclick="goStep(1)">← 이전</button>
+        <button class="btn btn-primary" onclick="doJoin()">🫧 빡세 시작하기</button>
+      </div>
+      <div class="divider">또는</div>
+      <div class="login-link">이미 회원이신가요? <a href="login.html">로그인하기</a></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let curStep = 0;
+let selectedCars = [];
+let selectedSkill = '';
+
+function goStep(n) {
+  if(n > curStep) {
+    if(curStep === 0) {
+      if(!document.getElementById('userId').value.trim()) return showToast('아이디를 입력해주세요');
+      if(!document.getElementById('userNick').value.trim()) return showToast('닉네임을 입력해주세요');
+      if(!document.getElementById('userName').value.trim()) return showToast('이름을 입력해주세요');
+      if(document.getElementById('userPw').value.length < 8) return showToast('비밀번호는 8자 이상입니다');
+      if(document.getElementById('userPw').value !== document.getElementById('userPw2').value) return showToast('비밀번호가 일치하지 않습니다');
+      if(!document.getElementById('userPhone').value.trim()) return showToast('연락처를 입력해주세요');
+    }
+    if(curStep === 1) {
+      if(selectedCars.length === 0) return showToast('차종을 1개 이상 선택해주세요');
+      if(!selectedSkill) return showToast('세차 숙련도를 선택해주세요');
+    }
+  }
+  document.getElementById('step'+curStep).classList.remove('active');
+  document.getElementById('sd'+curStep).classList.remove('active');
+  document.getElementById('sd'+curStep).classList.add('done');
+  if(curStep < 2) document.getElementById('sl'+curStep).classList.add('done');
+  curStep = n;
+  document.getElementById('step'+curStep).classList.add('active');
+  document.getElementById('sd'+curStep).classList.remove('todo','done');
+  document.getElementById('sd'+curStep).classList.add('active');
+}
+
+function selectSkill(el, val) {
+  document.querySelectorAll('.skill-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedSkill = val;
+}
+
+document.querySelectorAll('.cartype-chip').forEach(chip => {
+  chip.onclick = () => {
+    chip.classList.toggle('on');
+    const v = chip.dataset.v;
+    if(chip.classList.contains('on')) selectedCars.push(v);
+    else selectedCars = selectedCars.filter(c => c !== v);
+  };
+});
+
+function agreeAllToggle(cb) {
+  document.querySelectorAll('.agreeItem').forEach(c => { c.checked = cb.checked; });
+}
+
+function togglePw(id) {
+  const el = document.getElementById(id);
+  el.type = el.type === 'password' ? 'text' : 'password';
+}
+
+// 프로필 이미지 미리보기
+document.getElementById('avatarInput').onchange = function() {
+  const file = this.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = document.getElementById('avatarPreview');
+    img.src = e.target.result;
+    img.style.display = 'block';
+    document.getElementById('avatarEmoji').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+};
+
+function doJoin() {
+  const required = document.querySelectorAll('.agreeItem');
+  const checked = [...required].filter(c => c.checked);
+  if(checked.length < 2) return showToast('필수 약관에 동의해주세요');
+
+  const user = {
+    userId: document.getElementById('userId').value.trim(),
+    userNick: document.getElementById('userNick').value.trim(),
+    userName: document.getElementById('userName').value.trim(),
+    userPw: document.getElementById('userPw').value,
+    userPhone: document.getElementById('userPhone').value.trim(),
+    cars: selectedCars,
+    skill: selectedSkill,
+    points: 0,
+    joinDate: new Date().toISOString(),
+    posts: [],
+    lightning: []
+  };
+
+  const users = JSON.parse(localStorage.getItem('ppaxseUsers') || '[]');
+  if(users.find(u => u.userId === user.userId)) return showToast('이미 사용 중인 아이디입니다');
+  users.push(user);
+  localStorage.setItem('ppaxseUsers', JSON.stringify(users));
+  localStorage.setItem('ppaxseUser', JSON.stringify(user));
+  location.href = 'map.html';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// 이미 로그인 상태면 바로 이동
+if(JSON.parse(localStorage.getItem('ppaxseUser')||'null')) location.href='map.html';
+</script>
+</body>
+</html>

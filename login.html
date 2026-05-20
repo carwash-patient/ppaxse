@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>로그인 · 빡세</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--deep:#04111e;--ocean:#0369a1;--sky:#0ea5e9;--aqua:#22d3ee;--foam:#bae6fd;--line:rgba(14,165,233,.18);--muted:rgba(186,230,253,.6)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;background:var(--deep);overflow-x:hidden;display:flex;align-items:center;justify-content:center}
+.bg{position:fixed;inset:0;background:
+  radial-gradient(ellipse 65% 50% at 15% 15%,rgba(14,165,233,.2),transparent 55%),
+  radial-gradient(ellipse 50% 40% at 88% 88%,rgba(6,182,212,.18),transparent 50%),
+  linear-gradient(160deg,#04111e,#071828)}
+.bg-ring{position:fixed;width:600px;height:600px;border-radius:50%;border:1px solid rgba(14,165,233,.07);top:50%;left:50%;transform:translate(-50%,-50%);animation:ring 12s linear infinite}
+.bg-ring:nth-child(2){width:900px;height:900px;animation-duration:18s;animation-direction:reverse;border-color:rgba(6,182,212,.05)}
+@keyframes ring{to{transform:translate(-50%,-50%) rotate(360deg)}}
+
+.page{position:relative;z-index:5;width:100%;max-width:420px;padding:24px 20px}
+
+.back{display:inline-flex;align-items:center;gap:7px;color:var(--muted);font-size:13px;font-weight:700;text-decoration:none;margin-bottom:28px}
+
+.brand{text-align:center;margin-bottom:32px}
+.brand-icon{width:72px;height:72px;border-radius:24px;background:linear-gradient(135deg,var(--ocean),var(--aqua));display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 14px;box-shadow:0 12px 44px rgba(14,165,233,.38),0 0 0 1px rgba(255,255,255,.07) inset}
+.brand-name{font-family:'Black Han Sans',sans-serif;font-size:28px;letter-spacing:-.5px}
+.brand-name em{color:var(--aqua);font-style:normal}
+.brand-sub{font-size:13px;color:var(--muted);margin-top:7px;font-weight:300}
+
+.card{background:rgba(7,24,40,.8);border:1px solid var(--line);border-radius:28px;padding:32px 26px;box-shadow:0 40px 100px rgba(0,0,0,.5);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);animation:popIn .45s ease}
+@keyframes popIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:7px;letter-spacing:.3px}
+.pw-wrap{position:relative}
+.pw-wrap input{padding-right:46px}
+.pw-eye{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.35);cursor:pointer;font-size:18px;padding:0}
+.field input{width:100%;min-height:52px;border:1.5px solid rgba(255,255,255,.1);border-radius:14px;background:rgba(4,17,30,.65);color:#fff;padding:0 16px;font-family:inherit;font-size:14px;outline:none;transition:.2s}
+.field input::placeholder{color:rgba(255,255,255,.28)}
+.field input:focus{border-color:rgba(14,165,233,.7);background:rgba(14,165,233,.07);box-shadow:0 0 0 4px rgba(14,165,233,.1)}
+
+.btn{width:100%;min-height:54px;border:none;border-radius:16px;font-family:inherit;font-size:15px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:.2s;letter-spacing:-.2px}
+.btn-primary{background:linear-gradient(135deg,var(--sky),var(--aqua));color:#fff;box-shadow:0 12px 36px rgba(14,165,233,.38);margin-top:4px}
+.btn-primary:active{transform:scale(.98)}
+.btn-guest{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.7);margin-top:10px}
+
+.divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:rgba(255,255,255,.25);font-size:12px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.1)}
+
+.join-btn{width:100%;min-height:50px;border:1.5px solid rgba(14,165,233,.3);border-radius:16px;background:transparent;color:var(--sky);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:.2s}
+.join-btn:hover{background:rgba(14,165,233,.07)}
+
+.links{display:flex;justify-content:center;gap:16px;margin-top:18px;font-size:12px}
+.links a{color:rgba(255,255,255,.5);text-decoration:none;font-weight:700}
+.links a:hover{color:#fff}
+.links span{color:rgba(255,255,255,.2)}
+
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:rgba(239,68,68,.9);color:#fff;padding:12px 22px;border-radius:14px;font-size:13px;font-weight:700;opacity:0;transition:.3s;z-index:999;backdrop-filter:blur(10px)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="bg">
+  <div class="bg-ring"></div>
+  <div class="bg-ring"></div>
+</div>
+<div class="page">
+  <a href="landing.html" class="back">← 홈으로</a>
+  <div class="brand">
+    <div class="brand-icon">💧</div>
+    <div class="brand-name">빡<em>세</em></div>
+    <div class="brand-sub">세차 마니아들의 플랫폼</div>
+  </div>
+  <div class="card">
+    <div class="field">
+      <label>아이디</label>
+      <input type="text" id="loginId" placeholder="아이디를 입력하세요" autocomplete="username">
+    </div>
+    <div class="field">
+      <label>비밀번호</label>
+      <div class="pw-wrap">
+        <input type="password" id="loginPw" placeholder="비밀번호를 입력하세요" autocomplete="current-password">
+        <button class="pw-eye" onclick="togglePw()">👁</button>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="loginBtn">💧 빡세 입장</button>
+    <button class="btn btn-guest" onclick="guestLogin()">게스트로 둘러보기</button>
+    <div class="divider">처음 오셨나요?</div>
+    <button class="join-btn" onclick="location.href='join.html'">🫧 무료 회원가입하기</button>
+    <div class="links">
+      <a href="#">아이디 찾기</a><span>|</span><a href="#">비밀번호 찾기</a>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+function togglePw() {
+  const el = document.getElementById('loginPw');
+  el.type = el.type === 'password' ? 'text' : 'password';
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+function guestLogin() {
+  localStorage.setItem('ppaxseUser', JSON.stringify({guest:true, userNick:'게스트', points:0}));
+  location.href = 'map.html';
+}
+document.getElementById('loginBtn').onclick = () => {
+  const id = document.getElementById('loginId').value.trim();
+  const pw = document.getElementById('loginPw').value;
+  if(!id || !pw) return showToast('아이디와 비밀번호를 입력해주세요');
+  const users = JSON.parse(localStorage.getItem('ppaxseUsers') || '[]');
+  const found = users.find(u => u.userId === id && u.userPw === pw);
+  if(found) {
+    localStorage.setItem('ppaxseUser', JSON.stringify(found));
+    location.href = 'map.html';
+  } else {
+    showToast('아이디 또는 비밀번호가 일치하지 않습니다');
+  }
+};
+document.getElementById('loginPw').addEventListener('keydown', e => {
+  if(e.key === 'Enter') document.getElementById('loginBtn').click();
+});
+if(JSON.parse(localStorage.getItem('ppaxseUser')||'null')) location.href='map.html';
+</script>
+</body>
+</html>

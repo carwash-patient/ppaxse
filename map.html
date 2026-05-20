@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>세차장 찾기 · 빡세</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;700;900&display=swap" rel="stylesheet">
+
+<!--
+  ★★★ 카카오 지도 API ★★★
+  1. https://developers.kakao.com 에서 앱 생성
+  2. 앱 키 > JavaScript 키 복사
+  3. 플랫폼 > Web > 사이트 도메인에 실제 도메인 등록
+  4. 아래 YOUR_KAKAO_JAVASCRIPT_KEY 를 발급받은 키로 교체
+-->
+<script src="sdk.js"></script>
+
+<style>
+:root{--deep:#04111e;--deep2:#071828;--ocean:#0369a1;--sky:#0ea5e9;--cyan:#06b6d4;--aqua:#22d3ee;--foam:#bae6fd;--line:rgba(14,165,233,.18);--muted:rgba(186,230,253,.6);--card:rgba(7,24,40,.94)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;background:var(--deep);overflow:hidden}
+
+/* TOP BAR */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:300;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);background:rgba(4,17,30,.92);border-bottom:1px solid var(--line)}
+.topbar-inner{display:flex;align-items:center;gap:10px;padding:12px 16px}
+.logo-btn{display:flex;align-items:center;gap:8px;text-decoration:none;flex-shrink:0}
+.logo-icon{width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,var(--ocean),var(--aqua));display:flex;align-items:center;justify-content:center;font-size:16px}
+.logo-text{font-family:'Black Han Sans',sans-serif;font-size:17px;color:#fff;letter-spacing:-.3px}
+.logo-text em{color:var(--aqua);font-style:normal}
+.search-wrap{flex:1;position:relative}
+.search-input{width:100%;height:40px;border:1.5px solid var(--line);border-radius:12px;background:rgba(255,255,255,.06);color:#fff;padding:0 14px 0 36px;font-family:inherit;font-size:13px;outline:none;transition:.2s}
+.search-input::placeholder{color:rgba(255,255,255,.3)}
+.search-input:focus{border-color:rgba(14,165,233,.65);background:rgba(14,165,233,.07)}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:15px;opacity:.45}
+.my-btn{width:36px;height:36px;border-radius:11px;background:rgba(14,165,233,.15);border:1px solid rgba(14,165,233,.28);display:flex;align-items:center;justify-content:center;font-size:14px;text-decoration:none;flex-shrink:0}
+
+/* FILTER CHIPS */
+.filters{position:fixed;top:68px;left:0;right:0;z-index:290;padding:10px 14px;display:flex;gap:7px;overflow-x:auto;background:rgba(4,17,30,.88);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.filters::-webkit-scrollbar{display:none}
+.chip{display:flex;align-items:center;gap:5px;padding:7px 13px;border-radius:999px;border:1.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);font-size:12px;font-weight:700;color:rgba(255,255,255,.65);white-space:nowrap;cursor:pointer;transition:.2s;flex-shrink:0}
+.chip.on{border-color:var(--sky);background:rgba(14,165,233,.18);color:#fff;box-shadow:0 0 12px rgba(14,165,233,.2)}
+.chip:active{transform:scale(.95)}
+
+/* MAP */
+#mapArea{position:fixed;top:110px;left:0;right:0;bottom:0}
+#kakaoMap{width:100%;height:100%}
+
+/* 카카오 API 키 미설정 fallback */
+#mapFallback{display:none;width:100%;height:100%;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:linear-gradient(160deg,#071828,#04111e)}
+#mapFallback .icon{font-size:56px;opacity:.4}
+#mapFallback p{font-size:13px;font-weight:700;color:rgba(255,255,255,.5);text-align:center;line-height:1.7}
+#mapFallback .api-note{font-size:12px;color:rgba(6,182,212,.8);background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.25);padding:14px 20px;border-radius:14px;max-width:300px;text-align:center;line-height:1.7}
+#mapFallback .api-note b{color:#fff}
+
+/* 이 지역 재검색 버튼 */
+.research-btn{position:absolute;top:14px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--ocean),var(--aqua));color:#fff;border:none;padding:10px 22px;border-radius:999px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 8px 24px rgba(14,165,233,.4);z-index:10;display:none;align-items:center;gap:7px;white-space:nowrap;backdrop-filter:blur(10px)}
+.research-btn.show{display:flex}
+
+/* 현위치 버튼 */
+.locate-btn{position:absolute;bottom:228px;right:14px;width:46px;height:46px;border-radius:15px;background:rgba(7,24,40,.95);border:1px solid var(--line);color:var(--aqua);font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.5);z-index:10;backdrop-filter:blur(10px)}
+
+/* BOTTOM SHEET */
+.sheet{position:fixed;bottom:0;left:0;right:0;z-index:400;background:var(--card);border-radius:24px 24px 0 0;border-top:1px solid var(--line);transition:transform .38s cubic-bezier(.4,0,.2,1);box-shadow:0 -24px 64px rgba(0,0,0,.55)}
+.sheet.collapsed{transform:translateY(calc(100% - 112px))}
+.sheet.peek{transform:translateY(calc(100% - 290px))}
+.sheet.full{transform:translateY(0)}
+.sheet-handle-area{padding:12px 0 8px;cursor:pointer;position:relative}
+.sheet-handle{width:38px;height:4px;border-radius:99px;background:rgba(255,255,255,.18);margin:0 auto}
+.sheet-summary{padding:0 16px 12px;display:flex;align-items:center;justify-content:space-between}
+.sheet-count{font-family:'Black Han Sans',sans-serif;font-size:16px}
+.sheet-count span{color:var(--aqua)}
+.sheet-sort{font-size:12px;color:var(--muted);font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px}
+.place-list{overflow-y:auto;max-height:calc(100vh - 200px);padding:0 14px 100px}
+.place-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:20px;padding:16px;margin-bottom:10px;cursor:pointer;transition:.2s;position:relative;overflow:hidden}
+.place-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--sky),var(--aqua));opacity:0;transition:.2s}
+.place-card:active{transform:scale(.99)}
+.place-card.active{border-color:rgba(14,165,233,.4);background:rgba(14,165,233,.07)}
+.place-card.active::before{opacity:1}
+.pc-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px}
+.pc-icon{width:48px;height:48px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.pc-icon.self{background:linear-gradient(135deg,rgba(14,165,233,.2),rgba(34,211,238,.12));border:1px solid rgba(14,165,233,.28)}
+.pc-icon.detail{background:linear-gradient(135deg,rgba(168,85,247,.2),rgba(236,72,153,.12));border:1px solid rgba(168,85,247,.28)}
+.pc-icon.notouch{background:linear-gradient(135deg,rgba(16,185,129,.2),rgba(52,211,153,.12));border:1px solid rgba(16,185,129,.28)}
+.pc-info{flex:1;min-width:0}
+.pc-name{font-size:15px;font-weight:900;letter-spacing:-.3px;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc-addr{font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:300}
+.pc-meta{display:flex;align-items:center;gap:8px}
+.pc-stars{font-size:12px;color:#fbbf24;font-weight:700}
+.pc-reviews{font-size:11px;color:rgba(255,255,255,.35)}
+.pc-dist{font-size:11px;color:var(--aqua);font-weight:700;margin-left:auto}
+.pc-badges{display:flex;flex-wrap:wrap;gap:5px}
+.badge{padding:4px 9px;border-radius:999px;font-size:11px;font-weight:700}
+.badge.b{background:rgba(14,165,233,.14);color:var(--aqua);border:1px solid rgba(14,165,233,.22)}
+.badge.g{background:rgba(16,185,129,.14);color:#34d399;border:1px solid rgba(16,185,129,.22)}
+.badge.y{background:rgba(251,191,36,.14);color:#fbbf24;border:1px solid rgba(251,191,36,.22)}
+.badge.r{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2)}
+.pc-open{position:absolute;top:14px;right:14px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px}
+.pc-open.yes{background:rgba(16,185,129,.14);color:#34d399}
+.pc-open.no{background:rgba(239,68,68,.1);color:#f87171}
+
+/* 상세 패널 */
+.detail-panel{display:none;position:fixed;bottom:0;left:0;right:0;z-index:500;background:linear-gradient(180deg,#0d1e35,#071828);border-radius:26px 26px 0 0;border-top:1px solid var(--line);padding:0 0 70px;max-height:88vh;overflow-y:auto;box-shadow:0 -32px 80px rgba(0,0,0,.65);animation:slideUp .3s ease}
+.detail-panel.open{display:block}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:none}}
+.dp-handle{padding:14px 0 8px;text-align:center;cursor:pointer}
+.dp-handle::before{content:'';display:block;width:38px;height:4px;border-radius:99px;background:rgba(255,255,255,.18);margin:0 auto}
+.dp-close{position:absolute;top:14px;right:16px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.dp-body{padding:0 20px 20px}
+.dp-type-tag{font-size:10px;font-weight:700;color:var(--aqua);letter-spacing:1.5px;margin-bottom:6px}
+.dp-name{font-family:'Black Han Sans',sans-serif;font-size:24px;letter-spacing:-.5px;margin-bottom:4px}
+.dp-addr{font-size:13px;color:var(--muted);margin-bottom:14px;font-weight:300}
+.dp-rating-row{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.dp-score{font-family:'Black Han Sans',sans-serif;font-size:34px;color:#fbbf24}
+.dp-stars-big{font-size:17px;color:#fbbf24}
+.dp-rev-count{font-size:12px;color:var(--muted);font-weight:300}
+.dp-badges{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:22px}
+.dp-section{margin-bottom:22px}
+.dp-section-title{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:1px;margin-bottom:12px;text-transform:uppercase}
+.dp-spec-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.spec-item{padding:13px;border-radius:15px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;gap:4px}
+.spec-label{font-size:11px;color:var(--muted);font-weight:700}
+.spec-val{font-size:13px;font-weight:900}
+.spec-val.y{color:#34d399}.spec-val.n{color:#f87171}
+.review-item{padding:14px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);margin-bottom:8px}
+.ri-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.ri-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--ocean),var(--aqua));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;flex-shrink:0}
+.ri-nick{font-size:13px;font-weight:900}
+.ri-skill{font-size:10px;color:var(--aqua);font-weight:700;margin-left:6px}
+.ri-date{font-size:11px;color:rgba(255,255,255,.35);margin-left:auto;font-weight:300}
+.ri-stars{font-size:12px;color:#fbbf24;margin-bottom:6px}
+.ri-text{font-size:13px;color:var(--muted);line-height:1.7;font-weight:300}
+.ri-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+.ri-tag{padding:3px 8px;border-radius:6px;background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.2);font-size:11px;color:var(--aqua);font-weight:700}
+.dp-actions{display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap}
+.dp-btn{flex:1;min-height:50px;min-width:80px;border:none;border-radius:15px;font-family:inherit;font-size:13px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:.2s}
+.dp-btn.primary{background:linear-gradient(135deg,var(--sky),var(--aqua));color:#fff;box-shadow:0 8px 24px rgba(14,165,233,.3)}
+.dp-btn.ghost{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#fff}
+.write-review-btn{width:100%;min-height:50px;border:2px dashed rgba(14,165,233,.32);border-radius:15px;background:transparent;color:var(--sky);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:600;display:flex;background:rgba(4,17,30,.97);border-top:1px solid var(--line);backdrop-filter:blur(20px);padding-bottom:env(safe-area-inset-bottom)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;text-decoration:none;color:rgba(255,255,255,.35);transition:.15s;gap:3px}
+.nav-item.active{color:var(--aqua)}
+.nav-item-icon{font-size:22px}
+.nav-item-label{font-size:10px;font-weight:700}
+.nav-item.dim{opacity:.35;pointer-events:none}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <a href="landing.html" class="logo-btn">
+      <div class="logo-icon">💧</div>
+      <div class="logo-text">빡<em>세</em></div>
+    </a>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="searchInput" type="text" placeholder="세차장 이름, 지역 검색...">
+    </div>
+    <a href="mypage.html" class="my-btn">👤</a>
+  </div>
+</div>
+
+<div class="filters" id="filterBar">
+  <div class="chip on" data-f="all">전체</div>
+  <div class="chip" data-f="self">🚿 셀프세차</div>
+  <div class="chip" data-f="detail">✨ 디테일링</div>
+  <div class="chip" data-f="notouch">🤖 무인세차</div>
+  <div class="chip" data-f="foam">💨 폼건</div>
+  <div class="chip" data-f="under">⬇️ 하부세차</div>
+  <div class="chip" data-f="indoor">🏠 실내베이</div>
+  <div class="chip" data-f="h24">🕐 24시간</div>
+  <div class="chip" data-f="myitem">🧴 개인용품OK</div>
+  <div class="chip" data-f="reserve">📅 예약가능</div>
+</div>
+
+<div id="mapArea">
+  <div id="kakaoMap"></div>
+  <div id="mapFallback">
+    <div class="icon">💧</div>
+    <p>카카오 지도를 불러올 수 없습니다</p>
+    <div class="api-note">
+      map.html 상단 &lt;script src&gt;의<br>
+      <b>YOUR_KAKAO_JAVASCRIPT_KEY</b>를<br>
+      발급받은 JS 키로 교체 후<br>
+      카카오 콘솔에서 도메인을 등록하세요.<br><br>
+      📌 <b>developers.kakao.com</b><br>
+      내 애플리케이션 → 플랫폼 → Web
+    </div>
+  </div>
+  <button class="research-btn" id="researchBtn" onclick="researchArea()">🔄 이 지역 재검색</button>
+  <div class="locate-btn" id="locateBtn">📍</div>
+</div>
+
+<div class="sheet peek" id="sheet">
+  <div class="sheet-handle-area" id="sheetHandle"><div class="sheet-handle"></div></div>
+  <div class="sheet-summary">
+    <div class="sheet-count"><span id="countNum">5</span>개의 세차장</div>
+    <div class="sheet-sort" id="sortBtn">거리순 ▾</div>
+  </div>
+  <div class="place-list" id="placeList"></div>
+</div>
+
+<div class="detail-panel" id="detailPanel">
+  <div class="dp-handle" onclick="closeDetail()"></div>
+  <button class="dp-close" onclick="closeDetail()">×</button>
+  <div class="dp-body" id="dpBody"></div>
+</div>
+
+<nav class="bottom-nav">
+  <a href="map.html" class="nav-item active"><div class="nav-item-icon">🗺️</div><div class="nav-item-label">지도</div></a>
+  <a href="community.html" class="nav-item"><div class="nav-item-icon">⚡</div><div class="nav-item-label">커뮤니티</div></a>
+  <a href="#" class="nav-item dim"><div class="nav-item-icon">🛒</div><div class="nav-item-label">커머스</div></a>
+  <a href="mypage.html" class="nav-item"><div class="nav-item-icon">👤</div><div class="nav-item-label">마이페이지</div></a>
+</nav>
+
+<script>
+// ══════════════════════════════════════════════════
+//  MOCK DATA — 샘플 세차장 5곳 (Firestore 연동 전)
+// ══════════════════════════════════════════════════
+const places = [
+  {
+    id:1, name:'워터드롭 셀프세차 강남점', addr:'서울 강남구 테헤란로 123',
+    type:'self', lat:37.4994, lng:127.0261, dist:0.3,
+    rating:4.7, reviews:128, open:true,
+    foam:true, under:true, indoor:true, h24:false, myitem:true, reserve:false, detail:false,
+    reviewList:[
+      {nick:'세차왕민준', skill:'maniac', stars:5, date:'2주 전',
+       text:'수압 진짜 미침!! 폼건 거품량도 장난 아니고 베이 간격이 넓어서 SUV도 여유롭게 세차 가능',
+       tags:['수압최고','거품풍성','넓은베이']},
+      {nick:'거품중독자', skill:'pro', stars:4, date:'1달 전',
+       text:'평일에는 줄 없이 바로 들어갈 수 있음. 주말 개인용품 사용은 확인 필요',
+       tags:['평일추천','주말혼잡']},
+    ]
+  },
+  {
+    id:2, name:'하이글로스 디테일링 서초', addr:'서울 서초구 반포대로 56',
+    type:'detail', lat:37.503, lng:127.008, dist:0.8,
+    rating:4.9, reviews:87, open:true,
+    foam:false, under:true, indoor:true, h24:false, myitem:true, reserve:true, detail:true,
+    reviewList:[
+      {nick:'코팅덕후', skill:'pro', stars:5, date:'3일 전',
+       text:'유리막 코팅 퀄리티 대박. 사장님이 직접 작업하시고 진행 상황도 공유해주심. 예약 필수!',
+       tags:['코팅맛집','친절','예약필수']},
+    ]
+  },
+  {
+    id:3, name:'클린스팟 무인세차 역삼', addr:'서울 강남구 역삼동 804-3',
+    type:'notouch', lat:37.497, lng:127.038, dist:1.1,
+    rating:4.2, reviews:203, open:true,
+    foam:false, under:false, indoor:false, h24:true, myitem:false, reserve:false, detail:false,
+    reviewList:[
+      {nick:'스피드세차', skill:'mid', stars:4, date:'5일 전',
+       text:'24시간이라 새벽에 가도 돼서 좋음. 무인이라 빠르게 끝남. 셀프보단 퀄리티 좀 낮지만 급할 때 최고',
+       tags:['24시간','빠름','편의성']},
+    ]
+  },
+  {
+    id:4, name:'버블팩토리 셀프세차 삼성', addr:'서울 강남구 삼성동 145-1',
+    type:'self', lat:37.509, lng:127.055, dist:1.4,
+    rating:4.5, reviews:64, open:false,
+    foam:true, under:false, indoor:true, h24:false, myitem:true, reserve:false, detail:false,
+    reviewList:[
+      {nick:'실내베이매니아', skill:'maniac', stars:5, date:'1주 전',
+       text:'실내 베이가 있어서 비 올 때도 세차 가능. 환기 잘 되고 조명 밝아서 디테일 작업하기 딱 좋음',
+       tags:['실내베이','비올때OK','밝은조명']},
+    ]
+  },
+  {
+    id:5, name:'폼아트 셀프세차 광진점', addr:'서울 광진구 능동로 209',
+    type:'self', lat:37.541, lng:127.083, dist:3.1,
+    rating:4.3, reviews:41, open:true,
+    foam:true, under:true, indoor:false, h24:true, myitem:false, reserve:false, detail:false,
+    reviewList:[
+      {nick:'야간세차마스터', skill:'mid', stars:4, date:'3주 전',
+       text:'새벽에 가도 수압 그대로. 24시간 운영이라 부담없이 타이밍 맞춰서 가기 좋음',
+       tags:['24시간','야간OK','깔끔']},
+    ]
+  }
+];
+
+const typeLabel={self:'셀프세차',detail:'디테일링샵',notouch:'무인세차'};
+const typeIcon={self:'🚿',detail:'✨',notouch:'🤖'};
+const skillLabel={beginner:'🌱세린이',mid:'💨중수',pro:'✨고수',maniac:'🫧세차환자'};
+
+let activeFilter='all', activeId=null, sheetState='peek', sortBy='dist';
+let kakaoMap=null, kakaoMarkers={};
+
+// ══════════════════════════════════════════════════
+//  카카오 지도 초기화
+// ══════════════════════════════════════════════════
+function initKakaoMap() {
+  if(typeof kakao === 'undefined' || !kakao.maps) { showFallback(); return; }
+  const container = document.getElementById('kakaoMap');
+  if(!container) return showFallback();
+
+  const options = {
+    center: new kakao.maps.LatLng(37.505, 127.040),
+    level: 4
+  };
+
+  try {
+    kakaoMap = new kakao.maps.Map(container, options);
+  } catch(e) {
+    return showFallback();
+  }
+
+  // 지도 이동 시 재검색 버튼 표시
+  kakao.maps.event.addListener(kakaoMap, 'dragend', function() {
+    document.getElementById('researchBtn').classList.add('show');
+  });
+
+  // 지도 클릭 시 상세 닫기
+  kakao.maps.event.addListener(kakaoMap, 'click', function() {
+    if(activeId) closeDetail();
+  });
+
+  renderKakaoMarkers();
+}
+
+function showFallback() {
+  document.getElementById('kakaoMap').style.display = 'none';
+  document.getElementById('mapFallback').style.display = 'flex';
+}
+
+// ══════════════════════════════════════════════════
+//  물방울 커스텀 마커 HTML
+// ══════════════════════════════════════════════════
+const markerColors = {
+  self:    {bg:'linear-gradient(160deg,#0ea5e9,#22d3ee)', glow:'rgba(14,165,233,.6)'},
+  detail:  {bg:'linear-gradient(160deg,#a855f7,#ec4899)', glow:'rgba(168,85,247,.6)'},
+  notouch: {bg:'linear-gradient(160deg,#10b981,#34d399)', glow:'rgba(16,185,129,.6)'},
+};
+
+function dropMarkerHTML(p, selected) {
+  const c = markerColors[p.type];
+  const scale = selected ? 'transform:scale(1.28)' : '';
+  const glow  = selected ? `filter:drop-shadow(0 0 8px ${c.glow})` : '';
+  // 물방울 모양: border-radius 70% 30% 30% 70% / 60% 40% 60% 40%
+  return `<div style="display:flex;flex-direction:column;align-items:center;cursor:pointer;${scale};${glow};transition:.25s">
+    <div style="width:46px;height:54px;background:${c.bg};border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(0,0,0,.45);border:2.5px solid rgba(255,255,255,.35)">
+      <span style="font-size:20px">${typeIcon[p.type]}</span>
+    </div>
+    <div style="margin-top:5px;background:rgba(4,17,30,.93);border:1px solid rgba(14,165,233,.35);padding:3px 9px;border-radius:7px;font-size:11px;font-weight:700;color:#fff;white-space:nowrap;font-family:'Noto Sans KR',sans-serif;backdrop-filter:blur(8px)">
+      ${p.name.length>9?p.name.slice(0,9)+'…':p.name}
+    </div>
+  </div>`;
+}
+
+function renderKakaoMarkers() {
+  if(!kakaoMap) return;
+  Object.values(kakaoMarkers).forEach(m => m.setMap(null));
+  kakaoMarkers = {};
+  filteredPlaces().forEach(p => {
+    const pos = new kakao.maps.LatLng(p.lat, p.lng);
+    const content = dropMarkerHTML(p, activeId === p.id);
+    const overlay = new kakao.maps.CustomOverlay({
+      position: pos,
+      content,
+      yAnchor: 1.05,
+      zIndex: activeId===p.id ? 10 : 1
+    });
+    overlay.setMap(kakaoMap);
+    // 클릭 이벤트는 HTML 내에서 처리
+    overlay.getContent = () => content;
+    kakaoMarkers[p.id] = overlay;
+
+    // CustomOverlay는 DOM에 직접 접근
+    setTimeout(() => {
+      const el = overlay.a;
+      if(el) el.onclick = () => openDetail(p.id);
+    }, 100);
+  });
+}
+
+function updateMarkerSelected(id) {
+  // 마커 재렌더로 선택 상태 반영
+  renderKakaoMarkers();
+}
+
+function researchArea() {
+  document.getElementById('researchBtn').classList.remove('show');
+  renderKakaoMarkers(); renderList();
+}
+
+// ══════════════════════════════════════════════════
+//  필터 / 정렬 / 검색
+// ══════════════════════════════════════════════════
+document.querySelectorAll('.chip').forEach(chip => {
+  chip.onclick = () => {
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
+    chip.classList.add('on');
+    activeFilter = chip.dataset.f;
+    renderList(); renderKakaoMarkers(); closeDetail();
+  };
+});
+
+const sheet = document.getElementById('sheet');
+document.getElementById('sheetHandle').onclick = () => {
+  if(sheetState==='collapsed'){sheet.className='sheet peek';sheetState='peek';}
+  else if(sheetState==='peek'){sheet.className='sheet full';sheetState='full';}
+  else{sheet.className='sheet peek';sheetState='peek';}
+};
+
+document.getElementById('sortBtn').onclick = () => {
+  sortBy = sortBy==='dist' ? 'rating' : 'dist';
+  document.getElementById('sortBtn').textContent = sortBy==='dist' ? '거리순 ▾' : '평점순 ▾';
+  renderList();
+};
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  renderList(e.target.value); renderKakaoMarkers();
+});
+
+function filteredPlaces(query='') {
+  let list = places;
+  if(activeFilter !== 'all') {
+    if(['self','detail','notouch'].includes(activeFilter)) list = list.filter(p => p.type===activeFilter);
+    else list = list.filter(p => p[activeFilter]);
+  }
+  const q = query || document.getElementById('searchInput').value;
+  if(q) list = list.filter(p => p.name.includes(q) || p.addr.includes(q));
+  return [...list].sort((a,b) => sortBy==='dist' ? a.dist-b.dist : b.rating-a.rating);
+}
+
+function renderList(query='') {
+  const fp = filteredPlaces(query);
+  document.getElementById('countNum').textContent = fp.length;
+  document.getElementById('placeList').innerHTML = fp.map(p => `
+    <div class="place-card ${activeId===p.id?'active':''}" onclick="openDetail(${p.id})">
+      <div class="pc-open ${p.open?'yes':'no'}">${p.open?'영업중':'영업종료'}</div>
+      <div class="pc-top">
+        <div class="pc-icon ${p.type}">${typeIcon[p.type]}</div>
+        <div class="pc-info">
+          <div class="pc-name">${p.name}</div>
+          <div class="pc-addr">${p.addr}</div>
+          <div class="pc-meta">
+            <span class="pc-stars">★ ${p.rating}</span>
+            <span class="pc-reviews">(${p.reviews})</span>
+            <span class="pc-dist">${p.dist}km</span>
+          </div>
+        </div>
+      </div>
+      <div class="pc-badges">
+        ${p.foam?'<span class="badge b">💨 폼건</span>':''}
+        ${p.under?'<span class="badge g">⬇️ 하부</span>':''}
+        ${p.indoor?'<span class="badge y">🏠 실내베이</span>':''}
+        ${p.h24?'<span class="badge g">🕐 24시간</span>':''}
+        ${p.myitem?'<span class="badge b">🧴 개인용품</span>':''}
+        ${p.reserve?'<span class="badge y">📅 예약가능</span>':''}
+      </div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════════════
+//  상세 패널
+// ══════════════════════════════════════════════════
+function openDetail(id) {
+  activeId = id;
+  const p = places.find(x => x.id===id);
+  if(kakaoMap) {
+    kakaoMap.panTo(new kakao.maps.LatLng(p.lat, p.lng));
+    renderKakaoMarkers();
+  }
+  renderList();
+
+  document.getElementById('dpBody').innerHTML = `
+    <div class="dp-type-tag">${typeLabel[p.type].toUpperCase()}</div>
+    <div class="dp-name">${p.name}</div>
+    <div class="dp-addr">📍 ${p.addr}</div>
+    <div class="dp-rating-row">
+      <div class="dp-score">${p.rating}</div>
+      <div>
+        <div class="dp-stars-big">${'★'.repeat(Math.round(p.rating))}${'☆'.repeat(5-Math.round(p.rating))}</div>
+        <div class="dp-rev-count">리뷰 ${p.reviews}개</div>
+      </div>
+    </div>
+    <div class="dp-badges">
+      ${p.open?'<span class="badge g">✅ 영업중</span>':'<span class="badge r">⛔ 영업종료</span>'}
+      ${p.foam?'<span class="badge b">💨 폼건</span>':''}
+      ${p.under?'<span class="badge b">⬇️ 하부세차</span>':''}
+      ${p.indoor?'<span class="badge y">🏠 실내베이</span>':''}
+      ${p.h24?'<span class="badge g">🕐 24시간</span>':''}
+      ${p.myitem?'<span class="badge b">🧴 개인용품OK</span>':''}
+      ${p.reserve?'<span class="badge y">📅 예약가능</span>':''}
+    </div>
+    <div class="dp-actions">
+      ${p.reserve?`<button class="dp-btn primary" onclick="alert('예약 기능은 Phase 2에서 오픈 예정!')">📅 예약</button>`:''}
+      <button class="dp-btn ghost" onclick="openKakaoNavi(${p.lat},${p.lng},'${p.name}')">🗺️ 길찾기</button>
+      <button class="dp-btn ghost" onclick="alert('전화하기 연동 예정')">📞 전화</button>
+    </div>
+    <div class="dp-section">
+      <div class="dp-section-title">시설 정보</div>
+      <div class="dp-spec-grid">
+        <div class="spec-item"><div class="spec-label">폼건 사용</div><div class="spec-val ${p.foam?'y':'n'}">${p.foam?'✅ 가능':'❌ 불가'}</div></div>
+        <div class="spec-item"><div class="spec-label">하부 세차</div><div class="spec-val ${p.under?'y':'n'}">${p.under?'✅ 가능':'❌ 불가'}</div></div>
+        <div class="spec-item"><div class="spec-label">실내 베이</div><div class="spec-val ${p.indoor?'y':'n'}">${p.indoor?'✅ 있음':'❌ 없음'}</div></div>
+        <div class="spec-item"><div class="spec-label">24시간</div><div class="spec-val ${p.h24?'y':'n'}">${p.h24?'✅ 운영':'❌ 미운영'}</div></div>
+        <div class="spec-item"><div class="spec-label">개인용품</div><div class="spec-val ${p.myitem?'y':'n'}">${p.myitem?'✅ 허용':'❌ 불가'}</div></div>
+        <div class="spec-item"><div class="spec-label">예약 여부</div><div class="spec-val ${p.reserve?'y':'n'}">${p.reserve?'✅ 가능':'❌ 불가'}</div></div>
+      </div>
+    </div>
+    <div class="dp-section">
+      <div class="dp-section-title">빡세 리뷰</div>
+      ${p.reviewList.map(r=>`
+        <div class="review-item">
+          <div class="ri-top">
+            <div class="ri-avatar">${r.nick[0]}</div>
+            <div class="ri-nick">${r.nick}</div>
+            <div class="ri-skill">${skillLabel[r.skill]||''}</div>
+            <div class="ri-date">${r.date}</div>
+          </div>
+          <div class="ri-stars">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</div>
+          <div class="ri-text">${r.text}</div>
+          <div class="ri-tags">${r.tags.map(t=>`<span class="ri-tag">#${t}</span>`).join('')}</div>
+        </div>`).join('')}
+      <button class="write-review-btn" onclick="openReviewModal(${p.id})">✏️ 리뷰 작성하기</button>
+    </div>`;
+
+  document.getElementById('detailPanel').classList.add('open');
+  sheet.className='sheet collapsed'; sheetState='collapsed';
+}
+
+function closeDetail() {
+  activeId = null;
+  document.getElementById('detailPanel').classList.remove('open');
+  sheet.className='sheet peek'; sheetState='peek';
+  renderList(); renderKakaoMarkers();
+}
+
+function openReviewModal(id) {
+  const user = JSON.parse(localStorage.getItem('ppaxseUser')||'null');
+  if(!user || user.guest) { alert('리뷰 작성은 로그인 후 가능합니다'); location.href='login.html'; return; }
+  alert('리뷰 작성 — 커뮤니티 페이지와 연동 예정');
+}
+
+// 카카오맵 길찾기
+function openKakaoNavi(lat, lng, name) {
+  const enc = encodeURIComponent(name);
+  // 카카오맵 앱 딥링크 → 웹 fallback
+  const appUrl = `kakaomap://route?ep=${lat},${lng}&by=CAR`;
+  const webUrl = `https://map.kakao.com/link/to/${enc},${lat},${lng}`;
+  window.location.href = appUrl;
+  setTimeout(() => window.open(webUrl, '_blank'), 1500);
+}
+
+// 현위치 버튼
+document.getElementById('locateBtn').onclick = () => {
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      if(kakaoMap) {
+        const ll = new kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
+        kakaoMap.panTo(ll);
+        kakaoMap.setLevel(4);
+        // 현위치 마커
+        new kakao.maps.CustomOverlay({
+          position: ll,
+          content: `<div style="width:18px;height:18px;border-radius:50%;background:#0ea5e9;border:3px solid #fff;box-shadow:0 0 0 6px rgba(14,165,233,.25)"></div>`,
+          zIndex: 99
+        }).setMap(kakaoMap);
+      } else {
+        alert(`현위치: ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`);
+      }
+    },
+    () => alert('위치 접근 권한이 필요합니다')
+  );
+};
+
+// 초기 렌더
+renderList();
+window.addEventListener('load', initKakaoMap);
+</script>
+</body>
+</html>
