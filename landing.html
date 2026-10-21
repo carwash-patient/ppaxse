@@ -94,16 +94,6 @@ main{position:relative;z-index:5}
 .feat-desc{font-size:13px;color:var(--muted);line-height:1.7;font-weight:300}
 
 /* ── ROADMAP ── */
-.roadmap-bg{padding:88px 20px;background:rgba(6,182,212,.04);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.roadmap-inner{max-width:760px;margin:0 auto}
-.phase-list{margin-top:44px;display:flex;flex-direction:column;gap:0;position:relative}
-.phase-list::before{content:'';position:absolute;left:24px;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,var(--sky),var(--aqua),rgba(34,211,238,.1))}
-.phase{display:flex;gap:26px;padding-bottom:44px}
-.phase-dot{width:50px;height:50px;min-width:50px;border-radius:50%;background:linear-gradient(135deg,var(--ocean),var(--aqua));display:flex;align-items:center;justify-content:center;font-family:'Noto Sans KR',sans-serif;font-weight:900;font-size:16px;box-shadow:0 4px 22px rgba(14,165,233,.4);position:relative;z-index:1}
-.phase-body{padding-top:10px}
-.phase-tag{font-size:10px;font-weight:700;color:var(--aqua);letter-spacing:1.5px;margin-bottom:6px}
-.phase-name{font-family:'Noto Sans KR',sans-serif;font-weight:900;font-size:19px;margin-bottom:7px}
-.phase-desc{font-size:13px;color:var(--muted);line-height:1.7;font-weight:300}
 
 /* ── SKILL BADGES ── */
 .skill-section{padding:88px 20px;max-width:960px;margin:0 auto;text-align:center}
@@ -168,9 +158,7 @@ footer{padding:28px 20px;text-align:center;font-size:11px;color:rgba(255,255,255
       <a href="community.html" class="cta-btn outline">⚡ 커뮤니티 보기</a>
     </div>
     <div class="hero-kpi">
-      <div class="kpi-item"><div class="kpi-num">2,400<span>+</span></div><div class="kpi-label">등록 세차장</div></div>
-      <div class="kpi-item"><div class="kpi-num">18K<span>+</span></div><div class="kpi-label">빡세 회원</div></div>
-      <div class="kpi-item"><div class="kpi-num">4.9<span>★</span></div><div class="kpi-label">평균 앱 평점</div></div>
+      <div class="kpi-item"><div class="kpi-num"><b id="placeCount">5,700</b><span>+</span></div><div class="kpi-label">등록 세차장</div></div>
     </div>
   </section>
 
@@ -180,8 +168,8 @@ footer{padding:28px 20px;text-align:center;font-size:11px;color:rgba(255,255,255
     <div class="feat-grid">
       <div class="feat-card">
         <div class="feat-icon-wrap">🗺️</div>
-        <div class="feat-name">카카오 지도 세차장 검색</div>
-        <div class="feat-desc">내 주변 셀프세차장·디테일링샵을 실제 지도로 확인. 폼건·하부세차·실내베이·24시간 필터로 딱 맞는 곳만 골라냅니다.</div>
+        <div class="feat-name">네이버 지도 세차장 검색</div>
+        <div class="feat-desc">서울·경기·인천 세차장을 네이버 지도로 한눈에. 셀프·손세차·디테일링 종류별 필터와 구 단위 지역 선택으로 원하는 곳만 골라봅니다.</div>
       </div>
       <div class="feat-card">
         <div class="feat-icon-wrap">💧</div>
@@ -194,55 +182,12 @@ footer{padding:28px 20px;text-align:center;font-size:11px;color:rgba(255,255,255
         <div class="feat-desc">"오늘 저녁 8시 번개!" 지도 핀으로 참가자 모집. 차종별 동호회 게시판에서 같은 차 오너들과 소통.</div>
       </div>
       <div class="feat-card">
-        <div class="feat-icon-wrap">📅</div>
-        <div class="feat-name">베이 & 디테일링 예약</div>
-        <div class="feat-desc">타임슬롯 방식으로 원하는 베이 예약. 디테일링샵은 코스·차종 선택 후 바로 결제. (Phase 2)</div>
-      </div>
-      <div class="feat-card">
         <div class="feat-icon-wrap">🎁</div>
         <div class="feat-name">포인트 리워드</div>
         <div class="feat-desc">리뷰 작성·번개 주최로 포인트 적립. 세차권·주유권으로 즉시 교환. 성실한 활동이 보상받는 구조.</div>
       </div>
-      <div class="feat-card">
-        <div class="feat-icon-wrap">🛒</div>
-        <div class="feat-name">세차용품 커머스</div>
-        <div class="feat-desc">리뷰에 언급된 케미컬·장비를 바로 구매. 내 차 도장 상태에 맞는 용품을 AI가 추천. (Phase 3)</div>
-      </div>
     </div>
   </section>
-
-  <div class="roadmap-bg">
-    <div class="roadmap-inner">
-      <div class="sec-kicker">ROADMAP</div>
-      <h2 class="sec-title">단계별 <em>성장 플랜</em></h2>
-      <div class="phase-list">
-        <div class="phase">
-          <div class="phase-dot">1</div>
-          <div class="phase-body">
-            <div class="phase-tag">현재 · PHASE 1</div>
-            <div class="phase-name">세차장 지도 + 커뮤니티</div>
-            <div class="phase-desc">카카오 지도 기반 전국 셀프세차장 검색과 번개·동호회 커뮤니티로 실제 마니아 트래픽을 확보합니다. Firebase 무료 플랜으로 비용 없이 운영.</div>
-          </div>
-        </div>
-        <div class="phase">
-          <div class="phase-dot">2</div>
-          <div class="phase-body">
-            <div class="phase-tag">PHASE 2</div>
-            <div class="phase-name">예약 시스템 + 포인트 고도화</div>
-            <div class="phase-desc">모인 유저를 바탕으로 점주 제휴, 디테일링 & 베이 예약 기능 오픈. 포인트 파트너십 확장.</div>
-          </div>
-        </div>
-        <div class="phase" style="padding-bottom:0">
-          <div class="phase-dot">3</div>
-          <div class="phase-body">
-            <div class="phase-tag">PHASE 3</div>
-            <div class="phase-name">맞춤 커머스 & 데이터</div>
-            <div class="phase-desc">예약·차량 데이터 기반 AI 맞춤 세차용품 커머스로 수익 극대화. B2B 점주 광고 플랫폼 출시.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <section class="skill-section">
     <div class="sec-kicker">SKILL LEVELS</div>
@@ -264,6 +209,24 @@ footer{padding:28px 20px;text-align:center;font-size:11px;color:rgba(255,255,255
   </div>
 </main>
 
-<footer>© 2026 빡세(Ppaxse) · 세차 마니아를 위한 플랫폼</footer>
+<footer>© 2026 빡세(Ppaxse) · 세차 마니아를 위한 플랫폼<br><span style="opacity:.6">세차장 기본 정보: 행정안전부 전국세차장표준데이터 (공공데이터포털)</span></footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/ppx.js"></script>
+<script>
+// 등록 세차장 수 = 지도에 올라간 세차장 수, 100단위 버림 (예: 5,773 → 5,700+)
+(async () => {
+  let n = 0;
+  try {
+    if(window.PPX && PPX.ready) {
+      const { count, error } = await PPX.db.from('places').select('id', { count: 'exact', head: true }).eq('status', 'approved');
+      if(!error) n = count || 0;
+    }
+    if(!n) n = (await fetch('places.json').then(r => r.json())).length;
+  } catch(e) {}
+  if(n >= 100) document.getElementById('placeCount').textContent = (Math.floor(n / 100) * 100).toLocaleString();
+})();
+</script>
 </body>
 </html>
