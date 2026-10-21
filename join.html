@@ -133,19 +133,13 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
         <input type="file" id="avatarInput" accept="image/*">
       </div>
 
-      <div class="field-row">
-        <div class="field">
-          <label class="field-label">아이디<span>*</span></label>
-          <input type="text" id="userId" placeholder="영문+숫자">
-        </div>
-        <div class="field">
-          <label class="field-label">닉네임<span>*</span></label>
-          <input type="text" id="userNick" placeholder="세차왕○○">
-        </div>
+      <div class="field">
+        <label class="field-label">이메일<span>*</span></label>
+        <input type="email" id="userId" placeholder="example@email.com" autocomplete="email" inputmode="email">
       </div>
       <div class="field">
-        <label class="field-label">이름<span>*</span></label>
-        <input type="text" id="userName" placeholder="실명">
+        <label class="field-label">닉네임<span>*</span></label>
+        <input type="text" id="userNick" placeholder="세차왕○○" maxlength="20">
       </div>
       <div class="field">
         <label class="field-label">비밀번호<span>*</span></label>
@@ -160,10 +154,6 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
           <input type="password" id="userPw2" placeholder="동일하게 입력">
           <button class="pw-eye" onclick="togglePw('userPw2')">👁</button>
         </div>
-      </div>
-      <div class="field">
-        <label class="field-label">연락처<span>*</span></label>
-        <input type="tel" id="userPhone" placeholder="010-0000-0000">
       </div>
       <button class="btn btn-primary" onclick="goStep(1)">다음 단계 →</button>
     </div>
@@ -271,6 +261,9 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
 
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/ppx.js"></script>
 <script>
 let curStep = 0;
 let selectedCars = [];
@@ -279,12 +272,10 @@ let selectedSkill = '';
 function goStep(n) {
   if(n > curStep) {
     if(curStep === 0) {
-      if(!document.getElementById('userId').value.trim()) return showToast('아이디를 입력해주세요');
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(document.getElementById('userId').value.trim())) return showToast('이메일을 정확히 입력해주세요');
       if(!document.getElementById('userNick').value.trim()) return showToast('닉네임을 입력해주세요');
-      if(!document.getElementById('userName').value.trim()) return showToast('이름을 입력해주세요');
       if(document.getElementById('userPw').value.length < 8) return showToast('비밀번호는 8자 이상입니다');
       if(document.getElementById('userPw').value !== document.getElementById('userPw2').value) return showToast('비밀번호가 일치하지 않습니다');
-      if(!document.getElementById('userPhone').value.trim()) return showToast('연락처를 입력해주세요');
     }
     if(curStep === 1) {
       if(selectedCars.length === 0) return showToast('차종을 1개 이상 선택해주세요');
@@ -339,31 +330,38 @@ document.getElementById('avatarInput').onchange = function() {
   reader.readAsDataURL(file);
 };
 
-function doJoin() {
+async function doJoin() {
   const required = document.querySelectorAll('.agreeItem');
-  const checked = [...required].filter(c => c.checked);
+  const checked = [...required].slice(0, 2).filter(c => c.checked);
   if(checked.length < 2) return showToast('필수 약관에 동의해주세요');
+  if(!PPX.ready) return showToast('회원가입을 준비 중이에요. 잠시만 기다려 주세요');
 
-  const user = {
-    userId: document.getElementById('userId').value.trim(),
-    userNick: document.getElementById('userNick').value.trim(),
-    userName: document.getElementById('userName').value.trim(),
-    userPw: document.getElementById('userPw').value,
-    userPhone: document.getElementById('userPhone').value.trim(),
-    cars: selectedCars,
-    skill: selectedSkill,
-    points: 0,
-    joinDate: new Date().toISOString(),
-    posts: [],
-    lightning: []
-  };
-
-  const users = JSON.parse(localStorage.getItem('ppaxseUsers') || '[]');
-  if(users.find(u => u.userId === user.userId)) return showToast('이미 사용 중인 아이디입니다');
-  users.push(user);
-  localStorage.setItem('ppaxseUsers', JSON.stringify(users));
-  localStorage.setItem('ppaxseUser', JSON.stringify(user));
-  location.href = 'map.html';
+  const btn = document.querySelector('#step2 .btn-primary');
+  btn.disabled = true; btn.textContent = '가입 중…';
+  try {
+    const res = await PPX.signUp({
+      email: document.getElementById('userId').value.trim(),
+      password: document.getElementById('userPw').value,
+      nickname: document.getElementById('userNick').value.trim(),
+      skill: selectedSkill,
+      cars: selectedCars
+    });
+    if(res && res.needsConfirm) {
+      document.getElementById('step2').innerHTML = `
+        <div class="step-title">메일함을 확인해 주세요 📬</div>
+        <div class="step-sub" style="line-height:1.8">
+          <b>${document.getElementById('userId').value.trim().replace(/[<>&"]/g,'')}</b> 으로 인증 메일을 보냈어요.<br>
+          메일의 링크를 누르면 가입이 끝나고 빡세로 돌아옵니다.<br>
+          메일이 안 보이면 스팸함도 확인해 주세요.
+        </div>
+        <button class="btn btn-primary" onclick="location.href='login.html'">로그인 화면으로</button>`;
+      return;
+    }
+    location.href = 'map.html';
+  } catch(e) {
+    showToast(PPX.koError(e));
+    btn.disabled = false; btn.textContent = '🫧 빡세 시작하기';
+  }
 }
 
 function showToast(msg) {
@@ -373,7 +371,7 @@ function showToast(msg) {
 }
 
 // 이미 로그인 상태면 바로 이동
-if(JSON.parse(localStorage.getItem('ppaxseUser')||'null')) location.href='map.html';
+(async () => { try { if(PPX.ready && await PPX.me()) location.href='map.html'; } catch(e) {} })();
 </script>
 </body>
 </html>

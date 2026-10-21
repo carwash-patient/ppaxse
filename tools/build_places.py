@@ -12,7 +12,9 @@
   - 세차장 종류 분류 (셀프 / 손세차 / 디테일링 / 무인 / 자동 / 일반 / 정비·기타)
   - 대표자 이름 같은 개인정보는 넣지 않음
 """
+import csv
 import json
+import os
 import re
 import sys
 
@@ -87,7 +89,7 @@ def main(src, out):
         if not c:
             no_coord += 1
             continue
-        name = re.sub(r"\s+", " ", str(r["사업장명"]).strip())
+        name = re.sub(r"\s+", " ", str(r["사업장명"]).strip())[:60]
         key = (name, c)
         if key in seen:
             continue
@@ -97,15 +99,16 @@ def main(src, out):
         p = {
             "id": len(places) + 1,
             "name": name,
-            "addr": re.sub(r"\s+", " ", str(addr or "")).strip(),
+            "addr": re.sub(r"\s+", " ", str(addr or "")).strip()[:200],
             "region": SIDO[r["시도명"]] + " " + fix_sigungu(r["시군구명"]),
             "type": classify(r),
             "lat": c[0],
             "lng": c[1],
         }
+        p["_ref"] = f'{r["개방자치단체코드"]}-{r["관리번호"]}'  # 공공데이터 고유번호 (DB 중복 방지용)
         tel = r["세차장전화번호"]
         if isinstance(tel, str) and re.search(r"\d{3,}", tel):
-            p["tel"] = tel.strip()
+            p["tel"] = tel.strip()[:30]
         if h:
             p["hours"] = h
         if is24:
@@ -120,8 +123,24 @@ def main(src, out):
     stats["지도에 올린 수"] = len(places)
     types = pd.Series([p["type"] for p in places]).value_counts().to_dict()
 
+    # 1) 지도용 places.json (Supabase에 연결되지 않을 때 쓰는 예비 데이터)
     with open(out, "w", encoding="utf-8") as f:
-        json.dump(places, f, ensure_ascii=False, separators=(",", ":"))
+        json.dump([{k: v for k, v in p.items() if k != "_ref"} for p in places],
+                  f, ensure_ascii=False, separators=(",", ":"))
+
+    # 2) Supabase 'places' 테이블에 가져올 CSV (Table Editor → Import data from CSV)
+    seed = os.path.join(os.path.dirname(os.path.abspath(out)), "supabase", "places_seed.csv")
+    os.makedirs(os.path.dirname(seed), exist_ok=True)
+    cols = ["name", "addr", "region", "type", "lat", "lng", "tel", "hours", "price", "h24",
+            "status", "source", "source_ref"]
+    with open(seed, "w", encoding="utf-8", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(cols)
+        for p in places:
+            row = dict(p, status="approved", source="public_data", source_ref=p["_ref"])
+            row["h24"] = "true" if p.get("h24") else ""
+            w.writerow(["" if row.get(c) is None else row.get(c, "") for c in cols])
+    stats["Supabase용 CSV"] = os.path.relpath(seed)
     print(json.dumps({"stats": stats, "types": types}, ensure_ascii=False, indent=1))
 
 

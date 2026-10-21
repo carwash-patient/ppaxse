@@ -50,6 +50,45 @@ html,body{height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backgroun
 .chip.on{border-color:var(--sky);background:rgba(14,165,233,.18);color:#fff;box-shadow:0 0 12px rgba(14,165,233,.2)}
 .chip:active{transform:scale(.95)}
 
+/* 세차장 추가 요청 */
+.add-btn{position:absolute;top:14px;right:14px;z-index:10;display:flex;align-items:center;gap:6px;padding:10px 15px;border-radius:999px;border:1px solid rgba(34,211,238,.4);background:rgba(7,24,40,.95);color:#fff;font-family:inherit;font-size:13px;font-weight:900;box-shadow:0 6px 20px rgba(0,0,0,.45);cursor:pointer}
+.add-btn b{color:var(--aqua);font-size:16px;line-height:1}
+.pick-pin{display:none;position:absolute;left:50%;top:50%;z-index:20;pointer-events:none;transform:translate(-50%,-100%);font-size:40px;filter:drop-shadow(0 6px 8px rgba(0,0,0,.5))}
+.pick-pin::after{content:'';position:absolute;left:50%;bottom:-4px;width:10px;height:4px;margin-left:-5px;border-radius:50%;background:rgba(0,0,0,.45)}
+.pick-banner{display:none;position:absolute;top:14px;left:14px;right:14px;z-index:20;padding:13px 16px;border-radius:15px;background:rgba(7,24,40,.96);border:1px solid rgba(34,211,238,.4);font-size:13px;font-weight:700;line-height:1.6;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+.pick-bar{display:none;position:fixed;left:14px;right:14px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:460;gap:10px}
+.picking .pick-pin,.picking .pick-banner{display:block}
+.picking .pick-bar{display:flex}
+.picking .add-btn,.picking .list-toggle,.picking .locate-btn{display:none}
+.pick-bar button{flex:1;min-height:52px;border-radius:15px;font-family:inherit;font-size:14px;font-weight:900;cursor:pointer;border:none}
+.pb-cancel{background:rgba(7,24,40,.96);color:#fff;border:1px solid rgba(255,255,255,.15)!important}
+.pb-ok{background:linear-gradient(135deg,var(--sky),var(--aqua));color:#fff;box-shadow:0 8px 24px rgba(14,165,233,.35)}
+.af-body{padding:0 18px 22px;overflow-y:auto}
+.af-field{margin-bottom:14px}
+.af-label{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:7px}
+.af-label b{color:var(--aqua)}
+.af-input{width:100%;height:46px;border:1.5px solid var(--line);border-radius:13px;background:rgba(255,255,255,.05);color:#fff;padding:0 14px;font-family:inherit;font-size:14px;outline:none}
+.af-input:focus{border-color:rgba(14,165,233,.65)}
+textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
+.af-types{display:flex;flex-wrap:wrap;gap:7px}
+.af-type{padding:9px 13px;border-radius:999px;border:1.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:rgba(255,255,255,.75);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.af-type.on{border-color:var(--sky);background:rgba(14,165,233,.2);color:#fff}
+.af-loc{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:13px;background:rgba(14,165,233,.08);border:1px solid rgba(14,165,233,.25);font-size:13px}
+.af-loc button{margin-left:auto;background:none;border:none;color:var(--aqua);font-family:inherit;font-weight:900;font-size:12px;cursor:pointer}
+.af-near{padding:12px 14px;border-radius:13px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);font-size:12px;color:#fde68a;line-height:1.6;margin-bottom:14px}
+.af-near a{display:block;color:#fff;font-weight:700;text-decoration:underline;cursor:pointer;margin-top:4px}
+.af-submit{width:100%;min-height:52px;border:none;border-radius:15px;background:linear-gradient(135deg,var(--sky),var(--aqua));color:#fff;font-family:inherit;font-size:15px;font-weight:900;cursor:pointer;margin-top:4px}
+.af-submit:disabled{opacity:.6}
+.af-note{font-size:11px;color:var(--muted);text-align:center;margin-top:10px;line-height:1.6}
+.af-login{text-align:center;padding:10px 0 6px;font-size:14px;line-height:1.8;color:var(--muted)}
+.af-login .row{display:flex;gap:10px;margin-top:16px}
+.af-login a{flex:1;display:flex;align-items:center;justify-content:center;min-height:50px;border-radius:14px;text-decoration:none;font-weight:900;color:#fff}
+.af-login a.p{background:linear-gradient(135deg,var(--sky),var(--aqua))}
+.af-login a.g{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12)}
+.ppx-toast{position:fixed;left:50%;bottom:calc(150px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(10px);z-index:900;background:rgba(16,185,129,.95);color:#fff;padding:12px 20px;border-radius:14px;font-size:13px;font-weight:700;opacity:0;transition:.25s;pointer-events:none;max-width:calc(100% - 40px);text-align:center;line-height:1.5}
+.ppx-toast.show{opacity:1;transform:translateX(-50%)}
+.ppx-toast.warn{background:rgba(239,68,68,.95)}
+
 /* 지역 선택 */
 .region-btn{display:flex;align-items:center;gap:5px;padding:7px 13px;border-radius:999px;border:1.5px solid rgba(34,211,238,.45);background:rgba(14,165,233,.14);font-size:12px;font-weight:900;color:#fff;white-space:nowrap;cursor:pointer;flex-shrink:0;font-family:inherit}
 .region-btn.set{background:linear-gradient(135deg,var(--ocean),var(--cyan));border-color:transparent}
@@ -238,7 +277,26 @@ html,body{height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backgroun
   </div>
   <button class="research-btn" id="researchBtn" onclick="researchArea()">🔄 이 지역 재검색</button>
   <div class="locate-btn" id="locateBtn">📍</div>
+  <button class="add-btn" id="addBtn" type="button"><b>＋</b> 세차장 추가</button>
+  <div class="pick-pin" aria-hidden="true">📍</div>
+  <div class="pick-banner">지도를 움직여 <b style="color:var(--aqua)">📍 핀</b>을 세차장 위치에 맞춰주세요</div>
 </div>
+
+<div class="pick-bar">
+  <button class="pb-cancel" id="pickCancel" type="button">취소</button>
+  <button class="pb-ok" id="pickOk" type="button">이 위치로 정하기</button>
+</div>
+
+<div class="region-dim" id="addDim"></div>
+<div class="region-panel" id="addPanel" role="dialog" aria-label="세차장 추가 요청">
+  <div class="rp-head">
+    <div class="rp-title">세차장 추가 요청</div>
+    <button class="rp-close" id="addClose" type="button" aria-label="닫기">×</button>
+  </div>
+  <div class="af-body" id="addBody"></div>
+</div>
+
+<div class="ppx-toast" id="ppxToast"></div>
 
 <div class="region-dim" id="regionDim"></div>
 <div class="region-panel" id="regionPanel" role="dialog" aria-label="지역 선택">
@@ -274,7 +332,12 @@ html,body{height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backgroun
   <a href="mypage.html" class="nav-item"><div class="nav-item-icon">👤</div><div class="nav-item-label">마이페이지</div></a>
 </nav>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/ppx.js"></script>
 <script>
+// 로그인 연결 파일을 못 불러와도 지도는 places.json 으로 계속 동작하도록
+if(!window.PPX) window.PPX = { ready:false, me: async () => null, koError: e => (e && e.message) || '문제가 생겼어요' };
 // ══════════════════════════════════════════════════
 //  세차장 데이터 — places.json (행정안전부 전국세차장표준데이터, 서울·경기·인천)
 //  tools/build_places.py 로 만든 파일. 시설 정보·평점·리뷰는 차차 채워 넣음.
@@ -831,13 +894,133 @@ document.getElementById('regionClose').onclick = closeRegionPanel;
 document.getElementById('regionDim').onclick = closeRegionPanel;
 
 // ══════════════════════════════════════════════════
+//  세차장 추가 요청 (로그인 → 위치 정하기 → 정보 입력 → '확인 대기'로 저장)
+// ══════════════════════════════════════════════════
+let pickLatLng = null;
+const addForm = { name:'', type:'self', addr:'', tel:'', memo:'' };
+
+function toast(msg, warn) {
+  const t = document.getElementById('ppxToast');
+  t.textContent = msg; t.className = 'ppx-toast show' + (warn ? ' warn' : '');
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function openAddPanel(html) {
+  document.getElementById('addBody').innerHTML = html;
+  document.getElementById('addPanel').classList.add('open');
+  document.getElementById('addDim').classList.add('open');
+}
+function closeAddPanel() {
+  document.getElementById('addPanel').classList.remove('open');
+  document.getElementById('addDim').classList.remove('open');
+}
+
+async function startAddPlace() {
+  if(!PPX.ready) return toast('세차장 추가 기능을 준비 중이에요');
+  let me = null;
+  try { me = await PPX.me(); } catch(e) {}
+  if(!me) {
+    openAddPanel(`<div class="af-login">자주 가는 세차장이 지도에 없나요?<br>로그인하면 추가를 요청할 수 있어요.<br>운영자가 확인한 뒤 지도에 올라갑니다.
+      <div class="row"><a class="g" href="join.html">가입하기</a><a class="p" href="login.html?next=map.html">💧 로그인</a></div></div>`);
+    return;
+  }
+  if(activeId) closeDetail();
+  setSheet('hidden');
+  document.body.classList.add('picking');
+}
+
+function stopPicking() { document.body.classList.remove('picking'); }
+
+function nearestRegion(lat, lng) {
+  let best = null, bd = 5;   // 5km 안의 가장 가까운 세차장 지역을 따라감
+  places.forEach(p => { const d = distKm({lat,lng}, p); if(d < bd) { bd = d; best = p; } });
+  return best ? best.region : '';
+}
+
+function renderAddForm() {
+  const near = places.map(p => ({p, d: distKm(pickLatLng, p)})).filter(x => x.d < 0.2).sort((a,b) => a.d-b.d).slice(0,3);
+  const types = ['self','hand','detail','notouch','auto','wash'];
+  openAddPanel(`
+    ${near.length ? `<div class="af-near">혹시 이미 지도에 있는 곳인가요? 근처에 이런 세차장이 있어요.
+      ${near.map(x => `<a onclick="closeAddPanel();openDetail(${x.p.id})">${esc(x.p.name)} · ${fmtDist(x.d)}</a>`).join('')}</div>` : ''}
+    <div class="af-field">
+      <div class="af-label">위치</div>
+      <div class="af-loc">📍 ${esc(nearestRegion(pickLatLng.lat, pickLatLng.lng) || '선택한 위치')} <button type="button" onclick="saveAddForm();closeAddPanel();startAddPlace()">다시 정하기</button></div>
+    </div>
+    <div class="af-field">
+      <div class="af-label">세차장 이름 <b>*</b></div>
+      <input class="af-input" id="afName" maxlength="60" placeholder="간판에 적힌 이름" value="${esc(addForm.name)}">
+    </div>
+    <div class="af-field">
+      <div class="af-label">종류 <b>*</b></div>
+      <div class="af-types">${types.map(t => `<button type="button" class="af-type ${addForm.type===t?'on':''}" data-t="${t}">${typeIcon[t]} ${typeLabel[t]}</button>`).join('')}</div>
+    </div>
+    <div class="af-field">
+      <div class="af-label">주소 (선택)</div>
+      <input class="af-input" id="afAddr" maxlength="200" placeholder="예: 인천 남동구 구월동 123-4" value="${esc(addForm.addr)}">
+    </div>
+    <div class="af-field">
+      <div class="af-label">전화번호 (선택)</div>
+      <input class="af-input" id="afTel" maxlength="30" inputmode="tel" placeholder="세차장 전화번호" value="${esc(addForm.tel)}">
+    </div>
+    <div class="af-field">
+      <div class="af-label">알려주고 싶은 점 (선택)</div>
+      <textarea class="af-input" id="afMemo" maxlength="500" placeholder="예: 실내 베이 4개, 폼건 가능, 24시간 운영">${esc(addForm.memo)}</textarea>
+    </div>
+    <button class="af-submit" id="afSubmit" type="button">요청 보내기</button>
+    <div class="af-note">운영자가 확인한 뒤 지도에 올라가요.<br>진행 상황은 마이페이지에서 볼 수 있어요.</div>`);
+  document.querySelectorAll('.af-type').forEach(b => b.onclick = () => {
+    addForm.type = b.dataset.t;
+    document.querySelectorAll('.af-type').forEach(x => x.classList.toggle('on', x===b));
+  });
+  document.getElementById('afSubmit').onclick = submitAddPlace;
+}
+
+function saveAddForm() {
+  addForm.name = document.getElementById('afName').value.trim();
+  addForm.addr = document.getElementById('afAddr').value.trim();
+  addForm.tel  = document.getElementById('afTel').value.trim();
+  addForm.memo = document.getElementById('afMemo').value.trim();
+}
+
+async function submitAddPlace() {
+  saveAddForm();
+  if(!addForm.name) return toast('세차장 이름을 입력해 주세요', true);
+  const btn = document.getElementById('afSubmit');
+  btn.disabled = true; btn.textContent = '보내는 중…';
+  try {
+    await PPX.requestPlace({
+      ...addForm, lat: +pickLatLng.lat.toFixed(6), lng: +pickLatLng.lng.toFixed(6),
+      region: nearestRegion(pickLatLng.lat, pickLatLng.lng)
+    });
+    closeAddPanel();
+    Object.assign(addForm, { name:'', type:'self', addr:'', tel:'', memo:'' });
+    toast('요청을 보냈어요! 운영자 확인 후 지도에 올라가요 💧');
+  } catch(e) {
+    toast(PPX.koError(e), true);
+    btn.disabled = false; btn.textContent = '요청 보내기';
+  }
+}
+
+document.getElementById('addBtn').onclick = startAddPlace;
+document.getElementById('pickCancel').onclick = stopPicking;
+document.getElementById('pickOk').onclick = () => {
+  const c = naverMap ? naverMap.getCenter() : null;
+  pickLatLng = c ? { lat: c.lat(), lng: c.lng() } : originPoint();
+  stopPicking();
+  renderAddForm();
+};
+document.getElementById('addClose').onclick = closeAddPanel;
+document.getElementById('addDim').onclick = closeAddPanel;
+
+// ══════════════════════════════════════════════════
 //  시작: 세차장 데이터 불러오기 → 지도 그리기
 // ══════════════════════════════════════════════════
 renderList();
 window.addEventListener('load', () => {
   initNaverMap();
-  fetch('places.json')
-    .then(r => { if(!r.ok) throw new Error(r.status); return r.json(); })
+  const fromFile = () => fetch('places.json').then(r => { if(!r.ok) throw new Error(r.status); return r.json(); });
+  (PPX.ready ? PPX.approvedPlaces().catch(e => { console.warn('Supabase 연결 실패, places.json 사용', e); return fromFile(); }) : fromFile())
     .then(data => { places = data; buildRegionIndex(); refreshArea(); })
     .catch(() => {
       document.getElementById('sheetCount').textContent = '세차장 정보를 불러오지 못했어요';

@@ -97,6 +97,16 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
 .nav-item-label{font-size:10px;font-weight:700}
 .nav-item.dim{opacity:.35;pointer-events:none}
 
+.req-section{margin:0 16px 18px}
+.req-item{display:flex;align-items:center;gap:10px;padding:13px 14px;border-radius:15px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);margin-bottom:8px}
+.req-name{font-size:14px;font-weight:900}
+.req-sub{font-size:11px;color:var(--muted);font-weight:300;margin-top:2px}
+.req-state{margin-left:auto;font-size:11px;font-weight:900;padding:4px 9px;border-radius:999px;white-space:nowrap}
+.req-state.pending{background:rgba(251,191,36,.14);color:#fbbf24}
+.req-state.approved{background:rgba(16,185,129,.14);color:#34d399}
+.req-state.rejected{background:rgba(239,68,68,.12);color:#f87171}
+.req-empty{font-size:12px;color:var(--muted);padding:14px;text-align:center;border:1px dashed rgba(255,255,255,.12);border-radius:15px;line-height:1.7}
+.admin-link{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 16px 18px;padding:15px;border-radius:16px;background:linear-gradient(135deg,rgba(168,85,247,.25),rgba(14,165,233,.2));border:1px solid rgba(168,85,247,.4);color:#fff;font-weight:900;text-decoration:none;font-size:14px}
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(12px);background:rgba(16,185,129,.9);color:#fff;padding:11px 20px;border-radius:13px;font-size:13px;font-weight:700;opacity:0;transition:.3s;z-index:999}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.warn{background:rgba(239,68,68,.9)}
@@ -122,7 +132,11 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
 </nav>
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/ppx.js"></script>
 <script>
+const escHTML = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const skillLabel={beginner:'🌱 세린이',mid:'💨 폼건은 기본이죠',pro:'✨ 디테일링 직접 함',maniac:'🫧 3시간은 기본 아닌가?'};
 const carLabel={sedan:'🚗 세단',suv:'🚙 SUV',sports:'🏎️ 스포츠',ev:'⚡ 전기차',coupe:'🚘 쿠페',truck:'🛻 트럭',van:'🚐 밴',other:'🚔 기타'};
 
@@ -183,13 +197,21 @@ function render() {
       <div class="profile-top">
         <div class="avatar">${avatarContent}</div>
         <div class="profile-info">
-          <div class="profile-nick">${user.userNick || user.userName || '빡세 유저'}</div>
+          <div class="profile-nick">${escHTML(user.userNick || user.userName || '빡세 유저')}</div>
           <div class="profile-skill">${skillLabel[user.skill]||'🌱 세린이'}</div>
           <div class="profile-join">가입일 · ${joinDate}</div>
         </div>
       </div>
       ${carChips ? `<div class="profile-cars">${carChips}</div>` : ''}
     </div>
+
+    ${user.role === 'admin' ? '<a class="admin-link" href="admin.html">🛠️ 운영자 · 세차장 요청 승인하기</a>' : ''}
+
+    ${user.guest ? '' : `
+    <div class="req-section">
+      <div class="section-header"><div class="section-title">📍 내가 요청한 <em>세차장</em></div></div>
+      <div id="myReq"><div class="req-empty">불러오는 중…</div></div>
+    </div>`}
 
     <!-- 포인트 카드 -->
     <div class="point-card">
@@ -239,6 +261,28 @@ function render() {
       </div>
       <div id="activityContent">${renderActivity()}</div>
     </div>`;
+  if(!user.guest) loadMyRequests();
+}
+
+async function loadMyRequests() {
+  const box = document.getElementById('myReq');
+  if(!box) return;
+  if(!PPX.ready) { box.innerHTML = '<div class="req-empty">준비 중이에요</div>'; return; }
+  try {
+    const list = await PPX.myRequests();
+    const label = {pending:'확인 대기', approved:'지도에 등록됨', rejected:'반려'};
+    box.innerHTML = list.length ? list.map(r => `
+      <div class="req-item">
+        <div>
+          <div class="req-name">${escHTML(r.name)}</div>
+          <div class="req-sub">${escHTML(r.addr || '')}${r.status==='rejected' && r.reject_reason ? ' · 사유: '+escHTML(r.reject_reason) : ''}</div>
+        </div>
+        <div class="req-state ${r.status}">${label[r.status]||r.status}</div>
+      </div>`).join('')
+      : '<div class="req-empty">아직 요청한 세차장이 없어요.<br>지도에서 <b>＋ 세차장 추가</b>를 눌러 단골 세차장을 알려주세요!</div>';
+  } catch(e) {
+    box.innerHTML = '<div class="req-empty">목록을 불러오지 못했어요</div>';
+  }
 }
 
 function renderActivity() {
@@ -280,9 +324,9 @@ function redeemReward(id, pts, name) {
   render();
 }
 
-function doLogout() {
+async function doLogout() {
   if(!confirm('로그아웃 하시겠습니까?')) return;
-  localStorage.removeItem('ppaxseUser');
+  try { await PPX.signOut(); } catch(e) { localStorage.removeItem('ppaxseUser'); }
   location.href = 'landing.html';
 }
 
@@ -293,7 +337,17 @@ function showToast(msg, warn=false) {
   setTimeout(()=>t.classList.remove('show'), 2500);
 }
 
-render();
+// 실제 로그인 상태를 먼저 확인해서 화면을 맞춤 (로그인 만료 시 예전 정보 정리)
+(async () => {
+  if(PPX.ready) {
+    try {
+      const me = await PPX.me();
+      const local = JSON.parse(localStorage.getItem('ppaxseUser')||'null');
+      if(!me && local && !local.guest) localStorage.removeItem('ppaxseUser');
+    } catch(e) {}
+  }
+  render();
+})();
 </script>
 </body>
 </html>

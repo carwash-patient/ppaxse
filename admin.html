@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="robots" content="noindex">
+<title>운영자 · 세차장 승인 · 빡세</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;700;900&display=swap" rel="stylesheet">
+<script>window.navermap_authFailure = function(){ window.__naverAuthFailed = true; };</script>
+<script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=ts4h2dbzz2"></script>
+<style>
+:root{--deep:#04111e;--deep2:#071828;--ocean:#0369a1;--sky:#0ea5e9;--cyan:#06b6d4;--aqua:#22d3ee;--foam:#bae6fd;--line:rgba(14,165,233,.18);--muted:rgba(186,230,253,.6);--card:rgba(7,24,40,.94)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;background:var(--deep)}
+.topbar{position:sticky;top:0;z-index:50;background:rgba(4,17,30,.96);border-bottom:1px solid var(--line);padding:14px 16px;display:flex;align-items:center;gap:10px}
+.topbar a{color:var(--muted);text-decoration:none;font-size:13px;font-weight:700}
+.topbar h1{font-family:'Black Han Sans',sans-serif;font-size:19px;font-weight:400}
+.topbar h1 em{color:var(--aqua);font-style:normal}
+.tabs{display:flex;gap:6px;padding:12px 16px}
+.tab{flex:1;padding:11px 0;border-radius:12px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(255,255,255,.65);font-family:inherit;font-size:14px;font-weight:900;cursor:pointer}
+.tab.on{border-color:var(--sky);background:rgba(14,165,233,.18);color:#fff}
+.tab b{color:var(--aqua);margin-left:4px}
+#map{height:38vh;min-height:220px;margin:0 16px;border-radius:18px;overflow:hidden;border:1px solid var(--line);background:#0a1b2e}
+.map-note{font-size:11px;color:var(--muted);margin:6px 18px 0;line-height:1.6}
+.list{padding:14px 16px 60px}
+.card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px;margin-bottom:12px;cursor:pointer}
+.card.sel{border-color:rgba(34,211,238,.55);background:rgba(14,165,233,.07)}
+.c-top{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.c-who{font-size:12px;color:var(--muted)}
+.c-when{margin-left:auto;font-size:11px;color:rgba(255,255,255,.4)}
+.f{margin-bottom:9px}
+.f label{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px}
+.f input,.f select{width:100%;height:42px;border:1.5px solid var(--line);border-radius:11px;background:rgba(255,255,255,.05);color:#fff;padding:0 12px;font-family:inherit;font-size:14px;outline:none}
+.f select option{color:#000}
+.f-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.memo{font-size:13px;color:#e0f2fe;background:rgba(14,165,233,.08);border:1px solid rgba(14,165,233,.2);border-radius:11px;padding:10px 12px;line-height:1.6;margin-bottom:10px;white-space:pre-wrap}
+.near{font-size:12px;color:#fde68a;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:11px;padding:9px 12px;margin-bottom:10px;line-height:1.6}
+.acts{display:flex;gap:8px;margin-top:6px}
+.acts button{flex:1;min-height:46px;border-radius:13px;border:none;font-family:inherit;font-size:14px;font-weight:900;cursor:pointer}
+.ok{background:linear-gradient(135deg,#10b981,#34d399);color:#fff}
+.no{background:rgba(239,68,68,.14);color:#fca5a5;border:1px solid rgba(239,68,68,.35)!important}
+.acts button:disabled{opacity:.5}
+.reject-box{display:none;margin-top:8px;gap:8px}
+.reject-box.open{display:flex}
+.reject-box input{flex:1;height:44px;border:1.5px solid rgba(239,68,68,.4);border-radius:11px;background:rgba(255,255,255,.05);color:#fff;padding:0 12px;font-family:inherit;font-size:13px;outline:none}
+.reject-box button{padding:0 16px;border-radius:11px;border:none;background:#ef4444;color:#fff;font-family:inherit;font-weight:900;cursor:pointer}
+.state{font-size:11px;font-weight:900;padding:3px 9px;border-radius:999px}
+.state.approved{background:rgba(16,185,129,.15);color:#34d399}
+.state.rejected{background:rgba(239,68,68,.12);color:#f87171}
+.msg{text-align:center;padding:60px 24px;color:var(--muted);line-height:1.9;font-size:14px}
+.msg a{display:inline-block;margin-top:16px;padding:13px 26px;border-radius:14px;background:linear-gradient(135deg,var(--sky),var(--aqua));color:#fff;text-decoration:none;font-weight:900}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(10px);background:rgba(16,185,129,.95);color:#fff;padding:12px 20px;border-radius:14px;font-size:13px;font-weight:700;opacity:0;transition:.25s;z-index:99;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.toast.warn{background:rgba(239,68,68,.95)}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a href="mypage.html">←</a>
+  <h1>운영자 · 세차장 <em>승인</em></h1>
+</div>
+<div id="app"><div class="msg">확인 중…</div></div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/ppx.js"></script>
+<script>
+const typeLabel={self:'셀프세차',hand:'손세차',detail:'디테일링샵',notouch:'무인세차',auto:'자동세차',wash:'세차장',etc:'정비·기타'};
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let tab = 'pending', items = [], approved = [], selId = null;
+let map = null, reqMarker = null, nearMarkers = [];
+
+function toast(msg, warn) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show' + (warn ? ' warn' : '');
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2600);
+}
+function ago(iso) {
+  if(!iso) return '';
+  const m = Math.round((Date.now() - new Date(iso)) / 60000);
+  return m < 60 ? `${Math.max(m,1)}분 전` : m < 1440 ? `${Math.round(m/60)}시간 전` : `${Math.round(m/1440)}일 전`;
+}
+function distM(a, b) {
+  const R=6371000, r=Math.PI/180, dLat=(b.lat-a.lat)*r, dLng=(b.lng-a.lng)*r;
+  const h=Math.sin(dLat/2)**2+Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h));
+}
+
+function gate(html) { document.getElementById('app').innerHTML = `<div class="msg">${html}</div>`; }
+
+async function init() {
+  if(!PPX.ready) return gate('Supabase 연결 정보가 아직 없어요.<br>js/config.js 를 확인해 주세요.');
+  let me = null;
+  try { me = await PPX.me(); } catch(e) {}
+  if(!me) return gate('운영자 계정으로 로그인해 주세요.<br><a href="login.html?next=admin.html">💧 로그인</a>');
+  if(me.role !== 'admin') return gate('운영자만 볼 수 있는 화면이에요.<br><a href="map.html">지도로 돌아가기</a>');
+
+  document.getElementById('app').innerHTML = `
+    <div class="tabs">
+      <button class="tab on" data-t="pending" type="button">확인 대기<b id="pendingN"></b></button>
+      <button class="tab" data-t="done" type="button">처리 내역</button>
+    </div>
+    <div id="map"></div>
+    <div class="map-note">📍 빨간 핀 = 요청 위치 · 파란 점 = 근처에 이미 등록된 세차장 (중복 확인용)</div>
+    <div class="list" id="list"></div>`;
+  document.querySelectorAll('.tab').forEach(b => b.onclick = () => {
+    tab = b.dataset.t;
+    document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x===b));
+    load();
+  });
+  if(window.naver && naver.maps && !window.__naverAuthFailed) {
+    map = new naver.maps.Map('map', { center: new naver.maps.LatLng(37.5, 126.9), zoom: 15, zoomControl: true, mapDataControl: false });
+  } else {
+    document.getElementById('map').innerHTML = '<div class="msg" style="padding:40px 10px">지도를 불러올 수 없어요</div>';
+  }
+  try { approved = await PPX.approvedPlaces(); } catch(e) { approved = []; }
+  load();
+}
+
+async function load() {
+  document.getElementById('list').innerHTML = '<div class="msg">불러오는 중…</div>';
+  try {
+    items = await PPX.adminList(tab);
+  } catch(e) {
+    document.getElementById('list').innerHTML = `<div class="msg">목록을 불러오지 못했어요<br>${esc(PPX.koError(e))}</div>`;
+    return;
+  }
+  if(tab === 'pending') document.getElementById('pendingN').textContent = items.length ? ' ' + items.length : '';
+  selId = items[0] ? items[0].id : null;
+  render();
+  showOnMap();
+}
+
+function nearbyOf(it) {
+  return approved.filter(p => p.id !== it.id).map(p => ({p, d: distM(it, p)})).filter(x => x.d < 300).sort((a,b) => a.d-b.d);
+}
+
+function render() {
+  const list = document.getElementById('list');
+  if(!items.length) {
+    list.innerHTML = `<div class="msg">${tab==='pending' ? '확인할 요청이 없어요 🎉' : '아직 처리한 요청이 없어요'}</div>`;
+    return;
+  }
+  list.innerHTML = items.map(it => {
+    const near = nearbyOf(it).slice(0, 3);
+    const who = it.submitter ? esc(it.submitter.nickname) : '알 수 없음';
+    if(tab !== 'pending') return `
+      <div class="card ${it.id===selId?'sel':''}" data-id="${it.id}">
+        <div class="c-top"><span class="state ${it.status}">${it.status==='approved'?'승인':'반려'}</span>
+          <b>${esc(it.name)}</b><span class="c-when">${ago(it.reviewed_at)}</span></div>
+        <div class="c-who">${esc(typeLabel[it.type]||'')} · ${esc(it.addr||it.region||'')} · 요청: ${who}</div>
+        ${it.status==='rejected' && it.reject_reason ? `<div class="c-who" style="margin-top:6px">사유: ${esc(it.reject_reason)}</div>` : ''}
+      </div>`;
+    return `
+      <div class="card ${it.id===selId?'sel':''}" data-id="${it.id}">
+        <div class="c-top"><span class="c-who">요청: <b style="color:#fff">${who}</b></span><span class="c-when">${ago(it.created_at)}</span></div>
+        ${it.memo ? `<div class="memo">💬 ${esc(it.memo)}</div>` : ''}
+        ${near.length ? `<div class="near">⚠️ 300m 안에 등록된 세차장이 있어요. 중복인지 확인하세요.<br>${near.map(x => `· ${esc(x.p.name)} (${Math.round(x.d)}m)`).join('<br>')}</div>` : ''}
+        <div class="f"><label>세차장 이름</label><input data-k="name" value="${esc(it.name)}" maxlength="60"></div>
+        <div class="f-row">
+          <div class="f"><label>종류</label><select data-k="type">${Object.keys(typeLabel).map(t => `<option value="${t}" ${t===it.type?'selected':''}>${typeLabel[t]}</option>`).join('')}</select></div>
+          <div class="f"><label>지역</label><input data-k="region" value="${esc(it.region)}" placeholder="예: 인천 남동구" maxlength="30"></div>
+        </div>
+        <div class="f"><label>주소</label><input data-k="addr" value="${esc(it.addr)}" maxlength="200"></div>
+        <div class="f"><label>전화번호</label><input data-k="tel" value="${esc(it.tel||'')}" maxlength="30"></div>
+        <div class="acts">
+          <button class="no" type="button" data-act="reject">반려</button>
+          <button class="ok" type="button" data-act="approve">✅ 승인 → 지도에 등록</button>
+        </div>
+        <div class="reject-box"><input placeholder="반려 사유 (요청자에게 보여요)" maxlength="200"><button type="button" data-act="reject-send">반려하기</button></div>
+      </div>`;
+  }).join('');
+
+  list.querySelectorAll('.card').forEach(card => {
+    const id = +card.dataset.id;
+    card.addEventListener('click', e => {
+      if(e.target.closest('input,select,button')) return;
+      selId = id; list.querySelectorAll('.card').forEach(c => c.classList.toggle('sel', c===card)); showOnMap();
+    });
+    card.querySelectorAll('button[data-act]').forEach(b => b.onclick = () => act(card, id, b.dataset.act));
+  });
+}
+
+function showOnMap() {
+  if(!map) return;
+  if(reqMarker) reqMarker.setMap(null);
+  nearMarkers.forEach(m => m.setMap(null)); nearMarkers = [];
+  const it = items.find(x => x.id === selId);
+  if(!it) return;
+  const ll = new naver.maps.LatLng(it.lat, it.lng);
+  map.setCenter(ll); map.setZoom(17);
+  reqMarker = new naver.maps.Marker({ position: ll, map, zIndex: 100,
+    icon: { content: '<div style="font-size:34px;transform:translate(-50%,-100%);filter:drop-shadow(0 4px 6px rgba(0,0,0,.5))">📍</div>', anchor: new naver.maps.Point(0,0) } });
+  nearbyOf(it).forEach(({p}) => nearMarkers.push(new naver.maps.Marker({ position: new naver.maps.LatLng(p.lat, p.lng), map,
+    icon: { content: `<div style="transform:translate(-50%,-50%);display:flex;align-items:center;gap:4px;white-space:nowrap"><span style="width:14px;height:14px;border-radius:50%;background:#0ea5e9;border:2px solid #fff;display:inline-block"></span><span style="font-size:11px;font-weight:700;color:#fff;background:rgba(4,17,30,.9);padding:2px 6px;border-radius:6px">${esc(p.name)}</span></div>`, anchor: new naver.maps.Point(0,0) } })));
+}
+
+async function act(card, id, what) {
+  if(what === 'reject') { card.querySelector('.reject-box').classList.add('open'); card.querySelector('.reject-box input').focus(); return; }
+  const btns = card.querySelectorAll('button'); btns.forEach(b => b.disabled = true);
+  try {
+    if(what === 'approve') {
+      const fields = {};
+      card.querySelectorAll('[data-k]').forEach(el => fields[el.dataset.k] = el.value.trim() || (el.dataset.k==='tel' ? null : ''));
+      if(!fields.name) { toast('이름을 입력해 주세요', true); btns.forEach(b => b.disabled = false); return; }
+      await PPX.adminReview(id, 'approved', fields);
+      toast('승인했어요. 이제 지도에 보여요 ✅');
+    } else if(what === 'reject-send') {
+      const reason = card.querySelector('.reject-box input').value.trim();
+      await PPX.adminReview(id, 'rejected', { reject_reason: reason || null });
+      toast('반려했어요');
+    }
+    try { approved = await PPX.approvedPlaces(); } catch(e) {}
+    load();
+  } catch(e) {
+    toast(PPX.koError(e), true);
+    btns.forEach(b => b.disabled = false);
+  }
+}
+
+init();
+</script>
+</body>
+</html>
