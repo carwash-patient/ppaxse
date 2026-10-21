@@ -90,6 +90,15 @@ html,body{height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backgroun
 .pc-icon.self{background:linear-gradient(135deg,rgba(14,165,233,.2),rgba(34,211,238,.12));border:1px solid rgba(14,165,233,.28)}
 .pc-icon.detail{background:linear-gradient(135deg,rgba(168,85,247,.2),rgba(236,72,153,.12));border:1px solid rgba(168,85,247,.28)}
 .pc-icon.notouch{background:linear-gradient(135deg,rgba(16,185,129,.2),rgba(52,211,153,.12));border:1px solid rgba(16,185,129,.28)}
+.pc-icon.hand{background:linear-gradient(135deg,rgba(251,191,36,.2),rgba(249,115,22,.12));border:1px solid rgba(251,191,36,.28)}
+.pc-icon.auto{background:linear-gradient(135deg,rgba(99,102,241,.2),rgba(129,140,248,.12));border:1px solid rgba(99,102,241,.28)}
+.pc-icon.wash,.pc-icon.etc{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12)}
+.list-note{text-align:center;font-size:12px;color:var(--muted);padding:18px 10px 24px;line-height:1.7}
+.pc-new{font-size:11px;color:rgba(255,255,255,.4);font-weight:700}
+.spec-val.u{color:rgba(255,255,255,.35);font-weight:700}
+.dp-info{padding:14px;border-radius:15px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);font-size:13px;line-height:1.8;color:var(--muted)}
+.dp-info b{color:#fff;font-weight:700;margin-right:6px}
+.dp-empty{padding:16px;border-radius:15px;background:rgba(14,165,233,.06);border:1px solid rgba(14,165,233,.18);font-size:13px;color:var(--muted);text-align:center;margin-bottom:10px;line-height:1.7}
 .pc-info{flex:1;min-width:0}
 .pc-name{font-size:15px;font-weight:900;letter-spacing:-.3px;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pc-addr{font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:300}
@@ -174,8 +183,10 @@ html,body{height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backgroun
 <div class="filters" id="filterBar">
   <div class="chip on" data-f="all">전체</div>
   <div class="chip" data-f="self">🚿 셀프세차</div>
+  <div class="chip" data-f="hand">🧽 손세차</div>
   <div class="chip" data-f="detail">✨ 디테일링</div>
   <div class="chip" data-f="notouch">🤖 무인세차</div>
+  <div class="chip" data-f="auto">⛽ 자동세차</div>
   <div class="chip" data-f="foam">💨 폼건</div>
   <div class="chip" data-f="under">⬇️ 하부세차</div>
   <div class="chip" data-f="indoor">🏠 실내베이</div>
@@ -205,7 +216,7 @@ html,body{height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backgroun
 <div class="sheet peek" id="sheet">
   <div class="sheet-handle-area" id="sheetHandle"><div class="sheet-handle"></div></div>
   <div class="sheet-summary">
-    <div class="sheet-count"><span id="countNum">5</span>개의 세차장</div>
+    <div class="sheet-count" id="sheetCount">세차장 불러오는 중…</div>
     <div class="sheet-sort" id="sortBtn">거리순 ▾</div>
   </div>
   <div class="place-list" id="placeList"></div>
@@ -226,75 +237,37 @@ html,body{height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backgroun
 
 <script>
 // ══════════════════════════════════════════════════
-//  MOCK DATA — 샘플 세차장 5곳 (Firestore 연동 전)
+//  세차장 데이터 — places.json (행정안전부 전국세차장표준데이터, 서울·경기·인천)
+//  tools/build_places.py 로 만든 파일. 시설 정보·평점·리뷰는 차차 채워 넣음.
 // ══════════════════════════════════════════════════
-const places = [
-  {
-    id:1, name:'워터드롭 셀프세차 강남점', addr:'서울 강남구 테헤란로 123',
-    type:'self', lat:37.4994, lng:127.0261, dist:0.3,
-    rating:4.7, reviews:128, open:true,
-    foam:true, under:true, indoor:true, h24:false, myitem:true, reserve:false, detail:false,
-    reviewList:[
-      {nick:'세차왕민준', skill:'maniac', stars:5, date:'2주 전',
-       text:'수압 진짜 미침!! 폼건 거품량도 장난 아니고 베이 간격이 넓어서 SUV도 여유롭게 세차 가능',
-       tags:['수압최고','거품풍성','넓은베이']},
-      {nick:'거품중독자', skill:'pro', stars:4, date:'1달 전',
-       text:'평일에는 줄 없이 바로 들어갈 수 있음. 주말 개인용품 사용은 확인 필요',
-       tags:['평일추천','주말혼잡']},
-    ]
-  },
-  {
-    id:2, name:'하이글로스 디테일링 서초', addr:'서울 서초구 반포대로 56',
-    type:'detail', lat:37.503, lng:127.008, dist:0.8,
-    rating:4.9, reviews:87, open:true,
-    foam:false, under:true, indoor:true, h24:false, myitem:true, reserve:true, detail:true,
-    reviewList:[
-      {nick:'코팅덕후', skill:'pro', stars:5, date:'3일 전',
-       text:'유리막 코팅 퀄리티 대박. 사장님이 직접 작업하시고 진행 상황도 공유해주심. 예약 필수!',
-       tags:['코팅맛집','친절','예약필수']},
-    ]
-  },
-  {
-    id:3, name:'클린스팟 무인세차 역삼', addr:'서울 강남구 역삼동 804-3',
-    type:'notouch', lat:37.497, lng:127.038, dist:1.1,
-    rating:4.2, reviews:203, open:true,
-    foam:false, under:false, indoor:false, h24:true, myitem:false, reserve:false, detail:false,
-    reviewList:[
-      {nick:'스피드세차', skill:'mid', stars:4, date:'5일 전',
-       text:'24시간이라 새벽에 가도 돼서 좋음. 무인이라 빠르게 끝남. 셀프보단 퀄리티 좀 낮지만 급할 때 최고',
-       tags:['24시간','빠름','편의성']},
-    ]
-  },
-  {
-    id:4, name:'버블팩토리 셀프세차 삼성', addr:'서울 강남구 삼성동 145-1',
-    type:'self', lat:37.509, lng:127.055, dist:1.4,
-    rating:4.5, reviews:64, open:false,
-    foam:true, under:false, indoor:true, h24:false, myitem:true, reserve:false, detail:false,
-    reviewList:[
-      {nick:'실내베이매니아', skill:'maniac', stars:5, date:'1주 전',
-       text:'실내 베이가 있어서 비 올 때도 세차 가능. 환기 잘 되고 조명 밝아서 디테일 작업하기 딱 좋음',
-       tags:['실내베이','비올때OK','밝은조명']},
-    ]
-  },
-  {
-    id:5, name:'폼아트 셀프세차 광진점', addr:'서울 광진구 능동로 209',
-    type:'self', lat:37.541, lng:127.083, dist:3.1,
-    rating:4.3, reviews:41, open:true,
-    foam:true, under:true, indoor:false, h24:true, myitem:false, reserve:false, detail:false,
-    reviewList:[
-      {nick:'야간세차마스터', skill:'mid', stars:4, date:'3주 전',
-       text:'새벽에 가도 수압 그대로. 24시간 운영이라 부담없이 타이밍 맞춰서 가기 좋음',
-       tags:['24시간','야간OK','깔끔']},
-    ]
-  }
-];
+let places = [];
+let areaPlaces = [];          // 지금 보이는 지도 영역 안의 세차장
+const MAX_MARKERS = 200;      // 한 화면에 그릴 최대 마커 수
+const MAX_LIST = 50;          // 목록에 보여줄 최대 개수
 
-const typeLabel={self:'셀프세차',detail:'디테일링샵',notouch:'무인세차'};
-const typeIcon={self:'🚿',detail:'✨',notouch:'🤖'};
+const typeLabel={self:'셀프세차',hand:'손세차',detail:'디테일링샵',notouch:'무인세차',auto:'자동세차',wash:'세차장',etc:'정비·기타'};
+const typeIcon={self:'🚿',hand:'🧽',detail:'✨',notouch:'🤖',auto:'⛽',wash:'💧',etc:'🔧'};
 const skillLabel={beginner:'🌱세린이',mid:'💨중수',pro:'✨고수',maniac:'🫧세차환자'};
+const facilityKeys=['foam','under','indoor','h24','myitem','reserve'];
 
 let activeFilter='all', activeId=null, sheetState='peek', sortBy='dist';
-let naverMap=null, naverMarkers={};
+let naverMap=null, naverMarkers={}, myPos=null;
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+// 두 좌표 사이 거리(km)
+function distKm(a, b) {
+  const R=6371, r=Math.PI/180;
+  const dLat=(b.lat-a.lat)*r, dLng=(b.lng-a.lng)*r;
+  const h=Math.sin(dLat/2)**2+Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h));
+}
+function originPoint() {
+  if(myPos) return myPos;
+  if(naverMap){ const c=naverMap.getCenter(); return {lat:c.lat(), lng:c.lng()}; }
+  return {lat:37.505, lng:127.040};
+}
+function fmtDist(km){ return km<1 ? Math.round(km*1000)+'m' : km.toFixed(1)+'km'; }
 
 // ══════════════════════════════════════════════════
 //  네이버 지도 초기화
@@ -305,31 +278,27 @@ function initNaverMap() {
   const container = document.getElementById('naverMap');
   if(!container) return showFallback();
 
-  const options = {
-    center: new naver.maps.LatLng(37.505, 127.040),
-    zoom: 15,
-    zoomControl: false,
-    mapDataControl: false,
-    scaleControl: false
-  };
-
   try {
-    naverMap = new naver.maps.Map(container, options);
+    naverMap = new naver.maps.Map(container, {
+      center: new naver.maps.LatLng(37.505, 127.040),
+      zoom: 15,
+      zoomControl: false,
+      mapDataControl: false,
+      scaleControl: false
+    });
   } catch(e) {
     return showFallback();
   }
 
-  // 지도 이동 시 재검색 버튼 표시
-  naver.maps.Event.addListener(naverMap, 'dragend', function() {
-    document.getElementById('researchBtn').classList.add('show');
-  });
+  // 지도를 움직이거나 확대/축소가 끝나면 그 영역의 세차장으로 갱신
+  naver.maps.Event.addListener(naverMap, 'idle', refreshArea);
 
   // 지도 클릭 시 상세 닫기
   naver.maps.Event.addListener(naverMap, 'click', function() {
     if(activeId) closeDetail();
   });
 
-  renderNaverMarkers();
+  refreshArea();
 }
 
 function showFallback() {
@@ -337,28 +306,49 @@ function showFallback() {
   document.getElementById('mapFallback').style.display = 'flex';
 }
 
+// 지도 영역 안의 세차장을 다시 계산
+function refreshArea() {
+  if(naverMap) {
+    const b = naverMap.getBounds();
+    const sw = b.getSW(), ne = b.getNE();
+    areaPlaces = places.filter(p => p.lat>=sw.lat() && p.lat<=ne.lat() && p.lng>=sw.lng() && p.lng<=ne.lng());
+  } else {
+    areaPlaces = places;
+  }
+  renderList(); renderNaverMarkers();
+}
+function researchArea() {
+  document.getElementById('researchBtn').classList.remove('show');
+  refreshArea();
+}
+
 // ══════════════════════════════════════════════════
 //  물방울 커스텀 마커 HTML
 // ══════════════════════════════════════════════════
 const markerColors = {
   self:    {bg:'linear-gradient(160deg,#0ea5e9,#22d3ee)', glow:'rgba(14,165,233,.6)'},
+  hand:    {bg:'linear-gradient(160deg,#f59e0b,#fbbf24)', glow:'rgba(251,191,36,.6)'},
   detail:  {bg:'linear-gradient(160deg,#a855f7,#ec4899)', glow:'rgba(168,85,247,.6)'},
   notouch: {bg:'linear-gradient(160deg,#10b981,#34d399)', glow:'rgba(16,185,129,.6)'},
+  auto:    {bg:'linear-gradient(160deg,#6366f1,#818cf8)', glow:'rgba(99,102,241,.6)'},
+  wash:    {bg:'linear-gradient(160deg,#334155,#64748b)', glow:'rgba(148,163,184,.5)'},
+  etc:     {bg:'linear-gradient(160deg,#334155,#475569)', glow:'rgba(148,163,184,.5)'},
 };
 
 function dropMarkerHTML(p, selected) {
-  const c = markerColors[p.type];
+  const c = markerColors[p.type] || markerColors.wash;
   const scale = selected ? 'transform:scale(1.28)' : '';
   const glow  = selected ? `filter:drop-shadow(0 0 8px ${c.glow})` : '';
+  const short = p.name.length>9 ? p.name.slice(0,9)+'…' : p.name;
   // 바깥 div는 크기 0 + translate로 "아래 가운데"가 좌표에 오도록 맞춤
   return `<div style="position:relative;width:0;height:0">
    <div style="position:absolute;left:0;bottom:4px;transform:translateX(-50%)">
     <div style="display:flex;flex-direction:column;align-items:center;cursor:pointer;${scale};transform-origin:50% 100%;${glow};transition:.25s">
-      <div style="width:46px;height:54px;background:${c.bg};border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(0,0,0,.45);border:2.5px solid rgba(255,255,255,.35)">
-        <span style="font-size:20px">${typeIcon[p.type]}</span>
+      <div style="width:40px;height:47px;background:${c.bg};border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(0,0,0,.45);border:2.5px solid rgba(255,255,255,.35)">
+        <span style="font-size:18px">${typeIcon[p.type]||'💧'}</span>
       </div>
-      <div style="margin-top:5px;background:rgba(4,17,30,.93);border:1px solid rgba(14,165,233,.35);padding:3px 9px;border-radius:7px;font-size:11px;font-weight:700;color:#fff;white-space:nowrap;font-family:'Noto Sans KR',sans-serif;backdrop-filter:blur(8px)">
-        ${p.name.length>9?p.name.slice(0,9)+'…':p.name}
+      <div style="margin-top:4px;background:rgba(4,17,30,.93);border:1px solid rgba(14,165,233,.35);padding:3px 8px;border-radius:7px;font-size:11px;font-weight:700;color:#fff;white-space:nowrap;font-family:'Noto Sans KR',sans-serif;backdrop-filter:blur(8px)">
+        ${esc(short)}
       </div>
     </div>
    </div>
@@ -369,30 +359,27 @@ function renderNaverMarkers() {
   if(!naverMap) return;
   Object.values(naverMarkers).forEach(m => m.setMap(null));
   naverMarkers = {};
-  filteredPlaces().forEach(p => {
+  // 화면에 너무 많으면 지도 가운데에서 가까운 곳부터 MAX_MARKERS개만
+  const c = naverMap.getCenter(), center = {lat:c.lat(), lng:c.lng()};
+  let list = filteredPlaces();
+  if(list.length > MAX_MARKERS) {
+    list = [...list].sort((a,b) => distKm(center,a)-distKm(center,b)).slice(0, MAX_MARKERS);
+  }
+  const sel = places.find(p => p.id===activeId);
+  if(sel && !list.includes(sel)) list.push(sel);
+  list.forEach(p => {
     const marker = new naver.maps.Marker({
       position: new naver.maps.LatLng(p.lat, p.lng),
       map: naverMap,
-      icon: {
-        content: dropMarkerHTML(p, activeId === p.id),
-        anchor: new naver.maps.Point(0, 0)
-      },
-      zIndex: activeId===p.id ? 10 : 1
+      icon: { content: dropMarkerHTML(p, activeId === p.id), anchor: new naver.maps.Point(0, 0) },
+      zIndex: activeId===p.id ? 1000 : 1
     });
     naver.maps.Event.addListener(marker, 'click', () => openDetail(p.id));
     naverMarkers[p.id] = marker;
   });
 }
 
-function updateMarkerSelected(id) {
-  // 마커 재렌더로 선택 상태 반영
-  renderNaverMarkers();
-}
-
-function researchArea() {
-  document.getElementById('researchBtn').classList.remove('show');
-  renderNaverMarkers(); renderList();
-}
+function updateMarkerSelected(id) { renderNaverMarkers(); }
 
 // ══════════════════════════════════════════════════
 //  필터 / 정렬 / 검색
@@ -402,7 +389,7 @@ document.querySelectorAll('.chip').forEach(chip => {
     document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
     chip.classList.add('on');
     activeFilter = chip.dataset.f;
-    renderList(); renderNaverMarkers(); closeDetail();
+    closeDetail();
   };
 });
 
@@ -419,40 +406,54 @@ document.getElementById('sortBtn').onclick = () => {
   renderList();
 };
 
-document.getElementById('searchInput').addEventListener('input', e => {
-  renderList(e.target.value); renderNaverMarkers();
+let searchTimer=null;
+document.getElementById('searchInput').addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => { renderList(); renderNaverMarkers(); }, 200);
 });
 
-function filteredPlaces(query='') {
-  let list = places;
+function searchQuery(){ return document.getElementById('searchInput').value.trim(); }
+
+// 검색어가 있으면 수도권 전체에서, 없으면 지금 보이는 지도 영역에서 찾음
+function filteredPlaces() {
+  const q = searchQuery();
+  let list = q ? places.filter(p => p.name.includes(q) || p.addr.includes(q) || p.region.includes(q)) : areaPlaces;
   if(activeFilter !== 'all') {
-    if(['self','detail','notouch'].includes(activeFilter)) list = list.filter(p => p.type===activeFilter);
-    else list = list.filter(p => p[activeFilter]);
+    if(typeLabel[activeFilter]) list = list.filter(p => p.type===activeFilter);
+    else list = list.filter(p => p[activeFilter]===true);
   }
-  const q = query || document.getElementById('searchInput').value;
-  if(q) list = list.filter(p => p.name.includes(q) || p.addr.includes(q));
-  return [...list].sort((a,b) => sortBy==='dist' ? a.dist-b.dist : b.rating-a.rating);
+  return list;
 }
 
-function renderList(query='') {
-  const fp = filteredPlaces(query);
-  document.getElementById('countNum').textContent = fp.length;
-  document.getElementById('placeList').innerHTML = fp.map(p => `
+function sortedPlaces(list) {
+  const o = originPoint();
+  list.forEach(p => p._d = distKm(o, p));
+  return [...list].sort((a,b) => sortBy==='dist' ? a._d-b._d : ((b.rating||0)-(a.rating||0)) || a._d-b._d);
+}
+
+function renderList() {
+  const fp = filteredPlaces();
+  const q = searchQuery();
+  document.getElementById('sheetCount').innerHTML = q
+    ? `‘${esc(q)}’ 검색 <span>${fp.length.toLocaleString()}</span>곳`
+    : `이 지역 <span>${fp.length.toLocaleString()}</span>개의 세차장`;
+  const shown = sortedPlaces(fp).slice(0, MAX_LIST);
+  let html = shown.map(p => `
     <div class="place-card ${activeId===p.id?'active':''}" onclick="openDetail(${p.id})">
-      <div class="pc-open ${p.open?'yes':'no'}">${p.open?'영업중':'영업종료'}</div>
+      ${p.open===true?'<div class="pc-open yes">영업중</div>':p.open===false?'<div class="pc-open no">영업종료</div>':''}
       <div class="pc-top">
-        <div class="pc-icon ${p.type}">${typeIcon[p.type]}</div>
+        <div class="pc-icon ${p.type}">${typeIcon[p.type]||'💧'}</div>
         <div class="pc-info">
-          <div class="pc-name">${p.name}</div>
-          <div class="pc-addr">${p.addr}</div>
+          <div class="pc-name">${esc(p.name)}</div>
+          <div class="pc-addr">${esc(p.addr)}</div>
           <div class="pc-meta">
-            <span class="pc-stars">★ ${p.rating}</span>
-            <span class="pc-reviews">(${p.reviews})</span>
-            <span class="pc-dist">${p.dist}km</span>
+            ${p.rating ? `<span class="pc-stars">★ ${p.rating}</span><span class="pc-reviews">(${p.reviews||0})</span>` : '<span class="pc-new">리뷰 없음</span>'}
+            <span class="pc-dist">${fmtDist(p._d)}</span>
           </div>
         </div>
       </div>
       <div class="pc-badges">
+        <span class="badge b">${typeLabel[p.type]}</span>
         ${p.foam?'<span class="badge b">💨 폼건</span>':''}
         ${p.under?'<span class="badge g">⬇️ 하부</span>':''}
         ${p.indoor?'<span class="badge y">🏠 실내베이</span>':''}
@@ -461,33 +462,52 @@ function renderList(query='') {
         ${p.reserve?'<span class="badge y">📅 예약가능</span>':''}
       </div>
     </div>`).join('');
+  if(!places.length) html = '<div class="list-note">세차장 정보를 불러오는 중이에요…</div>';
+  else if(!fp.length) html = facilityKeys.includes(activeFilter) && activeFilter!=='h24'
+    ? '<div class="list-note">아직 이 시설 정보가 등록된 세차장이 없어요.<br>리뷰와 제보로 하나씩 채워갈 예정이에요!</div>'
+    : '<div class="list-note">이 지역에는 해당하는 세차장이 없어요.<br>지도를 움직이거나 축소해 보세요.</div>';
+  else if(fp.length > MAX_LIST) html += `<div class="list-note">가까운 ${MAX_LIST}곳만 보여드려요.<br>지도를 확대하면 더 정확하게 볼 수 있어요.</div>`;
+  document.getElementById('placeList').innerHTML = html;
 }
 
 // ══════════════════════════════════════════════════
 //  상세 패널
 // ══════════════════════════════════════════════════
+function specVal(v, yes, no) {
+  if(v===true)  return `<div class="spec-val y">✅ ${yes}</div>`;
+  if(v===false) return `<div class="spec-val n">❌ ${no}</div>`;
+  return `<div class="spec-val u">정보 준비중</div>`;
+}
+
 function openDetail(id) {
   activeId = id;
   const p = places.find(x => x.id===id);
-  if(naverMap) {
-    naverMap.panTo(new naver.maps.LatLng(p.lat, p.lng));
-    renderNaverMarkers();
-  }
-  renderList();
+  if(!p) return;
+  if(naverMap) naverMap.panTo(new naver.maps.LatLng(p.lat, p.lng));
+  renderList(); renderNaverMarkers();
+
+  const reviews = p.reviewList || [];
+  const info = [
+    p.hours ? `<div><b>운영시간</b>${esc(p.hours)}</div>` : '',
+    p.tel   ? `<div><b>전화</b>${esc(p.tel)}</div>` : '',
+    p.price ? `<div><b>요금</b>${esc(p.price)}</div>` : '',
+    `<div><b>지역</b>${esc(p.region)}</div>`
+  ].join('');
 
   document.getElementById('dpBody').innerHTML = `
-    <div class="dp-type-tag">${typeLabel[p.type].toUpperCase()}</div>
-    <div class="dp-name">${p.name}</div>
-    <div class="dp-addr">📍 ${p.addr}</div>
+    <div class="dp-type-tag">${typeLabel[p.type]}</div>
+    <div class="dp-name">${esc(p.name)}</div>
+    <div class="dp-addr">📍 ${esc(p.addr)}</div>
+    ${p.rating ? `
     <div class="dp-rating-row">
       <div class="dp-score">${p.rating}</div>
       <div>
         <div class="dp-stars-big">${'★'.repeat(Math.round(p.rating))}${'☆'.repeat(5-Math.round(p.rating))}</div>
-        <div class="dp-rev-count">리뷰 ${p.reviews}개</div>
+        <div class="dp-rev-count">리뷰 ${p.reviews||0}개</div>
       </div>
-    </div>
+    </div>` : ''}
     <div class="dp-badges">
-      ${p.open?'<span class="badge g">✅ 영업중</span>':'<span class="badge r">⛔ 영업종료</span>'}
+      ${p.open===true?'<span class="badge g">✅ 영업중</span>':p.open===false?'<span class="badge r">⛔ 영업종료</span>':''}
       ${p.foam?'<span class="badge b">💨 폼건</span>':''}
       ${p.under?'<span class="badge b">⬇️ 하부세차</span>':''}
       ${p.indoor?'<span class="badge y">🏠 실내베이</span>':''}
@@ -497,34 +517,38 @@ function openDetail(id) {
     </div>
     <div class="dp-actions">
       ${p.reserve?`<button class="dp-btn primary" onclick="alert('예약 기능은 Phase 2에서 오픈 예정!')">📅 예약</button>`:''}
-      <button class="dp-btn ghost" onclick="openNaverNavi(${p.lat},${p.lng},'${p.name}')">🗺️ 길찾기</button>
-      <button class="dp-btn ghost" onclick="alert('전화하기 연동 예정')">📞 전화</button>
+      <button class="dp-btn ghost" onclick="openNaverNavi(${p.id})">🗺️ 길찾기</button>
+      ${p.tel ? `<a class="dp-btn ghost" style="text-decoration:none" href="tel:${esc(p.tel.replace(/[^0-9+]/g,''))}">📞 전화</a>` : ''}
+    </div>
+    <div class="dp-section">
+      <div class="dp-section-title">기본 정보</div>
+      <div class="dp-info">${info}</div>
     </div>
     <div class="dp-section">
       <div class="dp-section-title">시설 정보</div>
       <div class="dp-spec-grid">
-        <div class="spec-item"><div class="spec-label">폼건 사용</div><div class="spec-val ${p.foam?'y':'n'}">${p.foam?'✅ 가능':'❌ 불가'}</div></div>
-        <div class="spec-item"><div class="spec-label">하부 세차</div><div class="spec-val ${p.under?'y':'n'}">${p.under?'✅ 가능':'❌ 불가'}</div></div>
-        <div class="spec-item"><div class="spec-label">실내 베이</div><div class="spec-val ${p.indoor?'y':'n'}">${p.indoor?'✅ 있음':'❌ 없음'}</div></div>
-        <div class="spec-item"><div class="spec-label">24시간</div><div class="spec-val ${p.h24?'y':'n'}">${p.h24?'✅ 운영':'❌ 미운영'}</div></div>
-        <div class="spec-item"><div class="spec-label">개인용품</div><div class="spec-val ${p.myitem?'y':'n'}">${p.myitem?'✅ 허용':'❌ 불가'}</div></div>
-        <div class="spec-item"><div class="spec-label">예약 여부</div><div class="spec-val ${p.reserve?'y':'n'}">${p.reserve?'✅ 가능':'❌ 불가'}</div></div>
+        <div class="spec-item"><div class="spec-label">폼건 사용</div>${specVal(p.foam,'가능','불가')}</div>
+        <div class="spec-item"><div class="spec-label">하부 세차</div>${specVal(p.under,'가능','불가')}</div>
+        <div class="spec-item"><div class="spec-label">실내 베이</div>${specVal(p.indoor,'있음','없음')}</div>
+        <div class="spec-item"><div class="spec-label">24시간</div>${specVal(p.h24,'운영',p.hours?'미운영':'')}</div>
+        <div class="spec-item"><div class="spec-label">개인용품</div>${specVal(p.myitem,'허용','불가')}</div>
+        <div class="spec-item"><div class="spec-label">예약 여부</div>${specVal(p.reserve,'가능','불가')}</div>
       </div>
     </div>
     <div class="dp-section">
       <div class="dp-section-title">빡세 리뷰</div>
-      ${p.reviewList.map(r=>`
+      ${reviews.length ? reviews.map(r=>`
         <div class="review-item">
           <div class="ri-top">
-            <div class="ri-avatar">${r.nick[0]}</div>
-            <div class="ri-nick">${r.nick}</div>
+            <div class="ri-avatar">${esc(r.nick[0])}</div>
+            <div class="ri-nick">${esc(r.nick)}</div>
             <div class="ri-skill">${skillLabel[r.skill]||''}</div>
-            <div class="ri-date">${r.date}</div>
+            <div class="ri-date">${esc(r.date)}</div>
           </div>
           <div class="ri-stars">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</div>
-          <div class="ri-text">${r.text}</div>
-          <div class="ri-tags">${r.tags.map(t=>`<span class="ri-tag">#${t}</span>`).join('')}</div>
-        </div>`).join('')}
+          <div class="ri-text">${esc(r.text)}</div>
+          <div class="ri-tags">${(r.tags||[]).map(t=>`<span class="ri-tag">#${esc(t)}</span>`).join('')}</div>
+        </div>`).join('') : '<div class="dp-empty">아직 리뷰가 없어요.<br>첫 번째 빡세 리뷰를 남겨주세요 💧</div>'}
       <button class="write-review-btn" onclick="openReviewModal(${p.id})">✏️ 리뷰 작성하기</button>
     </div>`;
 
@@ -546,8 +570,11 @@ function openReviewModal(id) {
 }
 
 // 네이버 지도 길찾기
-function openNaverNavi(lat, lng, name) {
-  const enc = encodeURIComponent(name);
+function openNaverNavi(id) {
+  const p = places.find(x => x.id===id);
+  if(!p) return;
+  const {lat, lng} = p;
+  const enc = encodeURIComponent(p.name);
   const appname = encodeURIComponent(location.hostname || 'ppaxse');
   // 네이버 지도 앱 딥링크 → 앱이 없으면 모바일 웹으로
   const appUrl = `nmap://route/car?dlat=${lat}&dlng=${lng}&dname=${enc}&appname=${appname}`;
@@ -564,10 +591,11 @@ let myLocMarker = null;
 document.getElementById('locateBtn').onclick = () => {
   navigator.geolocation.getCurrentPosition(
     pos => {
+      myPos = {lat: pos.coords.latitude, lng: pos.coords.longitude};
       if(naverMap) {
-        const ll = new naver.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
-        naverMap.panTo(ll);
+        const ll = new naver.maps.LatLng(myPos.lat, myPos.lng);
         naverMap.setZoom(15);
+        naverMap.panTo(ll);
         // 현위치 마커 (누를 때마다 쌓이지 않게 하나만 유지)
         if(myLocMarker) myLocMarker.setMap(null);
         myLocMarker = new naver.maps.Marker({
@@ -580,16 +608,27 @@ document.getElementById('locateBtn').onclick = () => {
           zIndex: 99
         });
       } else {
-        alert(`현위치: ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`);
+        renderList();
       }
     },
     () => alert('위치 접근 권한이 필요합니다')
   );
 };
 
-// 초기 렌더
+// ══════════════════════════════════════════════════
+//  시작: 세차장 데이터 불러오기 → 지도 그리기
+// ══════════════════════════════════════════════════
 renderList();
-window.addEventListener('load', initNaverMap);
+window.addEventListener('load', () => {
+  initNaverMap();
+  fetch('places.json')
+    .then(r => { if(!r.ok) throw new Error(r.status); return r.json(); })
+    .then(data => { places = data; refreshArea(); })
+    .catch(() => {
+      document.getElementById('sheetCount').textContent = '세차장 정보를 불러오지 못했어요';
+      document.getElementById('placeList').innerHTML = '<div class="list-note">places.json 파일을 찾을 수 없어요.<br>map.html과 같은 폴더에 있는지 확인해 주세요.</div>';
+    });
+});
 </script>
 </body>
 </html>
