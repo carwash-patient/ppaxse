@@ -251,7 +251,7 @@ const skillLabel={beginner:'🌱세린이',mid:'💨중수',pro:'✨고수',mani
 const facilityKeys=['foam','under','indoor','h24','myitem','reserve'];
 
 let activeFilter='all', activeId=null, sheetState='peek', sortBy='dist';
-let naverMap=null, naverMarkers={}, myPos=null;
+let naverMap=null, naverMarkers=[], myPos=null;
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -337,17 +337,18 @@ const markerColors = {
 
 function dropMarkerHTML(p, selected) {
   const c = markerColors[p.type] || markerColors.wash;
-  const scale = selected ? 'transform:scale(1.28)' : '';
-  const glow  = selected ? `filter:drop-shadow(0 0 8px ${c.glow})` : '';
+  const scale = selected ? 'transform:scale(1.28);' : '';
+  const glow  = selected ? `filter:drop-shadow(0 0 8px ${c.glow});` : '';
   const short = p.name.length>9 ? p.name.slice(0,9)+'…' : p.name;
   // 바깥 div는 크기 0 + translate로 "아래 가운데"가 좌표에 오도록 맞춤
+  // (휴대폰 성능을 위해 흐림 효과·애니메이션은 넣지 않음)
   return `<div style="position:relative;width:0;height:0">
    <div style="position:absolute;left:0;bottom:4px;transform:translateX(-50%)">
-    <div style="display:flex;flex-direction:column;align-items:center;cursor:pointer;${scale};transform-origin:50% 100%;${glow};transition:.25s">
-      <div style="width:40px;height:47px;background:${c.bg};border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(0,0,0,.45);border:2.5px solid rgba(255,255,255,.35)">
+    <div style="display:flex;flex-direction:column;align-items:center;cursor:pointer;${scale}transform-origin:50% 100%;${glow}">
+      <div style="width:40px;height:47px;background:${c.bg};border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.4);border:2.5px solid rgba(255,255,255,.35)">
         <span style="font-size:18px">${typeIcon[p.type]||'💧'}</span>
       </div>
-      <div style="margin-top:4px;background:rgba(4,17,30,.93);border:1px solid rgba(14,165,233,.35);padding:3px 8px;border-radius:7px;font-size:11px;font-weight:700;color:#fff;white-space:nowrap;font-family:'Noto Sans KR',sans-serif;backdrop-filter:blur(8px)">
+      <div style="margin-top:4px;background:rgba(4,17,30,.95);border:1px solid rgba(14,165,233,.35);padding:3px 8px;border-radius:7px;font-size:11px;font-weight:700;color:#fff;white-space:nowrap;font-family:'Noto Sans KR',sans-serif">
         ${esc(short)}
       </div>
     </div>
@@ -355,28 +356,87 @@ function dropMarkerHTML(p, selected) {
   </div>`;
 }
 
+// 묶음(클러스터) 아이콘: 전체 개수 + 그 안의 셀프세차 개수 배지
+function clusterHTML(count, selfCount) {
+  const size = count < 10 ? 40 : count < 50 ? 48 : count < 200 ? 56 : 64;
+  const badge = selfCount > 0
+    ? `<div style="position:absolute;top:-6px;right:-10px;background:#04111e;border:1.5px solid #22d3ee;color:#22d3ee;border-radius:999px;padding:1px 6px;font-size:10px;font-weight:900;white-space:nowrap;font-family:'Noto Sans KR',sans-serif">🚿${selfCount}</div>`
+    : '';
+  return `<div style="position:relative;width:0;height:0">
+   <div style="position:absolute;left:0;top:0;transform:translate(-50%,-50%);width:${size}px;height:${size}px;border-radius:50%;
+     background:radial-gradient(circle at 35% 30%,rgba(34,211,238,.95),rgba(3,105,161,.95));border:3px solid rgba(255,255,255,.45);
+     box-shadow:0 0 0 6px rgba(14,165,233,.18),0 4px 14px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;
+     color:#fff;font-size:${size>50?15:13}px;font-weight:900;font-family:'Noto Sans KR',sans-serif;cursor:pointer">
+     ${count.toLocaleString()}${badge}
+   </div>
+  </div>`;
+}
+
+// 이 줌보다 축소하면 가까운 세차장끼리 묶어서 표시
+const CLUSTER_BELOW_ZOOM = 15;
+const CLUSTER_CELL_PX = 90;   // 묶는 칸 크기(화면 픽셀 기준)
+
+function addMarker(lat, lng, content, z, onClick) {
+  const m = new naver.maps.Marker({
+    position: new naver.maps.LatLng(lat, lng), map: naverMap,
+    icon: { content, anchor: new naver.maps.Point(0, 0) }, zIndex: z
+  });
+  naver.maps.Event.addListener(m, 'click', onClick);
+  naverMarkers.push(m);
+}
+
+function zoomInto(lat, lng) {
+  const z = Math.min(naverMap.getZoom() + 2, CLUSTER_BELOW_ZOOM);
+  const ll = new naver.maps.LatLng(lat, lng);
+  if(naverMap.morph) naverMap.morph(ll, z);
+  else { naverMap.setCenter(ll); naverMap.setZoom(z); }
+}
+
 function renderNaverMarkers() {
   if(!naverMap) return;
-  Object.values(naverMarkers).forEach(m => m.setMap(null));
-  naverMarkers = {};
-  // 화면에 너무 많으면 지도 가운데에서 가까운 곳부터 MAX_MARKERS개만
-  const c = naverMap.getCenter(), center = {lat:c.lat(), lng:c.lng()};
-  let list = filteredPlaces();
-  if(list.length > MAX_MARKERS) {
-    list = [...list].sort((a,b) => distKm(center,a)-distKm(center,b)).slice(0, MAX_MARKERS);
-  }
+  naverMarkers.forEach(m => m.setMap(null));
+  naverMarkers = [];
+
+  // 화면 바깥 조금까지만 그림 (검색 결과도 보이는 곳만 지도에 표시)
+  const b = naverMap.getBounds(), sw = b.getSW(), ne = b.getNE();
+  const padLat = (ne.lat()-sw.lat())*0.15, padLng = (ne.lng()-sw.lng())*0.15;
+  const inView = filteredPlaces().filter(p =>
+    p.lat>=sw.lat()-padLat && p.lat<=ne.lat()+padLat && p.lng>=sw.lng()-padLng && p.lng<=ne.lng()+padLng);
   const sel = places.find(p => p.id===activeId);
-  if(sel && !list.includes(sel)) list.push(sel);
-  list.forEach(p => {
-    const marker = new naver.maps.Marker({
-      position: new naver.maps.LatLng(p.lat, p.lng),
-      map: naverMap,
-      icon: { content: dropMarkerHTML(p, activeId === p.id), anchor: new naver.maps.Point(0, 0) },
-      zIndex: activeId===p.id ? 1000 : 1
-    });
-    naver.maps.Event.addListener(marker, 'click', () => openDetail(p.id));
-    naverMarkers[p.id] = marker;
+
+  if(naverMap.getZoom() >= CLUSTER_BELOW_ZOOM) {
+    // 충분히 확대된 상태: 하나씩 표시 (그래도 너무 많으면 가운데 가까운 순으로 제한)
+    const c = naverMap.getCenter(), center = {lat:c.lat(), lng:c.lng()};
+    let list = inView;
+    if(list.length > MAX_MARKERS) list = [...list].sort((a,b)=>distKm(center,a)-distKm(center,b)).slice(0, MAX_MARKERS);
+    if(sel && !list.includes(sel)) list.push(sel);
+    list.forEach(p => addMarker(p.lat, p.lng, dropMarkerHTML(p, p.id===activeId), p.id===activeId?1000:1, () => openDetail(p.id)));
+    return;
+  }
+
+  // 축소된 상태: 화면을 칸으로 나눠 같은 칸의 세차장을 하나로 묶음
+  const el = document.getElementById('naverMap');
+  const cols = Math.max(1, Math.round((el.clientWidth||400) / CLUSTER_CELL_PX));
+  const rows = Math.max(1, Math.round((el.clientHeight||600) / CLUSTER_CELL_PX));
+  const cellLat = (ne.lat()-sw.lat()) / rows, cellLng = (ne.lng()-sw.lng()) / cols;
+  const cells = {};
+  inView.forEach(p => {
+    if(sel && p.id===sel.id) return;
+    const key = Math.floor((p.lat-sw.lat())/cellLat) + ':' + Math.floor((p.lng-sw.lng())/cellLng);
+    const g = cells[key] || (cells[key] = {n:0, self:0, lat:0, lng:0, one:null});
+    g.n++; g.lat += p.lat; g.lng += p.lng; g.one = p;
+    if(p.type==='self') g.self++;
   });
+  Object.values(cells).forEach(g => {
+    if(g.n === 1) {
+      const p = g.one;
+      addMarker(p.lat, p.lng, dropMarkerHTML(p, false), 1, () => openDetail(p.id));
+    } else {
+      const lat = g.lat/g.n, lng = g.lng/g.n;
+      addMarker(lat, lng, clusterHTML(g.n, g.self), 2, () => zoomInto(lat, lng));
+    }
+  });
+  if(sel) addMarker(sel.lat, sel.lng, dropMarkerHTML(sel, true), 1000, () => openDetail(sel.id));
 }
 
 function updateMarkerSelected(id) { renderNaverMarkers(); }
