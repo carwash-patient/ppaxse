@@ -7,13 +7,22 @@
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;700;900&display=swap" rel="stylesheet">
 
 <!--
-  ★★★ 카카오 지도 API ★★★
-  1. https://developers.kakao.com 에서 앱 생성
-  2. 앱 키 > JavaScript 키 복사
-  3. 플랫폼 > Web > 사이트 도메인에 실제 도메인 등록
-  4. 아래 YOUR_KAKAO_JAVASCRIPT_KEY 를 발급받은 키로 교체
+  ★★★ 네이버 지도 API (NAVER Cloud Platform · Maps) ★★★
+  1. https://console.ncloud.com 가입 후 Maps 서비스에서 Application 등록
+     (Dynamic Map 선택)
+  2. 인증 정보에서 Client ID 복사
+  3. Web 서비스 URL에 실제 도메인 등록 (예: https://아이디.github.io)
+     로컬 테스트 시 http://localhost 도 함께 등록
+  4. 아래 YOUR_NAVER_MAPS_CLIENT_ID 를 발급받은 Client ID로 교체
 -->
-<script src="sdk.js"></script>
+<script>
+  // 인증 실패 시 네이버 SDK가 호출하는 함수 → 안내 화면 표시
+  window.navermap_authFailure = function() {
+    if (typeof showFallback === 'function') showFallback();
+    else window.__naverAuthFailed = true;
+  };
+</script>
+<script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=YOUR_NAVER_MAPS_CLIENT_ID"></script>
 
 <style>
 :root{--deep:#04111e;--deep2:#071828;--ocean:#0369a1;--sky:#0ea5e9;--cyan:#06b6d4;--aqua:#22d3ee;--foam:#bae6fd;--line:rgba(14,165,233,.18);--muted:rgba(186,230,253,.6);--card:rgba(7,24,40,.94)}
@@ -43,9 +52,9 @@ html,body{height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backgroun
 
 /* MAP */
 #mapArea{position:fixed;top:110px;left:0;right:0;bottom:0}
-#kakaoMap{width:100%;height:100%}
+#naverMap{width:100%;height:100%}
 
-/* 카카오 API 키 미설정 fallback */
+/* 네이버 지도 API 키 미설정 fallback */
 #mapFallback{display:none;width:100%;height:100%;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:linear-gradient(160deg,#071828,#04111e)}
 #mapFallback .icon{font-size:56px;opacity:.4}
 #mapFallback p{font-size:13px;font-weight:700;color:rgba(255,255,255,.5);text-align:center;line-height:1.7}
@@ -176,17 +185,17 @@ html,body{height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backgroun
 </div>
 
 <div id="mapArea">
-  <div id="kakaoMap"></div>
+  <div id="naverMap"></div>
   <div id="mapFallback">
     <div class="icon">💧</div>
-    <p>카카오 지도를 불러올 수 없습니다</p>
+    <p>네이버 지도를 불러올 수 없습니다</p>
     <div class="api-note">
       map.html 상단 &lt;script src&gt;의<br>
-      <b>YOUR_KAKAO_JAVASCRIPT_KEY</b>를<br>
-      발급받은 JS 키로 교체 후<br>
-      카카오 콘솔에서 도메인을 등록하세요.<br><br>
-      📌 <b>developers.kakao.com</b><br>
-      내 애플리케이션 → 플랫폼 → Web
+      <b>YOUR_NAVER_MAPS_CLIENT_ID</b>를<br>
+      발급받은 Client ID로 교체 후<br>
+      콘솔에서 Web 서비스 URL을 등록하세요.<br><br>
+      📌 <b>console.ncloud.com</b><br>
+      Maps → Application → 인증 정보
     </div>
   </div>
   <button class="research-btn" id="researchBtn" onclick="researchArea()">🔄 이 지역 재검색</button>
@@ -285,42 +294,46 @@ const typeIcon={self:'🚿',detail:'✨',notouch:'🤖'};
 const skillLabel={beginner:'🌱세린이',mid:'💨중수',pro:'✨고수',maniac:'🫧세차환자'};
 
 let activeFilter='all', activeId=null, sheetState='peek', sortBy='dist';
-let kakaoMap=null, kakaoMarkers={};
+let naverMap=null, naverMarkers={};
 
 // ══════════════════════════════════════════════════
-//  카카오 지도 초기화
+//  네이버 지도 초기화
 // ══════════════════════════════════════════════════
-function initKakaoMap() {
-  if(typeof kakao === 'undefined' || !kakao.maps) { showFallback(); return; }
-  const container = document.getElementById('kakaoMap');
+function initNaverMap() {
+  if(window.__naverAuthFailed) return showFallback();
+  if(typeof naver === 'undefined' || !naver.maps) { showFallback(); return; }
+  const container = document.getElementById('naverMap');
   if(!container) return showFallback();
 
   const options = {
-    center: new kakao.maps.LatLng(37.505, 127.040),
-    level: 4
+    center: new naver.maps.LatLng(37.505, 127.040),
+    zoom: 15,
+    zoomControl: false,
+    mapDataControl: false,
+    scaleControl: false
   };
 
   try {
-    kakaoMap = new kakao.maps.Map(container, options);
+    naverMap = new naver.maps.Map(container, options);
   } catch(e) {
     return showFallback();
   }
 
   // 지도 이동 시 재검색 버튼 표시
-  kakao.maps.event.addListener(kakaoMap, 'dragend', function() {
+  naver.maps.Event.addListener(naverMap, 'dragend', function() {
     document.getElementById('researchBtn').classList.add('show');
   });
 
   // 지도 클릭 시 상세 닫기
-  kakao.maps.event.addListener(kakaoMap, 'click', function() {
+  naver.maps.Event.addListener(naverMap, 'click', function() {
     if(activeId) closeDetail();
   });
 
-  renderKakaoMarkers();
+  renderNaverMarkers();
 }
 
 function showFallback() {
-  document.getElementById('kakaoMap').style.display = 'none';
+  document.getElementById('naverMap').style.display = 'none';
   document.getElementById('mapFallback').style.display = 'flex';
 }
 
@@ -337,51 +350,48 @@ function dropMarkerHTML(p, selected) {
   const c = markerColors[p.type];
   const scale = selected ? 'transform:scale(1.28)' : '';
   const glow  = selected ? `filter:drop-shadow(0 0 8px ${c.glow})` : '';
-  // 물방울 모양: border-radius 70% 30% 30% 70% / 60% 40% 60% 40%
-  return `<div style="display:flex;flex-direction:column;align-items:center;cursor:pointer;${scale};${glow};transition:.25s">
-    <div style="width:46px;height:54px;background:${c.bg};border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(0,0,0,.45);border:2.5px solid rgba(255,255,255,.35)">
-      <span style="font-size:20px">${typeIcon[p.type]}</span>
+  // 바깥 div는 크기 0 + translate로 "아래 가운데"가 좌표에 오도록 맞춤
+  return `<div style="position:relative;width:0;height:0">
+   <div style="position:absolute;left:0;bottom:4px;transform:translateX(-50%)">
+    <div style="display:flex;flex-direction:column;align-items:center;cursor:pointer;${scale};transform-origin:50% 100%;${glow};transition:.25s">
+      <div style="width:46px;height:54px;background:${c.bg};border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(0,0,0,.45);border:2.5px solid rgba(255,255,255,.35)">
+        <span style="font-size:20px">${typeIcon[p.type]}</span>
+      </div>
+      <div style="margin-top:5px;background:rgba(4,17,30,.93);border:1px solid rgba(14,165,233,.35);padding:3px 9px;border-radius:7px;font-size:11px;font-weight:700;color:#fff;white-space:nowrap;font-family:'Noto Sans KR',sans-serif;backdrop-filter:blur(8px)">
+        ${p.name.length>9?p.name.slice(0,9)+'…':p.name}
+      </div>
     </div>
-    <div style="margin-top:5px;background:rgba(4,17,30,.93);border:1px solid rgba(14,165,233,.35);padding:3px 9px;border-radius:7px;font-size:11px;font-weight:700;color:#fff;white-space:nowrap;font-family:'Noto Sans KR',sans-serif;backdrop-filter:blur(8px)">
-      ${p.name.length>9?p.name.slice(0,9)+'…':p.name}
-    </div>
+   </div>
   </div>`;
 }
 
-function renderKakaoMarkers() {
-  if(!kakaoMap) return;
-  Object.values(kakaoMarkers).forEach(m => m.setMap(null));
-  kakaoMarkers = {};
+function renderNaverMarkers() {
+  if(!naverMap) return;
+  Object.values(naverMarkers).forEach(m => m.setMap(null));
+  naverMarkers = {};
   filteredPlaces().forEach(p => {
-    const pos = new kakao.maps.LatLng(p.lat, p.lng);
-    const content = dropMarkerHTML(p, activeId === p.id);
-    const overlay = new kakao.maps.CustomOverlay({
-      position: pos,
-      content,
-      yAnchor: 1.05,
+    const marker = new naver.maps.Marker({
+      position: new naver.maps.LatLng(p.lat, p.lng),
+      map: naverMap,
+      icon: {
+        content: dropMarkerHTML(p, activeId === p.id),
+        anchor: new naver.maps.Point(0, 0)
+      },
       zIndex: activeId===p.id ? 10 : 1
     });
-    overlay.setMap(kakaoMap);
-    // 클릭 이벤트는 HTML 내에서 처리
-    overlay.getContent = () => content;
-    kakaoMarkers[p.id] = overlay;
-
-    // CustomOverlay는 DOM에 직접 접근
-    setTimeout(() => {
-      const el = overlay.a;
-      if(el) el.onclick = () => openDetail(p.id);
-    }, 100);
+    naver.maps.Event.addListener(marker, 'click', () => openDetail(p.id));
+    naverMarkers[p.id] = marker;
   });
 }
 
 function updateMarkerSelected(id) {
   // 마커 재렌더로 선택 상태 반영
-  renderKakaoMarkers();
+  renderNaverMarkers();
 }
 
 function researchArea() {
   document.getElementById('researchBtn').classList.remove('show');
-  renderKakaoMarkers(); renderList();
+  renderNaverMarkers(); renderList();
 }
 
 // ══════════════════════════════════════════════════
@@ -392,7 +402,7 @@ document.querySelectorAll('.chip').forEach(chip => {
     document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
     chip.classList.add('on');
     activeFilter = chip.dataset.f;
-    renderList(); renderKakaoMarkers(); closeDetail();
+    renderList(); renderNaverMarkers(); closeDetail();
   };
 });
 
@@ -410,7 +420,7 @@ document.getElementById('sortBtn').onclick = () => {
 };
 
 document.getElementById('searchInput').addEventListener('input', e => {
-  renderList(e.target.value); renderKakaoMarkers();
+  renderList(e.target.value); renderNaverMarkers();
 });
 
 function filteredPlaces(query='') {
@@ -459,9 +469,9 @@ function renderList(query='') {
 function openDetail(id) {
   activeId = id;
   const p = places.find(x => x.id===id);
-  if(kakaoMap) {
-    kakaoMap.panTo(new kakao.maps.LatLng(p.lat, p.lng));
-    renderKakaoMarkers();
+  if(naverMap) {
+    naverMap.panTo(new naver.maps.LatLng(p.lat, p.lng));
+    renderNaverMarkers();
   }
   renderList();
 
@@ -487,7 +497,7 @@ function openDetail(id) {
     </div>
     <div class="dp-actions">
       ${p.reserve?`<button class="dp-btn primary" onclick="alert('예약 기능은 Phase 2에서 오픈 예정!')">📅 예약</button>`:''}
-      <button class="dp-btn ghost" onclick="openKakaoNavi(${p.lat},${p.lng},'${p.name}')">🗺️ 길찾기</button>
+      <button class="dp-btn ghost" onclick="openNaverNavi(${p.lat},${p.lng},'${p.name}')">🗺️ 길찾기</button>
       <button class="dp-btn ghost" onclick="alert('전화하기 연동 예정')">📞 전화</button>
     </div>
     <div class="dp-section">
@@ -526,7 +536,7 @@ function closeDetail() {
   activeId = null;
   document.getElementById('detailPanel').classList.remove('open');
   sheet.className='sheet peek'; sheetState='peek';
-  renderList(); renderKakaoMarkers();
+  renderList(); renderNaverMarkers();
 }
 
 function openReviewModal(id) {
@@ -535,30 +545,40 @@ function openReviewModal(id) {
   alert('리뷰 작성 — 커뮤니티 페이지와 연동 예정');
 }
 
-// 카카오맵 길찾기
-function openKakaoNavi(lat, lng, name) {
+// 네이버 지도 길찾기
+function openNaverNavi(lat, lng, name) {
   const enc = encodeURIComponent(name);
-  // 카카오맵 앱 딥링크 → 웹 fallback
-  const appUrl = `kakaomap://route?ep=${lat},${lng}&by=CAR`;
-  const webUrl = `https://map.kakao.com/link/to/${enc},${lat},${lng}`;
+  const appname = encodeURIComponent(location.hostname || 'ppaxse');
+  // 네이버 지도 앱 딥링크 → 앱이 없으면 모바일 웹으로
+  const appUrl = `nmap://route/car?dlat=${lat}&dlng=${lng}&dname=${enc}&appname=${appname}`;
+  const webUrl = `https://m.map.naver.com/route.nhn?menu=route&ename=${enc}&ex=${lng}&ey=${lat}&pathType=0&showMap=true`;
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if(!isMobile) { window.open(webUrl, '_blank'); return; }
   window.location.href = appUrl;
-  setTimeout(() => window.open(webUrl, '_blank'), 1500);
+  // 앱이 열려 화면이 숨겨졌으면 웹은 열지 않음
+  setTimeout(() => { if(!document.hidden) window.open(webUrl, '_blank'); }, 1500);
 }
 
 // 현위치 버튼
+let myLocMarker = null;
 document.getElementById('locateBtn').onclick = () => {
   navigator.geolocation.getCurrentPosition(
     pos => {
-      if(kakaoMap) {
-        const ll = new kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
-        kakaoMap.panTo(ll);
-        kakaoMap.setLevel(4);
-        // 현위치 마커
-        new kakao.maps.CustomOverlay({
+      if(naverMap) {
+        const ll = new naver.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
+        naverMap.panTo(ll);
+        naverMap.setZoom(15);
+        // 현위치 마커 (누를 때마다 쌓이지 않게 하나만 유지)
+        if(myLocMarker) myLocMarker.setMap(null);
+        myLocMarker = new naver.maps.Marker({
           position: ll,
-          content: `<div style="width:18px;height:18px;border-radius:50%;background:#0ea5e9;border:3px solid #fff;box-shadow:0 0 0 6px rgba(14,165,233,.25)"></div>`,
+          map: naverMap,
+          icon: {
+            content: `<div style="width:18px;height:18px;border-radius:50%;background:#0ea5e9;border:3px solid #fff;box-shadow:0 0 0 6px rgba(14,165,233,.25)"></div>`,
+            anchor: new naver.maps.Point(9, 9)
+          },
           zIndex: 99
-        }).setMap(kakaoMap);
+        });
       } else {
         alert(`현위치: ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`);
       }
@@ -569,7 +589,7 @@ document.getElementById('locateBtn').onclick = () => {
 
 // 초기 렌더
 renderList();
-window.addEventListener('load', initKakaoMap);
+window.addEventListener('load', initNaverMap);
 </script>
 </body>
 </html>
