@@ -6,7 +6,7 @@
 
 하는 일:
   - 서울·경기·인천만 남김
-  - 운수회사·버스·택시 차고지처럼 일반 고객이 못 쓰는 세차시설 제외
+  - 운수회사·버스·택시 차고지처럼 일반 고객이 못 쓰는 세차시설 제외 (상호명 기준)
   - 위도/경도가 뒤바뀌었거나 단위가 틀린 좌표 보정, 고칠 수 없는 좌표(0 등)는 제외
   - 같은 이름·같은 좌표 중복 제거
   - 세차장 종류 분류 (셀프 / 손세차 / 디테일링 / 무인 / 자동 / 일반 / 정비·기타)
@@ -46,6 +46,12 @@ def fix_coord(lat, lng):
     return (round(lat, 6), round(lng, 6)) if ok else None
 
 
+def fix_sigungu(name):
+    """'남양주' → '남양주시'처럼 끝 글자가 빠진 시군구명 보정"""
+    name = str(name or "").strip()
+    return name if re.search(r"[시군구]$", name) else name + "시"
+
+
 def classify(row):
     text = " ".join(str(row.get(k) or "") for k in ("사업장명", "세차유형", "사업장업종명"))
     name_type = str(row.get("사업장명") or "") + " " + str(row.get("세차유형") or "")
@@ -70,7 +76,8 @@ def main(src, out):
     df = df[df["시도명"].isin(SIDO)]
     stats = {"수도권 전체": len(df)}
 
-    fleet = df["사업장업종명"].fillna("").str.contains("운수") | df["사업장명"].fillna("").str.contains(FLEET)
+    # 업종명으로 거르면 안 됨: 포천시·안산시 등은 모든 세차장 업종명을 '운수세차' 등으로 등록함
+    fleet = df["사업장명"].fillna("").str.contains(FLEET)
     stats["운수·차고지 제외"] = int(fleet.sum())
     df = df[~fleet]
 
@@ -91,7 +98,7 @@ def main(src, out):
             "id": len(places) + 1,
             "name": name,
             "addr": re.sub(r"\s+", " ", str(addr or "")).strip(),
-            "region": SIDO[r["시도명"]] + " " + str(r["시군구명"] or ""),
+            "region": SIDO[r["시도명"]] + " " + fix_sigungu(r["시군구명"]),
             "type": classify(r),
             "lat": c[0],
             "lng": c[1],

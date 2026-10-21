@@ -50,6 +50,27 @@ html,body{height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backgroun
 .chip.on{border-color:var(--sky);background:rgba(14,165,233,.18);color:#fff;box-shadow:0 0 12px rgba(14,165,233,.2)}
 .chip:active{transform:scale(.95)}
 
+/* 지역 선택 */
+.region-btn{display:flex;align-items:center;gap:5px;padding:7px 13px;border-radius:999px;border:1.5px solid rgba(34,211,238,.45);background:rgba(14,165,233,.14);font-size:12px;font-weight:900;color:#fff;white-space:nowrap;cursor:pointer;flex-shrink:0;font-family:inherit}
+.region-btn.set{background:linear-gradient(135deg,var(--ocean),var(--cyan));border-color:transparent}
+.region-btn .x{margin-left:2px;opacity:.75;font-size:13px}
+.region-dim{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:700}
+.region-dim.open{display:block}
+.region-panel{display:none;position:fixed;left:0;right:0;bottom:0;z-index:710;background:linear-gradient(180deg,#0d1e35,#071828);border-radius:24px 24px 0 0;border-top:1px solid var(--line);max-height:78vh;flex-direction:column;box-shadow:0 -24px 60px rgba(0,0,0,.6);animation:slideUp .25s ease;padding-bottom:env(safe-area-inset-bottom)}
+.region-panel.open{display:flex}
+.rp-head{display:flex;align-items:center;justify-content:space-between;padding:18px 18px 10px}
+.rp-title{font-family:'Black Han Sans',sans-serif;font-size:19px}
+.rp-close{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);color:#fff;font-size:16px;cursor:pointer}
+.rp-tabs{display:flex;gap:6px;padding:0 18px 12px}
+.rp-tab{flex:1;padding:10px 0;border-radius:12px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(255,255,255,.65);font-family:inherit;font-size:14px;font-weight:900;cursor:pointer}
+.rp-tab.on{border-color:var(--sky);background:rgba(14,165,233,.18);color:#fff}
+.rp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:4px 18px 24px;overflow-y:auto}
+.rp-item{padding:12px 6px;border-radius:13px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#fff;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
+.rp-item small{font-size:11px;color:var(--muted);font-weight:300}
+.rp-item.all{grid-column:1/-1;flex-direction:row;justify-content:center;gap:8px;background:rgba(14,165,233,.08);border-color:rgba(14,165,233,.25)}
+.rp-item.on{border-color:var(--aqua);background:rgba(34,211,238,.16)}
+.rp-item:active{transform:scale(.97)}
+
 /* MAP */
 #mapArea{position:fixed;top:110px;left:0;right:0;bottom:0}
 #naverMap{width:100%;height:100%}
@@ -181,6 +202,7 @@ html,body{height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backgroun
 </div>
 
 <div class="filters" id="filterBar">
+  <button class="region-btn" id="regionBtn" type="button">📍 <span id="regionLabel">지역 선택</span> ▾</button>
   <div class="chip on" data-f="all">전체</div>
   <div class="chip" data-f="self">🚿 셀프세차</div>
   <div class="chip" data-f="hand">🧽 손세차</div>
@@ -211,6 +233,16 @@ html,body{height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backgroun
   </div>
   <button class="research-btn" id="researchBtn" onclick="researchArea()">🔄 이 지역 재검색</button>
   <div class="locate-btn" id="locateBtn">📍</div>
+</div>
+
+<div class="region-dim" id="regionDim"></div>
+<div class="region-panel" id="regionPanel" role="dialog" aria-label="지역 선택">
+  <div class="rp-head">
+    <div class="rp-title">어느 지역 세차장을 볼까요?</div>
+    <button class="rp-close" id="regionClose" type="button" aria-label="닫기">×</button>
+  </div>
+  <div class="rp-tabs" id="regionTabs"></div>
+  <div class="rp-grid" id="regionGrid"></div>
 </div>
 
 <div class="sheet peek" id="sheet">
@@ -292,6 +324,8 @@ function initNaverMap() {
 
   // 지도를 움직이거나 확대/축소가 끝나면 그 영역의 세차장으로 갱신
   naver.maps.Event.addListener(naverMap, 'idle', refreshArea);
+
+  naver.maps.Event.addListener(naverMap, 'dragend', clearRegionLabel);
 
   // 지도 클릭 시 상세 닫기
   naver.maps.Event.addListener(naverMap, 'click', function() {
@@ -652,6 +686,7 @@ document.getElementById('locateBtn').onclick = () => {
   navigator.geolocation.getCurrentPosition(
     pos => {
       myPos = {lat: pos.coords.latitude, lng: pos.coords.longitude};
+      clearRegionLabel();
       if(naverMap) {
         const ll = new naver.maps.LatLng(myPos.lat, myPos.lng);
         naverMap.setZoom(15);
@@ -676,6 +711,94 @@ document.getElementById('locateBtn').onclick = () => {
 };
 
 // ══════════════════════════════════════════════════
+//  지역 선택 (시·도 → 구·시·군) → 지도 이동
+// ══════════════════════════════════════════════════
+const SIDO_ORDER = ['서울','경기','인천'];
+let regionIndex = {};      // {서울: {강남구: [places...]}, ...}
+let regionTab = '서울', selectedRegion = null;
+
+function buildRegionIndex() {
+  regionIndex = {};
+  places.forEach(p => {
+    const [sido, ...rest] = p.region.split(' ');
+    const sgg = rest.join(' ');
+    ((regionIndex[sido] ||= {})[sgg] ||= []).push(p);
+  });
+}
+
+function renderRegionPanel() {
+  document.getElementById('regionTabs').innerHTML = SIDO_ORDER.map(s =>
+    `<button class="rp-tab ${s===regionTab?'on':''}" type="button" data-sido="${s}">${s}</button>`).join('');
+  const groups = regionIndex[regionTab] || {};
+  const total = Object.values(groups).reduce((a,l) => a+l.length, 0);
+  const names = Object.keys(groups).sort((a,b) => a.localeCompare(b,'ko'));
+  document.getElementById('regionGrid').innerHTML =
+    `<button class="rp-item all ${selectedRegion===regionTab?'on':''}" type="button" data-region="${regionTab}">${regionTab} 전체 <small>${total.toLocaleString()}곳</small></button>` +
+    names.map(n => {
+      const key = regionTab+' '+n;
+      return `<button class="rp-item ${selectedRegion===key?'on':''}" type="button" data-region="${esc(key)}">${esc(n)}<small>${groups[n].length}곳</small></button>`;
+    }).join('');
+  document.querySelectorAll('.rp-tab').forEach(b => b.onclick = () => { regionTab = b.dataset.sido; renderRegionPanel(); });
+  document.querySelectorAll('.rp-item').forEach(b => b.onclick = () => selectRegion(b.dataset.region));
+}
+
+function openRegionPanel() {
+  if(!places.length) return;
+  if(selectedRegion) regionTab = selectedRegion.split(' ')[0];
+  renderRegionPanel();
+  document.getElementById('regionPanel').classList.add('open');
+  document.getElementById('regionDim').classList.add('open');
+}
+function closeRegionPanel() {
+  document.getElementById('regionPanel').classList.remove('open');
+  document.getElementById('regionDim').classList.remove('open');
+}
+
+// 그 지역 세차장들이 모두 보이도록 지도를 맞춤 (좌표가 튀는 몇 곳은 무시)
+function regionBounds(list) {
+  const q = (arr, t) => arr[Math.min(arr.length-1, Math.max(0, Math.round((arr.length-1)*t)))];
+  const lats = list.map(p => p.lat).sort((a,b)=>a-b), lngs = list.map(p => p.lng).sort((a,b)=>a-b);
+  const cut = list.length >= 20 ? 0.03 : 0;
+  return {s:q(lats,cut), n:q(lats,1-cut), w:q(lngs,cut), e:q(lngs,1-cut)};
+}
+
+function selectRegion(key) {
+  const [sido, ...rest] = key.split(' ');
+  const sgg = rest.join(' ');
+  const list = sgg ? (regionIndex[sido]||{})[sgg] : Object.values(regionIndex[sido]||{}).flat();
+  if(!list || !list.length) return;
+  selectedRegion = key;
+  document.getElementById('regionLabel').textContent = key;
+  document.getElementById('regionBtn').classList.add('set');
+  closeRegionPanel();
+  if(activeId) closeDetail();
+  // 검색어가 있으면 지역 이동이 가려지므로 비움
+  const si = document.getElementById('searchInput');
+  if(si.value) { si.value = ''; }
+  if(naverMap) {
+    const b = regionBounds(list);
+    const bounds = new naver.maps.LatLngBounds(new naver.maps.LatLng(b.s, b.w), new naver.maps.LatLng(b.n, b.e));
+    // 아래 목록 패널에 가리지 않도록 아래쪽 여백을 크게
+    const sheetH = Math.round(window.innerHeight * 0.36);
+    naverMap.fitBounds(bounds, {top: 30, right: 30, bottom: sheetH, left: 30});
+  } else {
+    renderList();
+  }
+}
+
+document.getElementById('regionBtn').onclick = openRegionPanel;
+
+// 사용자가 지도를 직접 끌어서 다른 곳으로 가면 지역 표시는 처음 상태로
+function clearRegionLabel() {
+  if(!selectedRegion) return;
+  selectedRegion = null;
+  document.getElementById('regionLabel').textContent = '지역 선택';
+  document.getElementById('regionBtn').classList.remove('set');
+}
+document.getElementById('regionClose').onclick = closeRegionPanel;
+document.getElementById('regionDim').onclick = closeRegionPanel;
+
+// ══════════════════════════════════════════════════
 //  시작: 세차장 데이터 불러오기 → 지도 그리기
 // ══════════════════════════════════════════════════
 renderList();
@@ -683,7 +806,7 @@ window.addEventListener('load', () => {
   initNaverMap();
   fetch('places.json')
     .then(r => { if(!r.ok) throw new Error(r.status); return r.json(); })
-    .then(data => { places = data; refreshArea(); })
+    .then(data => { places = data; buildRegionIndex(); refreshArea(); })
     .catch(() => {
       document.getElementById('sheetCount').textContent = '세차장 정보를 불러오지 못했어요';
       document.getElementById('placeList').innerHTML = '<div class="list-note">places.json 파일을 찾을 수 없어요.<br>map.html과 같은 폴더에 있는지 확인해 주세요.</div>';
