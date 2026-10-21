@@ -327,7 +327,7 @@ function redeemReward(id, pts, name) {
 async function doLogout() {
   if(!confirm('로그아웃 하시겠습니까?')) return;
   try { await PPX.signOut(); } catch(e) { localStorage.removeItem('ppaxseUser'); }
-  location.href = 'landing.html';
+  location.href = './';
 }
 
 function showToast(msg, warn=false) {
