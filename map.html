@@ -1020,7 +1020,11 @@ renderList();
 window.addEventListener('load', () => {
   initNaverMap();
   const fromFile = () => fetch('places.json').then(r => { if(!r.ok) throw new Error(r.status); return r.json(); });
-  (PPX.ready ? PPX.approvedPlaces().catch(e => { console.warn('Supabase 연결 실패, places.json 사용', e); return fromFile(); }) : fromFile())
+  (PPX.ready
+    ? PPX.approvedPlaces()
+        .then(rows => rows.length ? rows : fromFile())   // 표가 아직 비어 있으면 예비 데이터
+        .catch(e => { console.warn('Supabase 연결 실패, places.json 사용', e); return fromFile(); })
+    : fromFile())
     .then(data => { places = data; buildRegionIndex(); refreshArea(); })
     .catch(() => {
       document.getElementById('sheetCount').textContent = '세차장 정보를 불러오지 못했어요';
