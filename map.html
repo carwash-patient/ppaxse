@@ -87,20 +87,25 @@ html,body{height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backgroun
 .research-btn.show{display:flex}
 
 /* 현위치 버튼 */
-.locate-btn{position:absolute;bottom:228px;right:14px;width:46px;height:46px;border-radius:15px;background:rgba(7,24,40,.95);border:1px solid var(--line);color:var(--aqua);font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.5);z-index:10;backdrop-filter:blur(10px)}
+.locate-btn{position:absolute;bottom:150px;right:14px;width:46px;height:46px;border-radius:15px;background:rgba(7,24,40,.95);border:1px solid var(--line);color:var(--aqua);font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.5);z-index:10;backdrop-filter:blur(10px)}
 
 /* BOTTOM SHEET */
 .sheet{position:fixed;bottom:0;left:0;right:0;z-index:400;background:var(--card);border-radius:24px 24px 0 0;border-top:1px solid var(--line);transition:transform .38s cubic-bezier(.4,0,.2,1);box-shadow:0 -24px 64px rgba(0,0,0,.55)}
-.sheet.collapsed{transform:translateY(calc(100% - 112px))}
-.sheet.peek{transform:translateY(calc(100% - 290px))}
+.sheet.hidden{transform:translateY(100%);box-shadow:none}
 .sheet.full{transform:translateY(0)}
+/* 목록보기 / 지도보기 버튼 (네이버 지도 방식) */
+.list-toggle{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:450;display:flex;align-items:center;gap:7px;padding:12px 20px;border-radius:999px;border:1px solid rgba(34,211,238,.35);background:rgba(7,24,40,.96);color:#fff;font-family:inherit;font-size:14px;font-weight:900;box-shadow:0 8px 24px rgba(0,0,0,.5);cursor:pointer;white-space:nowrap}
+.list-toggle .lt-icon{color:var(--aqua);font-size:15px}
+.list-toggle .lt-count{color:var(--aqua)}
+.list-toggle:active{transform:translateX(-50%) scale(.96)}
+.list-toggle.hide{display:none}
 .sheet-handle-area{padding:12px 0 8px;cursor:pointer;position:relative}
 .sheet-handle{width:38px;height:4px;border-radius:99px;background:rgba(255,255,255,.18);margin:0 auto}
 .sheet-summary{padding:0 16px 12px;display:flex;align-items:center;justify-content:space-between}
 .sheet-count{font-family:'Black Han Sans',sans-serif;font-size:16px}
 .sheet-count span{color:var(--aqua)}
 .sheet-sort{font-size:12px;color:var(--muted);font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px}
-.place-list{overflow-y:auto;max-height:calc(100vh - 200px);padding:0 14px 100px}
+.place-list{overflow-y:auto;max-height:calc(100vh - 200px);padding:0 14px 150px}
 .place-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:20px;padding:16px;margin-bottom:10px;cursor:pointer;transition:.2s;position:relative;overflow:hidden}
 .place-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--sky),var(--aqua));opacity:0;transition:.2s}
 .place-card:active{transform:scale(.99)}
@@ -245,7 +250,7 @@ html,body{height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backgroun
   <div class="rp-grid" id="regionGrid"></div>
 </div>
 
-<div class="sheet peek" id="sheet">
+<div class="sheet hidden" id="sheet">
   <div class="sheet-handle-area" id="sheetHandle"><div class="sheet-handle"></div></div>
   <div class="sheet-summary">
     <div class="sheet-count" id="sheetCount">세차장 불러오는 중…</div>
@@ -259,6 +264,8 @@ html,body{height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backgroun
   <button class="dp-close" onclick="closeDetail()">×</button>
   <div class="dp-body" id="dpBody"></div>
 </div>
+
+<button class="list-toggle" id="listToggle" type="button"><span class="lt-icon">☰</span> <span id="ltText">목록보기</span></button>
 
 <nav class="bottom-nav">
   <a href="map.html" class="nav-item active"><div class="nav-item-icon">🗺️</div><div class="nav-item-label">지도</div></a>
@@ -282,7 +289,7 @@ const typeIcon={self:'🚿',hand:'🧽',detail:'✨',notouch:'🤖',auto:'⛽',w
 const skillLabel={beginner:'🌱세린이',mid:'💨중수',pro:'✨고수',maniac:'🫧세차환자'};
 const facilityKeys=['foam','under','indoor','h24','myitem','reserve'];
 
-let activeFilter='all', activeId=null, sheetState='peek', sortBy='dist';
+let activeFilter='all', activeId=null, sheetState='hidden', sheetBeforeDetail='hidden', sortBy='dist';
 let naverMap=null, naverMarkers=[], myPos=null;
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -488,11 +495,27 @@ document.querySelectorAll('.chip').forEach(chip => {
 });
 
 const sheet = document.getElementById('sheet');
-document.getElementById('sheetHandle').onclick = () => {
-  if(sheetState==='collapsed'){sheet.className='sheet peek';sheetState='peek';}
-  else if(sheetState==='peek'){sheet.className='sheet full';sheetState='full';}
-  else{sheet.className='sheet peek';sheetState='peek';}
-};
+// 목록은 사용자가 원할 때만: 'hidden'(지도만) ↔ 'full'(목록)
+function setSheet(state) {
+  sheetState = state;
+  sheet.className = 'sheet ' + state;
+  updateListToggle();
+}
+function updateListToggle() {
+  const btn = document.getElementById('listToggle');
+  btn.classList.toggle('hide', !!activeId);   // 상세 화면에서는 숨김
+  if(sheetState === 'full') {
+    btn.querySelector('.lt-icon').textContent = '🗺️';
+    document.getElementById('ltText').textContent = '지도보기';
+  } else {
+    const n = places.length ? filteredPlaces().length : 0;
+    btn.querySelector('.lt-icon').textContent = '☰';
+    document.getElementById('ltText').innerHTML = places.length
+      ? `목록보기 <span class="lt-count">${n.toLocaleString()}</span>곳` : '목록보기';
+  }
+}
+document.getElementById('listToggle').onclick = () => setSheet(sheetState==='full' ? 'hidden' : 'full');
+document.getElementById('sheetHandle').onclick = () => setSheet('hidden');
 
 document.getElementById('sortBtn').onclick = () => {
   sortBy = sortBy==='dist' ? 'rating' : 'dist';
@@ -503,7 +526,11 @@ document.getElementById('sortBtn').onclick = () => {
 let searchTimer=null;
 document.getElementById('searchInput').addEventListener('input', () => {
   clearTimeout(searchTimer);
-  searchTimer = setTimeout(() => { renderList(); renderNaverMarkers(); }, 200);
+  searchTimer = setTimeout(() => {
+    renderList(); renderNaverMarkers();
+    // 검색하면 결과 목록을 바로 보여줌 (네이버 지도처럼)
+    if(searchQuery() && !activeId) setSheet('full');
+  }, 200);
 });
 
 function searchQuery(){ return document.getElementById('searchInput').value.trim(); }
@@ -562,6 +589,7 @@ function renderList() {
     : '<div class="list-note">이 지역에는 해당하는 세차장이 없어요.<br>지도를 움직이거나 축소해 보세요.</div>';
   else if(fp.length > MAX_LIST) html += `<div class="list-note">가까운 ${MAX_LIST}곳만 보여드려요.<br>지도를 확대하면 더 정확하게 볼 수 있어요.</div>`;
   document.getElementById('placeList').innerHTML = html;
+  updateListToggle();
 }
 
 // ══════════════════════════════════════════════════
@@ -647,13 +675,16 @@ function openDetail(id) {
     </div>`;
 
   document.getElementById('detailPanel').classList.add('open');
-  sheet.className='sheet collapsed'; sheetState='collapsed';
+  if(sheetState !== 'hidden') sheetBeforeDetail = sheetState;
+  setSheet('hidden');
 }
 
 function closeDetail() {
+  const wasOpen = activeId !== null;
   activeId = null;
   document.getElementById('detailPanel').classList.remove('open');
-  sheet.className='sheet peek'; sheetState='peek';
+  // 상세를 닫을 때만 이전 화면(지도 또는 목록)으로 돌아감
+  if(wasOpen) { setSheet(sheetBeforeDetail); sheetBeforeDetail = 'hidden'; }
   renderList(); renderNaverMarkers();
 }
 
@@ -772,6 +803,7 @@ function selectRegion(key) {
   document.getElementById('regionBtn').classList.add('set');
   closeRegionPanel();
   if(activeId) closeDetail();
+  setSheet('hidden');
   // 검색어가 있으면 지역 이동이 가려지므로 비움
   const si = document.getElementById('searchInput');
   if(si.value) { si.value = ''; }
@@ -779,8 +811,8 @@ function selectRegion(key) {
     const b = regionBounds(list);
     const bounds = new naver.maps.LatLngBounds(new naver.maps.LatLng(b.s, b.w), new naver.maps.LatLng(b.n, b.e));
     // 아래 목록 패널에 가리지 않도록 아래쪽 여백을 크게
-    const sheetH = Math.round(window.innerHeight * 0.36);
-    naverMap.fitBounds(bounds, {top: 30, right: 30, bottom: sheetH, left: 30});
+    // 아래쪽 '목록보기' 버튼과 메뉴에 가리지 않게 여백
+    naverMap.fitBounds(bounds, {top: 30, right: 30, bottom: 130, left: 30});
   } else {
     renderList();
   }
