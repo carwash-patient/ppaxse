@@ -145,6 +145,56 @@
       const { data, error } = await db.from('places').update(patch).eq('id', id).select('id,status').single();
       if (error) throw error;
       return data;
+    },
+
+    // 등록된 세차장 정보 고치기 (종류·시설·숨김 등)
+    async adminUpdate(id, fields) {
+      const { data, error } = await db.from('places').update(fields).eq('id', id)
+        .select(PLACE_COLS + ',status').single();
+      if (error) throw error;
+      return data;
+    },
+
+    // 지도에 있거나 숨긴 세차장을 이름·주소·지역으로 검색
+    async adminSearch(q) {
+      const term = String(q || '').replace(/[,()%*\\]/g, ' ').trim();
+      if (!term) return [];
+      const { data, error } = await db.from('places').select(PLACE_COLS + ',status')
+        .in('status', ['approved', 'closed'])
+        .or(`name.ilike.%${term}%,addr.ilike.%${term}%,region.ilike.%${term}%`)
+        .order('name').limit(30);
+      if (error) throw error;
+      return data;
+    },
+
+    // ── 정보 제보 ("정보가 달라요") ──
+    // suggest 예: { type:'notouch', foam:true, under:null, closed:true }  (바꾸자는 항목만)
+    async reportPlace(placeId, suggest, memo) {
+      const { data, error } = await db.from('place_reports')
+        .insert({ place_id: placeId, suggest: suggest || {}, memo: memo || null })
+        .select('id,status').single();
+      if (error) throw error;
+      return data;
+    },
+
+    async adminReports(status) {
+      let q = db.from('place_reports')
+        .select('id,place_id,suggest,memo,status,created_at,reviewed_at,' +
+                'place:places!place_reports_place_id_fkey(' + PLACE_COLS + ',status),' +
+                'reporter_p:profiles!place_reports_reporter_fkey(nickname)');
+      q = status === 'pending'
+        ? q.eq('status', 'pending').order('created_at', { ascending: true })
+        : q.in('status', ['applied', 'dismissed']).order('reviewed_at', { ascending: false }).limit(50);
+      const { data, error } = await q;
+      if (error) throw error;
+      return data;
+    },
+
+    async adminResolveReport(id, status) {
+      const { data, error } = await db.from('place_reports').update({ status }).eq('id', id)
+        .select('id,status').single();
+      if (error) throw error;
+      return data;
     }
   };
 

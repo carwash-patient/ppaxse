@@ -91,6 +91,18 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
 .af-login a{flex:1;display:flex;align-items:center;justify-content:center;min-height:50px;border-radius:14px;text-decoration:none;font-weight:900;color:#fff}
 .af-login a.p{background:linear-gradient(135deg,var(--sky),var(--aqua))}
 .af-login a.g{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12)}
+.report-btn{width:100%;min-height:48px;margin-top:10px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:rgba(255,255,255,.04);color:#fff;font-family:inherit;font-size:13px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.report-btn span{font-weight:400;color:var(--muted);font-size:12px}
+.rf-row{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.rf-row:last-child{border-bottom:none}
+.rf-name{flex:1;font-size:14px;font-weight:700}
+.rf-seg{display:flex;border:1.5px solid rgba(255,255,255,.12);border-radius:11px;overflow:hidden}
+.rf-seg button{min-width:52px;min-height:38px;border:none;background:transparent;color:rgba(255,255,255,.7);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer}
+.rf-seg button+button{border-left:1px solid rgba(255,255,255,.12)}
+.rf-seg button.on{background:rgba(14,165,233,.25);color:#fff}
+.rf-check{display:flex;align-items:center;gap:10px;padding:13px 14px;border-radius:13px;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.25);font-size:13px;font-weight:700;cursor:pointer}
+.rf-check input{width:20px;height:20px;accent-color:#ef4444}
+.rf-cur{font-size:11px;color:var(--muted);font-weight:400;margin-left:6px}
 .ppx-toast{position:fixed;left:50%;bottom:calc(150px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(10px);z-index:900;background:rgba(16,185,129,.95);color:#fff;padding:12px 20px;border-radius:14px;font-size:13px;font-weight:700;opacity:0;transition:.25s;pointer-events:none;max-width:calc(100% - 40px);text-align:center;line-height:1.5}
 .ppx-toast.show{opacity:1;transform:translateX(-50%)}
 .ppx-toast.warn{background:rgba(239,68,68,.95)}
@@ -257,7 +269,7 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
   <div class="chip" data-f="self">🚿 셀프세차</div>
   <div class="chip" data-f="hand">🧽 손세차</div>
   <div class="chip" data-f="detail">✨ 디테일링</div>
-  <div class="chip" data-f="notouch">🤖 무인세차</div>
+  <div class="chip" data-f="notouch">💦 노터치</div>
   <div class="chip" data-f="auto">⛽ 자동세차</div>
   <div class="chip" data-f="foam">💨 폼건</div>
   <div class="chip" data-f="under">⬇️ 하부세차</div>
@@ -351,8 +363,8 @@ let areaPlaces = [];          // 지금 보이는 지도 영역 안의 세차장
 const MAX_MARKERS = 200;      // 한 화면에 그릴 최대 마커 수
 const MAX_LIST = 50;          // 목록에 보여줄 최대 개수
 
-const typeLabel={self:'셀프세차',hand:'손세차',detail:'디테일링샵',notouch:'무인세차',auto:'자동세차',wash:'세차장',etc:'정비·기타'};
-const typeIcon={self:'🚿',hand:'🧽',detail:'✨',notouch:'🤖',auto:'⛽',wash:'💧',etc:'🔧'};
+const typeLabel={self:'셀프세차',hand:'손세차',detail:'디테일링샵',notouch:'노터치',auto:'자동세차',wash:'세차장',etc:'정비·기타'};
+const typeIcon={self:'🚿',hand:'🧽',detail:'✨',notouch:'💦',auto:'⛽',wash:'💧',etc:'🔧'};
 const skillLabel={beginner:'🌱세린이',mid:'💨중수',pro:'✨고수',maniac:'🫧세차환자'};
 const facilityKeys=['foam','under','indoor','h24'];
 
@@ -716,6 +728,7 @@ function openDetail(id) {
         <div class="spec-item"><div class="spec-label">실내 베이</div>${specVal(p.indoor,'있음','없음')}</div>
         <div class="spec-item"><div class="spec-label">24시간</div>${specVal(p.h24,'운영',p.hours?'미운영':'')}</div>
       </div>
+      <button class="report-btn" type="button" onclick="startReport(${p.id})">✏️ 정보가 달라요 <span>종류·시설·폐업 알려주기</span></button>
     </div>
     <div class="dp-section">
       <div class="dp-section-title">빡세 리뷰</div>
@@ -903,6 +916,7 @@ function toast(msg, warn) {
 }
 
 function openAddPanel(html) {
+  document.querySelector('#addPanel .rp-title').textContent = '세차장 추가 요청';
   document.getElementById('addBody').innerHTML = html;
   document.getElementById('addPanel').classList.add('open');
   document.getElementById('addDim').classList.add('open');
@@ -1009,6 +1023,90 @@ document.getElementById('pickOk').onclick = () => {
 };
 document.getElementById('addClose').onclick = closeAddPanel;
 document.getElementById('addDim').onclick = closeAddPanel;
+
+// ══════════════════════════════════════════════════
+//  정보 제보 ("정보가 달라요") → 운영자 확인 후 반영
+// ══════════════════════════════════════════════════
+let reportPlaceId = null;
+const reportForm = {};
+const FAC = [['foam','폼건 사용'],['under','하부 세차'],['indoor','실내 베이'],['h24','24시간 운영']];
+
+async function startReport(id) {
+  if(!PPX.ready) return toast('제보 기능을 준비 중이에요');
+  let me = null;
+  try { me = await PPX.me(); } catch(e) {}
+  if(!me) {
+    openAddPanel(`<div class="af-login">세차장 정보가 실제와 다른가요?<br>로그인하면 고쳐달라고 알려줄 수 있어요.<br>운영자가 확인한 뒤 반영됩니다.
+      <div class="row"><a class="g" href="join.html">가입하기</a><a class="p" href="login.html?next=map.html">💧 로그인</a></div></div>`);
+    document.querySelector('#addPanel .rp-title').textContent = '정보 수정 제보';
+    return;
+  }
+  const p = places.find(x => x.id === id);
+  if(!p) return;
+  reportPlaceId = id;
+  Object.assign(reportForm, { type: p.type, foam: p.foam ?? null, under: p.under ?? null, indoor: p.indoor ?? null, h24: p.h24 ?? null, closed: false, memo: '' });
+  renderReportForm();
+}
+
+function renderReportForm() {
+  const p = places.find(x => x.id === reportPlaceId);
+  const seg = (k) => [[null,'모름'],[true,'있음'],[false,'없음']].map(([v,l]) =>
+    `<button type="button" class="${reportForm[k]===v?'on':''}" data-k="${k}" data-v="${v===null?'null':v}">${l}</button>`).join('');
+  openAddPanel(`
+    <div class="af-field">
+      <div class="af-label">세차장</div>
+      <div class="af-loc">📍 ${esc(p.name)}</div>
+    </div>
+    <div class="af-field">
+      <div class="af-label">종류 <span class="rf-cur">지금: ${typeLabel[p.type]}</span></div>
+      <div class="af-types">${Object.keys(typeLabel).map(t => `<button type="button" class="af-type ${reportForm.type===t?'on':''}" data-t="${t}">${typeIcon[t]} ${typeLabel[t]}</button>`).join('')}</div>
+    </div>
+    <div class="af-field">
+      <div class="af-label">시설</div>
+      ${FAC.map(([k,l]) => `<div class="rf-row"><div class="rf-name">${l}</div><div class="rf-seg">${seg(k)}</div></div>`).join('')}
+    </div>
+    <div class="af-field">
+      <label class="rf-check"><input type="checkbox" id="rfClosed" ${reportForm.closed?'checked':''}> 폐업했거나 세차장이 아니에요</label>
+    </div>
+    <div class="af-field">
+      <div class="af-label">더 알려주고 싶은 점 (선택)</div>
+      <textarea class="af-input" id="rfMemo" maxlength="500" placeholder="예: 노터치 기계 2대, 주말엔 대기 30분">${esc(reportForm.memo)}</textarea>
+    </div>
+    <button class="af-submit" id="rfSubmit" type="button">제보 보내기</button>
+    <div class="af-note">운영자가 확인한 뒤 반영돼요. 고마워요 💧</div>`);
+  document.querySelector('#addPanel .rp-title').textContent = '정보 수정 제보';
+  document.querySelectorAll('#addBody .af-type').forEach(b => b.onclick = () => {
+    reportForm.type = b.dataset.t;
+    document.querySelectorAll('#addBody .af-type').forEach(x => x.classList.toggle('on', x===b));
+  });
+  document.querySelectorAll('#addBody .rf-seg button').forEach(b => b.onclick = () => {
+    reportForm[b.dataset.k] = b.dataset.v === 'null' ? null : b.dataset.v === 'true';
+    b.parentElement.querySelectorAll('button').forEach(x => x.classList.toggle('on', x===b));
+  });
+  document.getElementById('rfSubmit').onclick = submitReport;
+}
+
+async function submitReport() {
+  const p = places.find(x => x.id === reportPlaceId);
+  reportForm.closed = document.getElementById('rfClosed').checked;
+  reportForm.memo = document.getElementById('rfMemo').value.trim();
+  // 지금 정보와 달라진 항목만 보냄
+  const suggest = {};
+  if(reportForm.type !== p.type) suggest.type = reportForm.type;
+  FAC.forEach(([k]) => { if(reportForm[k] !== (p[k] ?? null)) suggest[k] = reportForm[k]; });
+  if(reportForm.closed) suggest.closed = true;
+  if(!Object.keys(suggest).length && !reportForm.memo) return toast('바뀐 내용이 없어요. 고칠 부분을 골라주세요', true);
+  const btn = document.getElementById('rfSubmit');
+  btn.disabled = true; btn.textContent = '보내는 중…';
+  try {
+    await PPX.reportPlace(p.id, suggest, reportForm.memo);
+    closeAddPanel();
+    toast('제보를 보냈어요! 운영자 확인 후 반영돼요 💧');
+  } catch(e) {
+    toast(PPX.koError(e), true);
+    btn.disabled = false; btn.textContent = '제보 보내기';
+  }
+}
 
 // ══════════════════════════════════════════════════
 //  시작: 세차장 데이터 불러오기 → 지도 그리기

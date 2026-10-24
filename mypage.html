@@ -211,7 +211,7 @@ function render() {
       ${carChips ? `<div class="profile-cars">${carChips}</div>` : ''}
     </div>
 
-    ${user.role === 'admin' ? '<a class="admin-link" href="admin.html">🛠️ 운영자 · 세차장 요청 승인하기</a>' : ''}
+    ${user.role === 'admin' ? '<a class="admin-link" href="admin.html">🛠️ 운영자 · 세차장 관리 (요청·제보 처리)</a>' : ''}
 
     ${user.guest ? '' : `
     <div class="req-section">
