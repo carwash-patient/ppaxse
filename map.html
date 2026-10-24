@@ -263,8 +263,6 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
   <div class="chip" data-f="under">⬇️ 하부세차</div>
   <div class="chip" data-f="indoor">🏠 실내베이</div>
   <div class="chip" data-f="h24">🕐 24시간</div>
-  <div class="chip" data-f="myitem">🧴 개인용품OK</div>
-  <div class="chip" data-f="reserve">📅 예약가능</div>
 </div>
 
 <div id="mapArea">
@@ -356,7 +354,7 @@ const MAX_LIST = 50;          // 목록에 보여줄 최대 개수
 const typeLabel={self:'셀프세차',hand:'손세차',detail:'디테일링샵',notouch:'무인세차',auto:'자동세차',wash:'세차장',etc:'정비·기타'};
 const typeIcon={self:'🚿',hand:'🧽',detail:'✨',notouch:'🤖',auto:'⛽',wash:'💧',etc:'🔧'};
 const skillLabel={beginner:'🌱세린이',mid:'💨중수',pro:'✨고수',maniac:'🫧세차환자'};
-const facilityKeys=['foam','under','indoor','h24','myitem','reserve'];
+const facilityKeys=['foam','under','indoor','h24'];
 
 let activeFilter='all', activeId=null, sheetState='hidden', sheetBeforeDetail='hidden', sortBy='dist';
 let naverMap=null, naverMarkers=[], myPos=null;
@@ -648,8 +646,6 @@ function renderList() {
         ${p.under?'<span class="badge g">⬇️ 하부</span>':''}
         ${p.indoor?'<span class="badge y">🏠 실내베이</span>':''}
         ${p.h24?'<span class="badge g">🕐 24시간</span>':''}
-        ${p.myitem?'<span class="badge b">🧴 개인용품</span>':''}
-        ${p.reserve?'<span class="badge y">📅 예약가능</span>':''}
       </div>
     </div>`).join('');
   if(!places.length) html = '<div class="list-note">세차장 정보를 불러오는 중이에요…</div>';
@@ -703,11 +699,8 @@ function openDetail(id) {
       ${p.under?'<span class="badge b">⬇️ 하부세차</span>':''}
       ${p.indoor?'<span class="badge y">🏠 실내베이</span>':''}
       ${p.h24?'<span class="badge g">🕐 24시간</span>':''}
-      ${p.myitem?'<span class="badge b">🧴 개인용품OK</span>':''}
-      ${p.reserve?'<span class="badge y">📅 예약가능</span>':''}
     </div>
     <div class="dp-actions">
-      ${p.reserve?`<button class="dp-btn primary" onclick="alert('예약 기능은 Phase 2에서 오픈 예정!')">📅 예약</button>`:''}
       <button class="dp-btn ghost" onclick="openNaverNavi(${p.id})">🗺️ 길찾기</button>
       ${p.tel ? `<a class="dp-btn ghost" style="text-decoration:none" href="tel:${esc(p.tel.replace(/[^0-9+]/g,''))}">📞 전화</a>` : ''}
     </div>
@@ -722,8 +715,6 @@ function openDetail(id) {
         <div class="spec-item"><div class="spec-label">하부 세차</div>${specVal(p.under,'가능','불가')}</div>
         <div class="spec-item"><div class="spec-label">실내 베이</div>${specVal(p.indoor,'있음','없음')}</div>
         <div class="spec-item"><div class="spec-label">24시간</div>${specVal(p.h24,'운영',p.hours?'미운영':'')}</div>
-        <div class="spec-item"><div class="spec-label">개인용품</div>${specVal(p.myitem,'허용','불가')}</div>
-        <div class="spec-item"><div class="spec-label">예약 여부</div>${specVal(p.reserve,'가능','불가')}</div>
       </div>
     </div>
     <div class="dp-section">
