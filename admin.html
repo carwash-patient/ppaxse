@@ -259,7 +259,7 @@ function cardReport(it) {
 function cardEdit(it) {
   if(it.id !== selId) return `
     <div class="card" data-id="${it.id}">
-      <div class="c-top"><span class="c-name">${esc(it.name)}</span>${it.status==='closed' ? '<span class="state closed" style="margin-left:auto">숨김</span>' : ''}</div>
+      <div class="c-top"><span class="c-name">${esc(it.name)}</span>${it.status==='closed' ? '<span class="state closed" style="margin-left:auto">숨김</span>' : it.status==='unlocated' ? '<span class="state closed" style="margin-left:auto">위치 확인 필요</span>' : ''}</div>
       <div class="c-who">${esc(typeLabel[it.type]||'')} · ${esc(it.addr || it.region || '')}</div>
     </div>`;
   return `
@@ -277,7 +277,8 @@ function cardEdit(it) {
       <div class="f-row">${FAC.map(([k, l]) => `<div class="f"><label>${l}</label>${facSelect(k, it[k] ?? null)}</div>`).join('')}</div>
       <div class="f"><label>지도 표시</label><select data-k="status">
         <option value="approved" ${it.status==='approved'?'selected':''}>지도에 표시</option>
-        <option value="closed" ${it.status==='closed'?'selected':''}>숨김 (폐업·세차장 아님)</option></select></div>
+        <option value="closed" ${it.status==='closed'?'selected':''}>숨김 (폐업·세차장 아님)</option>
+        <option value="unlocated" ${it.status==='unlocated'?'selected':''}>위치 확인 필요 (좌표 오류로 숨김)</option></select></div>
       <div class="acts"><button class="ok" type="button" data-act="save">💾 저장</button></div>
     </div>`;
 }

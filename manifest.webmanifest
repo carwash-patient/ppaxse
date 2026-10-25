@@ -1,7 +1,7 @@
 {
   "name": "세차장지도 빡세",
   "short_name": "빡세",
-  "description": "서울·경기·인천 세차장 지도와 세차 마니아 커뮤니티",
+  "description": "전국 세차장 지도와 세차 마니아 커뮤니티",
   "lang": "ko",
   "start_url": "./",
   "scope": "./",

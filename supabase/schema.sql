@@ -13,6 +13,7 @@
 --    approved : 승인됨 → 지도에 표시
 --    rejected : 거절됨 (요청한 본인만 사유와 함께 볼 수 있음)
 --    closed   : 폐업 등으로 숨김
+--    unlocated: 공공데이터 좌표가 틀려서 숨김 (주소로 위치를 다시 찾으면 approved로)
 -- ════════════════════════════════════════════════════════════════
 
 -- ── 1. 회원 정보 ───────────────────────────────────────────────
@@ -26,6 +27,9 @@ create table if not exists public.profiles (
 );
 
 alter table public.profiles add column if not exists cars text[] not null default '{}';
+-- 기본 지역 (예: {"region":"인천 남동구"}). 위치를 못 받을 때 지도를 여기서 시작
+alter table public.profiles add column if not exists home jsonb
+  check (home is null or (jsonb_typeof(home) = 'object' and octet_length(home::text) <= 200));
 
 -- 가입하면 profiles 행을 자동으로 만듦 (기본 역할: user). 가입 화면에서 넘긴 닉네임·숙련도·차종 저장
 
@@ -73,7 +77,7 @@ create table if not exists public.places (
   h24 boolean, foam boolean, under boolean, indoor boolean, myitem boolean, reserve boolean,
 
   status        text not null default 'pending'
-                check (status in ('pending','approved','rejected','closed')),
+                check (status in ('pending','approved','rejected','closed','unlocated')),
   source        text not null default 'user'
                 check (source in ('public_data','user','owner','admin')),
   source_ref    text unique,                         -- 공공데이터 관리번호 (중복 방지)
@@ -85,6 +89,11 @@ create table if not exists public.places (
   created_at    timestamptz not null default now(),
   updated_at    timestamptz not null default now()
 );
+
+-- 예전에 만든 표에도 'unlocated' 상태를 허용
+alter table public.places drop constraint if exists places_status_check;
+alter table public.places add constraint places_status_check
+  check (status in ('pending','approved','rejected','closed','unlocated'));
 
 create index if not exists places_status_idx    on public.places (status);
 create index if not exists places_latlng_idx    on public.places (lat, lng);
@@ -156,7 +165,7 @@ create policy "profiles: 본인 수정" on public.profiles
 
 -- 역할(role)은 본인이 바꿀 수 없음 → 열 단위로 수정 권한 제한
 revoke update on public.profiles from anon, authenticated;
-grant  update (nickname, skill, cars) on public.profiles to authenticated;
+grant  update (nickname, skill, cars, home) on public.profiles to authenticated;
 
 -- 세차장 조회: 승인된 곳은 누구나 / 내가 요청한 곳은 본인 / 운영자는 전부
 drop policy if exists "places: 조회" on public.places;

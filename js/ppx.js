@@ -57,7 +57,7 @@
       if (!session) { profileCache = null; return null; }
       if (profileCache && profileCache.id === session.user.id) return profileCache;
       const { data, error } = await db.from('profiles')
-        .select('id,nickname,skill,cars,role').eq('id', session.user.id).maybeSingle();
+        .select('id,nickname,skill,cars,role,home').eq('id', session.user.id).maybeSingle();
       if (error) throw error;
       profileCache = data ? { ...data, email: session.user.email } : null;
       syncLocalUser(profileCache, session.user.email);
@@ -94,17 +94,53 @@
       syncLocalUser(null);
     },
 
-    // 승인된 세차장 전부 (한 번에 1,000개씩 나눠 받음)
+    // 승인된 세차장 전부. 개수를 먼저 알아낸 뒤 1,000개씩 동시에 4묶음씩 받아 빠르게 불러옴
     async approvedPlaces() {
-      const all = [], step = 1000;
-      for (let from = 0; ; from += step) {
+      const step = 1000;
+      const head = await db.from('places').select('id', { count: 'exact', head: true }).eq('status', 'approved');
+      if (head.error) throw head.error;
+      const total = head.count || 0, pages = Math.ceil(total / step), out = new Array(pages);
+      for (let i = 0; i < pages; i += 4) {
+        await Promise.all(Array.from({ length: Math.min(4, pages - i) }, async (_, k) => {
+          const from = (i + k) * step;
+          const { data, error } = await db.from('places').select(PLACE_COLS)
+            .eq('status', 'approved').order('id').range(from, from + step - 1);
+          if (error) throw error;
+          out[i + k] = data;
+        }));
+      }
+      // 받는 사이에 새로 승인된 곳이 있어 마지막 묶음이 꽉 찼으면 남은 것도 받음
+      for (let from = pages * step; ; from += step) {
+        if (pages && out[pages - 1].length < step) break;
         const { data, error } = await db.from('places').select(PLACE_COLS)
           .eq('status', 'approved').order('id').range(from, from + step - 1);
         if (error) throw error;
-        all.push(...data);
+        out.push(data);
         if (data.length < step) break;
       }
-      return all;
+      const seen = new Set();
+      return out.flat().filter(p => !seen.has(p.id) && seen.add(p.id));
+    },
+
+    // ── 기본 지역 (지도를 열 때 위치를 못 받으면 여기로) ──
+    // 이 기기에 저장 + 로그인했으면 계정에도 저장해서 다른 기기에서도 쓰임
+    async getHome() {
+      let me = null;
+      try { me = await PPX.me(); } catch (e) {}
+      if (me && me.home && me.home.region) return me.home.region;
+      try { const h = JSON.parse(localStorage.getItem('ppxHome') || 'null'); return h && h.region || null; } catch (e) { return null; }
+    },
+    async setHome(region) {
+      try {
+        if (region) localStorage.setItem('ppxHome', JSON.stringify({ region }));
+        else localStorage.removeItem('ppxHome');
+      } catch (e) {}
+      let me = null;
+      try { me = await PPX.me(); } catch (e) {}
+      if (!me) return;
+      const home = region ? { region } : null;
+      const { error } = await db.from('profiles').update({ home }).eq('id', me.id);
+      if (!error && profileCache) profileCache.home = home;
     },
 
     // 세차장 추가 요청 → '대기' 상태로 저장 (서버에서 강제)
@@ -160,7 +196,7 @@
       const term = String(q || '').replace(/[,()%*\\]/g, ' ').trim();
       if (!term) return [];
       const { data, error } = await db.from('places').select(PLACE_COLS + ',status')
-        .in('status', ['approved', 'closed'])
+        .in('status', ['approved', 'closed', 'unlocated'])
         .or(`name.ilike.%${term}%,addr.ilike.%${term}%,region.ilike.%${term}%`)
         .order('name').limit(30);
       if (error) throw error;
