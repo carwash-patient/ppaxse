@@ -415,7 +415,7 @@ let areaPlaces = [];          // 지금 보이는 지도 영역 안의 세차장
 const MAX_MARKERS = 200;      // 한 화면에 그릴 최대 마커 수
 const MAX_LIST = 50;          // 목록에 보여줄 최대 개수
 
-const typeLabel={self:'셀프세차',hand:'손세차',detail:'디테일링샵',notouch:'노터치',auto:'자동세차',wash:'세차장',etc:'정비·기타'};
+const typeLabel={self:'셀프세차',hand:'손세차',detail:'디테일링샵',notouch:'노터치',auto:'자동세차',wash:'종류 확인 중',etc:'정비·기타'};
 const typeIcon={self:'🚿',hand:'🧽',detail:'✨',notouch:'💦',auto:'⛽',wash:'💧',etc:'🔧'};
 const skillLabel={beginner:'🌱세린이',mid:'💨중수',pro:'✨고수',maniac:'🫧세차환자'};
 const facilityKeys=['foam','under','indoor','h24'];
@@ -804,6 +804,7 @@ function openDetail(id) {
     <div class="dp-type-tag">${esc(typeNames(p).join(' · '))}</div>
     <div class="dp-name">${esc(p.name)}</div>
     <div class="dp-addr">📍 ${esc(p.addr)}</div>
+    ${typesOf(p).every(t => t === 'wash') ? `<div class="dp-more" style="margin:-4px 0 12px;text-align:left;color:#fde68a">🔍 어떤 세차장인지 확인하고 있어요. 곧 구분될 예정이에요.<br>다녀오셨다면 <b>달라요 · 더 알려주기</b>에서 종류를 골라 주세요!</div>` : ''}
     <div class="dp-check" id="dpCheck">${checked}</div>
     <div class="dp-badges">
       ${p.foam?'<span class="badge b">💨 폼건</span>':''}
@@ -1079,7 +1080,7 @@ function nearestRegion(lat, lng) {
 
 function renderAddForm() {
   const near = places.map(p => ({p, d: distKm(pickLatLng, p)})).filter(x => x.d < 0.2).sort((a,b) => a.d-b.d).slice(0,3);
-  const types = ['self','hand','detail','notouch','auto','wash'];
+  const types = ['self','hand','detail','notouch','auto','etc'];
   openAddPanel(`
     ${near.length ? `<div class="af-near">혹시 이미 지도에 있는 곳인가요? 근처에 이런 세차장이 있어요.
       ${near.map(x => `<a onclick="closeAddPanel();openDetail(${x.p.id})">${esc(x.p.name)} · ${fmtDist(x.d)}</a>`).join('')}</div>` : ''}
@@ -1208,8 +1209,8 @@ function renderReportForm() {
         `<button type="button" class="af-type ${reportForm.visit===k?'on':''}" data-visit="${k}" aria-pressed="${reportForm.visit===k}">${esc(l)}</button>`).join('')}</div>
     </div>
     <div class="af-field">
-      <div class="af-label">종류 <span class="rf-cur">지금: ${esc(typeNames(p).join(' · '))} · 여러 개 고를 수 있어요</span></div>
-      <div class="af-types">${Object.keys(typeLabel).map(t => `<button type="button" class="af-type ${reportForm.types.includes(t)?'on':''}" data-t="${t}" data-kind="type" aria-pressed="${reportForm.types.includes(t)}">${typeIcon[t]} ${typeLabel[t]}</button>`).join('')}</div>
+      <div class="af-label">종류 <span class="rf-cur">지금: ${esc(typeNames(p).join(' · '))} · ${typesOf(p).every(t => t === 'wash') ? '아시는 종류를 골라 주세요' : '여러 개 고를 수 있어요'}</span></div>
+      <div class="af-types">${Object.keys(typeLabel).filter(t => t !== 'wash').map(t => `<button type="button" class="af-type ${reportForm.types.includes(t)?'on':''}" data-t="${t}" data-kind="type" aria-pressed="${reportForm.types.includes(t)}">${typeIcon[t]} ${typeLabel[t]}</button>`).join('')}</div>
     </div>
     <div class="af-field">
       <label class="rf-check"><input type="checkbox" id="rfClosed" ${reportForm.closed?'checked':''}> 폐업했거나 세차장이 아니에요</label>
@@ -1255,6 +1256,8 @@ function renderReportForm() {
   document.querySelectorAll('#addBody [data-kind="type"]').forEach(b => b.onclick = () => {
     saveReportInputs();
     toggleType(reportForm.types, b.dataset.t);
+    if(reportForm.types.some(t => t !== 'wash')) reportForm.types = reportForm.types.filter(t => t !== 'wash');   // 종류를 고르면 '확인 중'은 뺌
+    else if(!reportForm.types.length) reportForm.types = typesOf(p).filter(t => t === 'wash');
     const scroll = document.getElementById('addBody').scrollTop;
     renderReportForm();
     document.getElementById('addBody').scrollTop = scroll;
