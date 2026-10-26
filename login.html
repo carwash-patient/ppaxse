@@ -90,7 +90,7 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
       </div>
     </div>
     <button class="btn btn-primary" id="loginBtn">💧 빡세 입장</button>
-    <button class="btn btn-guest" onclick="guestLogin()">게스트로 둘러보기</button>
+    <button class="btn btn-guest" onclick="guestLogin()">가입 없이 지도 보기</button>
     <div class="divider">처음 오셨나요?</div>
     <button class="join-btn" onclick="location.href='join.html'">🫧 무료 회원가입하기</button>
     <div class="links">
@@ -119,14 +119,11 @@ function showToast(msg) {
   t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2800);
 }
-function guestLogin() {
-  localStorage.setItem('ppaxseUser', JSON.stringify({guest:true, userNick:'게스트', points:0}));
-  location.href = nextPage;
-}
+function guestLogin() { location.href = 'map.html'; }
 
 const btn = document.getElementById('loginBtn');
 btn.onclick = async () => {
-  if(!PPX.ready) return showToast('로그인 기능을 준비 중이에요. 게스트로 둘러봐 주세요');
+  if(!PPX.ready) return showToast('로그인 기능을 준비 중이에요. 지도는 가입 없이 볼 수 있어요');
   const email = document.getElementById('loginId').value.trim();
   const pw = document.getElementById('loginPw').value;
   if(!email || !pw) return showToast('이메일과 비밀번호를 입력해주세요');

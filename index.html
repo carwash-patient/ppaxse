@@ -10,7 +10,16 @@
 <meta name="theme-color" content="#04111e">
 <meta name="apple-mobile-web-app-title" content="빡세">
 <title>세차장지도 빡세</title>
-<meta name="description" content="전국 세차장 지도와 세차 마니아 커뮤니티. 셀프세차·손세차·디테일링샵을 내 주변에서 찾아보세요.">
+<meta name="description" content="전국 세차장 지도. 셀프세차·노터치·손세차를 내 주변에서 찾고, 폼건·온수·하부세차 정보를 함께 채워가요.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="빡세">
+<meta property="og:title" content="세차장지도 빡세 · 전국 세차장 지도">
+<meta property="og:description" content="셀프세차·노터치·손세차, 내 주변에서 찾고 폼건·온수 정보를 같이 채워가요.">
+<meta property="og:url" content="https://carwash-patient.github.io/ppaxse/">
+<meta property="og:image" content="https://carwash-patient.github.io/ppaxse/icons/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700;900&display=swap" rel="stylesheet">
 <style>
@@ -142,7 +151,7 @@ footer{padding:28px 20px;text-align:center;font-size:11px;color:rgba(255,255,255
   </a>
   <div class="nav-links" id="navLinks">
     <a href="login.html" class="nav-btn ghost">로그인</a>
-    <a href="join.html" class="nav-btn fill">무료 가입</a>
+    <a href="map.html" class="nav-btn fill">🗺️ 지도 열기</a>
   </div>
 </nav>
 
@@ -150,73 +159,61 @@ footer{padding:28px 20px;text-align:center;font-size:11px;color:rgba(255,255,255
   <section class="hero">
     <div class="hero-eyebrow">
       <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-      WATER &amp; FOAM · 세차 마니아 전용 플랫폼
+      전국 세차장 지도 · 같이 채워가요
     </div>
     <h1 class="hero-title">
-      <span class="t1">세차에 진심인 당신,</span>
-      <span class="t2">빡세게 즐기세요.</span>
+      <span class="t1">우리 동네 세차장,</span>
+      <span class="t2">빡세게 정리했어요.</span>
     </h1>
     <p class="hero-sub">
-      내 주변 셀프세차장을 <b>지도</b>에서 바로 · <b>수압·폼·시설</b>을 세차 마니아가 직접 평가<br>
-      세차 번개·동호회·포인트 리워드까지 한 곳에
+      셀프세차·노터치·손세차를 <b>지도</b>에서 바로 찾고<br>
+      <b>폼건·온수·하부세차</b>처럼 세차하는 사람만 아는 정보를 함께 채워가요
     </p>
     <div class="hero-cta">
-      <a href="map.html" class="cta-btn primary">🗺️ 세차장 찾기</a>
-      <a href="community.html" class="cta-btn outline">⚡ 커뮤니티 보기</a>
+      <a href="map.html" class="cta-btn primary">🗺️ 내 주변 세차장 찾기</a>
     </div>
     <div class="hero-kpi">
-      <div class="kpi-item"><div class="kpi-num"><b id="placeCount">5,700</b><span>+</span></div><div class="kpi-label">등록 세차장</div></div>
+      <div class="kpi-item"><div class="kpi-num"><b id="placeCount">13,500</b><span>+</span></div><div class="kpi-label">지도에 있는 세차장</div></div>
     </div>
   </section>
 
   <section class="section">
-    <div class="sec-kicker">CORE FEATURES</div>
-    <h2 class="sec-title">빡세가 <em>다른 이유</em></h2>
+    <div class="sec-kicker">HOW IT WORKS</div>
+    <h2 class="sec-title">빡세는 <em>이렇게</em> 써요</h2>
     <div class="feat-grid">
       <div class="feat-card">
         <div class="feat-icon-wrap">🗺️</div>
-        <div class="feat-name">네이버 지도 세차장 검색</div>
-        <div class="feat-desc">전국 세차장을 네이버 지도로 한눈에. 지도를 열면 지금 있는 곳 주변부터, 셀프·손세차·디테일링·노터치 필터와 시·군·구 선택으로 원하는 곳만 골라봅니다.</div>
+        <div class="feat-name">전국 세차장을 한 지도에</div>
+        <div class="feat-desc">브랜드 상관없이 전국 세차장을 네이버 지도에서 한눈에. 셀프·노터치·손세차·디테일링을 여러 개 골라 걸러 보고, 시·군·구로 바로 이동해요.</div>
       </div>
       <div class="feat-card">
-        <div class="feat-icon-wrap">💧</div>
-        <div class="feat-name">세차 마니아 리뷰 & 평점</div>
-        <div class="feat-desc">수압·폼 품질·시설 관리까지 세차 마니아만 아는 포인트로 평가. 숙련도 배지로 신뢰도가 다릅니다.</div>
+        <div class="feat-icon-wrap">💨</div>
+        <div class="feat-name">세차하는 사람이 궁금한 정보</div>
+        <div class="feat-desc">폼건 되는지, 온수 나오는지, 하부세차·에어건·실내 베이가 있는지, 기본 요금은 얼마인지. 다녀온 사람들이 알려준 정보로 채워요.</div>
       </div>
       <div class="feat-card">
-        <div class="feat-icon-wrap">⚡</div>
-        <div class="feat-name">세차 번개 & 동호회</div>
-        <div class="feat-desc">"오늘 저녁 8시 번개!" 지도 핀으로 참가자 모집. 차종별 동호회 게시판에서 같은 차 오너들과 소통.</div>
+        <div class="feat-icon-wrap">👍</div>
+        <div class="feat-name">가입 없이, 버튼 몇 번</div>
+        <div class="feat-desc">다녀온 세차장 정보가 맞으면 ‘정보가 맞아요’, 다르면 ‘달라요’. 아는 것만 누르면 돼요. 가격표 사진 한 장이면 더 좋아요.</div>
       </div>
       <div class="feat-card">
-        <div class="feat-icon-wrap">🎁</div>
-        <div class="feat-name">포인트 리워드</div>
-        <div class="feat-desc">리뷰 작성·번개 주최로 포인트 적립. 세차권·주유권으로 즉시 교환. 성실한 활동이 보상받는 구조.</div>
+        <div class="feat-icon-wrap">✅</div>
+        <div class="feat-name">언제 확인된 정보인지 보여요</div>
+        <div class="feat-desc">‘최근 확인 3일 전’처럼 정보가 얼마나 최신인지 함께 보여드려요. 제보는 운영자가 확인한 뒤 지도에 반영돼요.</div>
       </div>
-    </div>
-  </section>
-
-  <section class="skill-section">
-    <div class="sec-kicker">SKILL LEVELS</div>
-    <h2 class="sec-title">당신의 세차 <em>숙련도</em>는?</h2>
-    <div class="skill-grid">
-      <div class="skill-chip"><div class="skill-dot" style="background:#34d399"></div>세린이 — 아직 배우는 중이에요</div>
-      <div class="skill-chip"><div class="skill-dot" style="background:#60a5fa"></div>폼건은 기본이죠 — 중수 입장</div>
-      <div class="skill-chip"><div class="skill-dot" style="background:#f59e0b"></div>디테일링 직접 함 — 고수</div>
-      <div class="skill-chip"><div class="skill-dot" style="background:var(--aqua)"></div>3시간은 기본 아닌가? — 빡세환자</div>
     </div>
   </section>
 
   <div class="cta-section">
     <div class="cta-box">
-      <h2 class="cta-box-title">지금 바로 시작하세요 💧</h2>
-      <p class="cta-box-sub">세차를 취미로 즐기는 사람들의 공간, 빡세에서<br>내 주변 최고의 세차장을 찾아보세요.</p>
-      <a href="join.html" class="cta-btn primary" id="bottomCta" style="justify-content:center;max-width:280px;margin:0 auto">무료로 가입하기 →</a>
+      <h2 class="cta-box-title">단골 세차장을 알려주세요 💧</h2>
+      <p class="cta-box-sub">지도에 없는 세차장은 <b>＋ 세차장 추가</b>로,<br>정보가 다르면 세차장을 눌러 알려주세요.</p>
+      <a href="map.html" class="cta-btn primary" id="bottomCta" style="justify-content:center;max-width:280px;margin:0 auto">🗺️ 지도 열기 →</a>
     </div>
   </div>
 </main>
 
-<footer>© 2026 빡세(Ppaxse) · 세차 마니아를 위한 플랫폼<br><span style="opacity:.6">세차장 기본 정보: 행정안전부 전국세차장표준데이터 (공공데이터포털)</span></footer>
+<footer>© 2026 빡세(Ppaxse) · <a href="privacy.html" style="color:inherit">개인정보처리방침</a><br><span style="opacity:.6">세차장 기본 정보: 행정안전부 전국세차장표준데이터 (공공데이터포털) · 이용자 제보</span></footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js"></script>
@@ -242,11 +239,8 @@ footer{padding:28px 20px;text-align:center;font-size:11px;color:rgba(255,255,255
   try { me = await PPX.me(); } catch(e) {}
   if(!me) return;
   document.getElementById('navLinks').innerHTML =
-    '<a href="mypage.html" class="nav-btn ghost">마이페이지</a>' +
+    '<a href="mypage.html" class="nav-btn ghost">내 정보</a>' +
     '<a href="map.html" class="nav-btn fill">🗺️ 지도 열기</a>';
-  const cta = document.getElementById('bottomCta');
-  cta.href = 'map.html';
-  cta.textContent = '🗺️ 내 주변 세차장 보기 →';
 })();
 </script>
 </body>

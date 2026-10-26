@@ -123,8 +123,8 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
 
 <div class="topbar">
   <div class="topbar-inner">
-    <div class="topbar-title">내 <em>마이페이지</em></div>
-    <button class="logout-btn" onclick="doLogout()">로그아웃</button>
+    <div class="topbar-title">내 <em>정보</em></div>
+    <button class="logout-btn" id="logoutBtn" onclick="doLogout()" style="display:none">로그아웃</button>
   </div>
 </div>
 
@@ -132,9 +132,7 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
 
 <nav class="bottom-nav">
   <a href="map.html" class="nav-item"><div class="nav-item-icon">🗺️</div><div class="nav-item-label">지도</div></a>
-  <a href="community.html" class="nav-item"><div class="nav-item-icon">⚡</div><div class="nav-item-label">커뮤니티</div></a>
-  <a href="#" class="nav-item dim"><div class="nav-item-icon">🛒</div><div class="nav-item-label">커머스</div></a>
-  <a href="mypage.html" class="nav-item active"><div class="nav-item-icon">👤</div><div class="nav-item-label">마이페이지</div></a>
+  <a href="mypage.html" class="nav-item active"><div class="nav-item-icon">👤</div><div class="nav-item-label">내 정보</div></a>
 </nav>
 <div class="toast" id="toast"></div>
 
@@ -146,138 +144,70 @@ const escHTML = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':
 const skillLabel={beginner:'🌱 세린이',mid:'💨 폼건은 기본이죠',pro:'✨ 디테일링 직접 함',maniac:'🫧 3시간은 기본 아닌가?'};
 const carLabel={sedan:'🚗 세단',suv:'🚙 SUV',sports:'🏎️ 스포츠',ev:'⚡ 전기차',coupe:'🚘 쿠페',truck:'🛻 트럭',van:'🚐 밴',other:'🚔 기타'};
 
-const rewards = [
-  {id:1,icon:'🧼',name:'셀프세차권',pts:5000,desc:'제휴 세차장 1회 이용'},
-  {id:2,icon:'⛽',name:'주유 쿠폰',pts:8000,desc:'GS·SK 1만원 교환권'},
-  {id:3,icon:'🫧',name:'폼건 케미컬',pts:3000,desc:'케미컬 제품 50ml 쿠폰'},
-  {id:4,icon:'✨',name:'디테일링 할인',pts:12000,desc:'디테일링샵 20% 할인권'},
-];
+const repState = {pending:'확인 대기', applied:'반영됨', dismissed:'반영 안 함'};
 
-const earnGuide = [
-  {icon:'✍️', label:'리뷰 작성', pts:'+50P'},
-  {icon:'⭐', label:'별점 5점 리뷰', pts:'+30P'},
-  {icon:'⚡', label:'번개 주최', pts:'+100P'},
-  {icon:'👥', label:'번개 참가', pts:'+20P'},
-  {icon:'📝', label:'커뮤니티 글 작성', pts:'+10P'},
-];
-
-const dummyLightning = [
-  {icon:'⚡', title:'강남 테헤란 셀프세차 번개!', sub:'워터드롭 강남점 · 참가 완료', date:'2일 전'},
-  {icon:'⚡', title:'야간 셀프세차 번개 🌙', sub:'폼아트 광진점 · 참가 완료', date:'1주 전'},
-];
-const dummyPosts = [
-  {icon:'📝', title:'무광 차량 폼건 주의사항 정리', sub:'자유게시판 · 좋아요 42개', date:'3일 전'},
-  {icon:'📝', title:'강남 근처 디테일링샵 비교', sub:'자유게시판 · 좋아요 87개', date:'1주 전'},
-];
-
-let actTab = 'lightning';
-
-function render() {
-  const user = JSON.parse(localStorage.getItem('ppaxseUser')||'null');
+// 화면: 로그인 / 가입 없이 보낸 기록이 있는 기기 / 처음 온 사람
+async function render() {
   const content = document.getElementById('content');
+  let me = null, anon = false;
+  if(PPX.ready) {
+    try { me = await PPX.me(); } catch(e) {}
+    if(!me) { try { anon = await PPX.isAnon(); } catch(e) {} }
+  }
+  document.getElementById('logoutBtn').style.display = me ? '' : 'none';
+  const lists = `
+    <div class="req-section">
+      <div class="section-header"><div class="section-title">📍 내가 요청한 <em>세차장</em></div></div>
+      <div id="myReq"><div class="req-empty">불러오는 중…</div></div>
+    </div>
+    <div class="req-section">
+      <div class="section-header"><div class="section-title">✏️ 내가 보낸 <em>제보</em></div></div>
+      <div id="myRep"><div class="req-empty">불러오는 중…</div></div>
+    </div>`;
 
-  if(!user) {
+  if(!me) {
     content.innerHTML = `
       <div class="guest-box">
         <div class="guest-icon">💧</div>
-        <div class="guest-title">빡세에 로그인하세요</div>
-        <div class="guest-sub">로그인하면 포인트 리워드, 번개 참가,<br>내 활동 기록을 모두 이용할 수 있어요.</div>
+        <div class="guest-title">${anon ? '가입 없이 쓰는 중이에요' : '빡세는 가입 없이도 쓸 수 있어요'}</div>
+        <div class="guest-sub">${anon
+          ? '이 기기로 보낸 요청·제보를 아래에서 볼 수 있어요.<br>가입하거나 로그인하면 이 기록이 계정으로 옮겨져서<br>다른 기기에서도 볼 수 있어요.'
+          : '지도에서 세차장을 눌러 정보를 알려주거나<br>없는 세차장을 추가해 주세요. 가입은 원할 때만 하면 돼요.'}</div>
         <div class="guest-btns">
           <a href="login.html" class="g-btn primary">💧 로그인</a>
           <a href="join.html" class="g-btn ghost">가입하기</a>
         </div>
-      </div>`;
+      </div>
+      ${anon ? lists : ''}`;
+    if(anon) loadLists();
     return;
   }
 
-  const pts = user.points || 1240; // 데모용 기본 포인트
-  const joinDate = user.joinDate ? new Date(user.joinDate).toLocaleDateString('ko-KR') : '2026.05.20';
-  const avatarContent = user.avatar
-    ? `<img src="${user.avatar}" alt="프로필">`
-    : (user.guest ? '👤' : (user.userNick?.[0] || 'P'));
-  const carChips = (user.cars||[]).map(c=>`<div class="car-chip">${carLabel[c]||c}</div>`).join('');
-
+  const carChips = (me.cars||[]).map(c=>`<div class="car-chip">${carLabel[c]||escHTML(c)}</div>`).join('');
   content.innerHTML = `
-    <!-- 프로필 카드 -->
     <div class="profile-card">
       <div class="profile-top">
-        <div class="avatar">${avatarContent}</div>
+        <div class="avatar">${escHTML((me.nickname||'빡')[0])}</div>
         <div class="profile-info">
-          <div class="profile-nick">${escHTML(user.userNick || user.userName || '빡세 유저')}</div>
-          <div class="profile-skill">${skillLabel[user.skill]||'🌱 세린이'}</div>
-          <div class="profile-join">가입일 · ${joinDate}</div>
+          <div class="profile-nick">${escHTML(me.nickname || '빡세 회원')}</div>
+          <div class="profile-skill">${skillLabel[me.skill]||''}</div>
+          <div class="profile-join">${escHTML(me.email||'')}</div>
         </div>
       </div>
       ${carChips ? `<div class="profile-cars">${carChips}</div>` : ''}
     </div>
-
-    ${user.role === 'admin' ? '<a class="admin-link" href="admin.html">🛠️ 운영자 · 세차장 관리 (요청·제보 처리)</a>' : ''}
-
-    ${user.guest ? '' : `
-    <div class="req-section">
-      <div class="section-header"><div class="section-title">📍 내가 요청한 <em>세차장</em></div></div>
-      <div id="myReq"><div class="req-empty">불러오는 중…</div></div>
-    </div>`}
-
-    <!-- 포인트 카드 -->
-    <div class="point-card">
-      <div class="point-header">
-        <div class="point-title">💧 빡세 포인트</div>
-        <div class="point-badge">리워드 교환 가능</div>
-      </div>
-      <div class="point-main">
-        <div class="point-num">${pts.toLocaleString()}</div>
-        <div class="point-unit">P</div>
-      </div>
-      <div class="point-desc" style="margin-bottom:14px">활동으로 포인트를 적립하고 세차권으로 교환하세요!</div>
-      <div class="earn-list">
-        ${earnGuide.map(e=>`<div class="earn-item"><div class="earn-left"><span>${e.icon}</span>${e.label}</div><div class="earn-pts">${e.pts}</div></div>`).join('')}
-      </div>
-    </div>
-
-    <!-- 포인트 교환소 -->
-    <div class="reward-section">
-      <div class="section-header">
-        <div class="section-title">🎁 포인트 <em>교환소</em></div>
-        <div style="font-size:12px;color:var(--muted);font-weight:300">보유 ${pts.toLocaleString()}P</div>
-      </div>
-      <div class="reward-grid">
-        ${rewards.map(r => {
-          const canUse = pts >= r.pts;
-          return `<div class="reward-item" onclick="redeemReward(${r.id},${r.pts},'${r.name}')">
-            <div class="reward-icon">${r.icon}</div>
-            <div class="reward-name">${r.name}</div>
-            <div class="reward-pts">${r.pts.toLocaleString()}P</div>
-            <div style="font-size:11px;color:var(--muted);margin-bottom:10px;font-weight:300">${r.desc}</div>
-            <button class="reward-btn ${canUse?'':'disabled'}">${canUse?'교환하기':'포인트 부족'}</button>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>
-
-    <!-- 활동 내역 -->
-    <div class="activity-section">
-      <div class="section-header">
-        <div class="section-title">📋 나의 <em>활동</em></div>
-      </div>
-      <div class="activity-tabs">
-        <button class="at-btn ${actTab==='lightning'?'active':''}" onclick="switchActTab('lightning')">⚡ 참가 번개</button>
-        <button class="at-btn ${actTab==='posts'?'active':''}" onclick="switchActTab('posts')">📝 내가 쓴 글</button>
-        <button class="at-btn ${actTab==='reserve'?'active':''}" onclick="switchActTab('reserve')">📅 예약 내역</button>
-      </div>
-      <div id="activityContent">${renderActivity()}</div>
-    </div>`;
-  if(!user.guest) loadMyRequests();
+    ${me.role === 'admin' ? '<a class="admin-link" href="admin.html">🛠️ 운영자 · 세차장 관리 (요청·제보 처리)</a>' : ''}
+    ${lists}`;
+  loadLists();
 }
 
-async function loadMyRequests() {
-  const box = document.getElementById('myReq');
-  if(!box) return;
-  if(!PPX.ready) { box.innerHTML = '<div class="req-empty">준비 중이에요</div>'; return; }
+async function loadLists() {
+  const req = document.getElementById('myReq'), rep = document.getElementById('myRep');
+  if(!PPX.ready) { req.innerHTML = rep.innerHTML = '<div class="req-empty">준비 중이에요</div>'; return; }
   try {
     const list = await PPX.myRequests();
     const label = {pending:'확인 대기', approved:'지도에 등록됨', rejected:'반려'};
-    box.innerHTML = list.length ? list.map(r => `
+    req.innerHTML = list.length ? list.map(r => `
       <div class="req-item">
         <div>
           <div class="req-name">${escHTML(r.name)}</div>
@@ -286,48 +216,19 @@ async function loadMyRequests() {
         <div class="req-state ${r.status}">${label[r.status]||r.status}</div>
       </div>`).join('')
       : '<div class="req-empty">아직 요청한 세차장이 없어요.<br>지도에서 <b>＋ 세차장 추가</b>를 눌러 단골 세차장을 알려주세요!</div>';
-  } catch(e) {
-    box.innerHTML = '<div class="req-empty">목록을 불러오지 못했어요</div>';
-  }
-}
-
-function renderActivity() {
-  if(actTab==='lightning') {
-    return dummyLightning.map(a=>`
-      <div class="activity-item">
-        <div class="ai-icon">${a.icon}</div>
-        <div class="ai-info"><div class="ai-title">${a.title}</div><div class="ai-sub">${a.sub}</div></div>
-        <div class="ai-date">${a.date}</div>
-      </div>`).join('');
-  }
-  if(actTab==='posts') {
-    return dummyPosts.map(a=>`
-      <div class="activity-item">
-        <div class="ai-icon">${a.icon}</div>
-        <div class="ai-info"><div class="ai-title">${a.title}</div><div class="ai-sub">${a.sub}</div></div>
-        <div class="ai-date">${a.date}</div>
-      </div>`).join('');
-  }
-  return `<div class="empty"><div class="empty-icon">📅</div><div class="empty-txt">예약 내역이 없습니다</div><div class="empty-sub">Phase 2에서 예약 기능이 오픈됩니다</div></div>`;
-}
-
-function switchActTab(tab) {
-  actTab = tab;
-  document.getElementById('activityContent').innerHTML = renderActivity();
-  document.querySelectorAll('.at-btn').forEach((b,i)=>{
-    b.classList.toggle('active', ['lightning','posts','reserve'][i]===tab);
-  });
-}
-
-function redeemReward(id, pts, name) {
-  const user = JSON.parse(localStorage.getItem('ppaxseUser')||'null');
-  const curPts = user.points || 1240;
-  if(curPts < pts) { showToast('포인트가 부족합니다', true); return; }
-  if(!confirm(`${name} 교환을 신청하시겠습니까?\n(${pts.toLocaleString()}P 차감)`)) return;
-  user.points = curPts - pts;
-  localStorage.setItem('ppaxseUser', JSON.stringify(user));
-  showToast(`${name} 교환 신청 완료! 🎁`);
-  render();
+  } catch(e) { req.innerHTML = '<div class="req-empty">목록을 불러오지 못했어요</div>'; }
+  try {
+    const list = await PPX.myReports();
+    rep.innerHTML = list.length ? list.map(r => `
+      <div class="req-item">
+        <div>
+          <div class="req-name">${escHTML(r.place ? r.place.name : '(지도에서 내려간 세차장)')}</div>
+          <div class="req-sub">${new Date(r.created_at).toLocaleDateString('ko-KR')}${r.memo ? ' · ' + escHTML(r.memo.slice(0, 40)) : ''}</div>
+        </div>
+        <div class="req-state ${r.status === 'applied' ? 'approved' : r.status === 'dismissed' ? 'rejected' : 'pending'}">${repState[r.status]||r.status}</div>
+      </div>`).join('')
+      : '<div class="req-empty">아직 보낸 제보가 없어요.<br>지도에서 세차장을 눌러 <b>정보가 맞아요</b> 또는 <b>달라요 · 더 알려주기</b>를 눌러 주세요!</div>';
+  } catch(e) { rep.innerHTML = '<div class="req-empty">목록을 불러오지 못했어요</div>'; }
 }
 
 async function doLogout() {
@@ -343,17 +244,7 @@ function showToast(msg, warn=false) {
   setTimeout(()=>t.classList.remove('show'), 2500);
 }
 
-// 실제 로그인 상태를 먼저 확인해서 화면을 맞춤 (로그인 만료 시 예전 정보 정리)
-(async () => {
-  if(PPX.ready) {
-    try {
-      const me = await PPX.me();
-      const local = JSON.parse(localStorage.getItem('ppaxseUser')||'null');
-      if(!me && local && !local.guest) localStorage.removeItem('ppaxseUser');
-    } catch(e) {}
-  }
-  render();
-})();
+render();
 </script>
 </body>
 </html>

@@ -10,6 +10,16 @@
 <meta name="theme-color" content="#04111e">
 <meta name="apple-mobile-web-app-title" content="빡세">
 <title>세차장 찾기 · 빡세</title>
+<meta name="description" content="전국 세차장 지도. 셀프세차·노터치·손세차를 내 주변에서 찾고, 폼건·온수·하부세차 정보를 함께 채워가요.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="빡세">
+<meta property="og:title" content="세차장지도 빡세 · 내 주변 세차장 찾기">
+<meta property="og:description" content="전국 세차장 지도. 폼건·온수·노터치 정보, 같이 채워가요.">
+<meta property="og:url" content="https://carwash-patient.github.io/ppaxse/map.html">
+<meta property="og:image" content="https://carwash-patient.github.io/ppaxse/icons/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;700;900&display=swap" rel="stylesheet">
 
 <!--
@@ -255,6 +265,23 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
 .dp-btn.ghost{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#fff}
 .write-review-btn{width:100%;min-height:50px;border:2px dashed rgba(14,165,233,.32);border-radius:15px;background:transparent;color:var(--sky);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px}
 
+/* 정보 확인 · 출처 */
+.dp-check{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:-4px 0 14px;font-size:12px;color:var(--muted)}
+.dp-check b{color:#34d399;font-weight:900}
+.dp-more{font-size:12px;color:var(--muted);text-align:center;margin:10px 0 0;line-height:1.6}
+.dp-src{font-size:11px;color:rgba(255,255,255,.3);text-align:center;margin-top:8px;line-height:1.6}
+.dp-two{display:flex;gap:8px;margin-top:10px}
+.dp-two .report-btn{margin-top:0}
+.check-btn{border-color:rgba(16,185,129,.4);background:rgba(16,185,129,.1)}
+.check-btn:disabled{opacity:.7}
+.rf-num{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.rf-num .af-input{width:96px;height:40px;text-align:right}
+.af-photo{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:13px;border:1.5px dashed rgba(14,165,233,.35);font-size:13px;color:var(--muted);cursor:pointer}
+.af-photo input{display:none}
+.af-photo b{color:#fff}
+.af-group{font-size:11px;font-weight:900;color:var(--aqua);letter-spacing:1px;margin:16px 0 4px}
+.af-note a{color:var(--aqua)}
+
 /* BOTTOM NAV */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:600;display:flex;background:rgba(4,17,30,.97);border-top:1px solid var(--line);backdrop-filter:blur(20px);padding-bottom:env(safe-area-inset-bottom)}
 .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;text-decoration:none;color:rgba(255,255,255,.35);transition:.15s;gap:3px}
@@ -370,9 +397,7 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
 
 <nav class="bottom-nav">
   <a href="map.html" class="nav-item active"><div class="nav-item-icon">🗺️</div><div class="nav-item-label">지도</div></a>
-  <a href="community.html" class="nav-item"><div class="nav-item-icon">⚡</div><div class="nav-item-label">커뮤니티</div></a>
-  <a href="#" class="nav-item dim"><div class="nav-item-icon">🛒</div><div class="nav-item-label">커머스</div></a>
-  <a href="mypage.html" class="nav-item"><div class="nav-item-icon">👤</div><div class="nav-item-label">마이페이지</div></a>
+  <a href="mypage.html" class="nav-item"><div class="nav-item-icon">👤</div><div class="nav-item-label">내 정보</div></a>
 </nav>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -687,7 +712,7 @@ function renderList() {
           <div class="pc-name">${esc(p.name)}</div>
           <div class="pc-addr">${esc(p.addr)}</div>
           <div class="pc-meta">
-            ${p.rating ? `<span class="pc-stars">★ ${p.rating}</span><span class="pc-reviews">(${p.reviews||0})</span>` : '<span class="pc-new">리뷰 없음</span>'}
+            ${p.check_count ? `<span class="pc-new" style="color:#34d399">✅ ${daysAgo(p.checked_at)} 확인</span>` : ''}
             <span class="pc-dist">${fmtDist(p._d)}</span>
           </div>
         </div>
@@ -702,7 +727,7 @@ function renderList() {
     </div>`).join('');
   if(!places.length) html = '<div class="list-note">세차장 정보를 불러오는 중이에요…</div>';
   else if(!fp.length) html = [...selFac].some(k => k !== 'h24')
-    ? '<div class="list-note">아직 이 시설 정보가 등록된 세차장이 없어요.<br>리뷰와 제보로 하나씩 채워갈 예정이에요!</div>'
+    ? '<div class="list-note">아직 이 시설 정보가 등록된 세차장이 없어요.<br>다녀오신 곳이 있다면 세차장을 눌러 알려주세요!</div>'
     : '<div class="list-note">이 지역에는 해당하는 세차장이 없어요.<br>지도를 움직이거나 축소해 보세요.</div>';
   else if(fp.length > MAX_LIST) html += `<div class="list-note">가까운 ${MAX_LIST}곳만 보여드려요.<br>지도를 확대하면 더 정확하게 볼 수 있어요.</div>`;
   document.getElementById('placeList').innerHTML = html;
@@ -712,10 +737,34 @@ function renderList() {
 // ══════════════════════════════════════════════════
 //  상세 패널
 // ══════════════════════════════════════════════════
+// 세차장 정보 항목 (js/ppx.js 를 못 불러왔을 때는 기본 4가지만)
+const FIELDS = PPX.FIELDS || [
+  {k:'foam',l:'폼건 사용',g:'self',col:true},{k:'under',l:'하부 세차',g:'self',col:true},
+  {k:'indoor',l:'실내 베이',g:'self',col:true},{k:'h24',l:'24시간 운영',g:'all',col:true}];
+const PAY = PPX.PAY || {}, SVC = PPX.SVC || {}, VISIT = PPX.VISIT || {};
+const groupsFor = PPX.groupsFor || (() => new Set(['all','self','auto','hand']));
+const fieldVal = PPX.fieldVal || ((p, f) => p[f.k] ?? null);
+const CORE = ['foam','under','indoor','h24'];   // 셀프세차장에서 모르더라도 항상 보여줄 항목
+const YESNO = { foam:['가능','불가'], under:['가능','불가'], myitem:['가능','불가'], reserve:['필요','필요 없음'], h24:['운영','미운영'] };
+
 function specVal(v, yes, no) {
   if(v===true)  return `<div class="spec-val y">✅ ${yes}</div>`;
   if(v===false) return `<div class="spec-val n">❌ ${no}</div>`;
   return `<div class="spec-val u">정보 준비중</div>`;
+}
+
+// 며칠 전
+function daysAgo(iso) {
+  if(!iso) return '';
+  const d = Math.floor((Date.now() - new Date(iso)) / 86400000);
+  return d <= 0 ? '오늘' : d === 1 ? '어제' : d < 30 ? `${d}일 전` : d < 365 ? `${Math.floor(d/30)}달 전` : `${Math.floor(d/365)}년 전`;
+}
+
+// 요금 글: 셀프는 '기본 3,000원 · 5분', 아니면 적힌 글 그대로
+function priceText(p) {
+  const i = p.info || {};
+  if(i.pw) return `기본 ${Number(i.pw).toLocaleString()}원${i.pm ? ' · ' + i.pm + '분' : ''}`;
+  return p.price || '';
 }
 
 function openDetail(id) {
@@ -725,30 +774,41 @@ function openDetail(id) {
   if(naverMap) naverMap.panTo(new naver.maps.LatLng(p.lat, p.lng));
   renderList(); renderNaverMarkers();
 
-  const reviews = p.reviewList || [];
+  const i = p.info || {};
+  const price = priceText(p);
   const info = [
     p.hours ? `<div><b>운영시간</b>${esc(p.hours)}</div>` : '',
     p.tel   ? `<div><b>전화</b>${esc(p.tel)}</div>` : '',
-    p.price ? `<div><b>요금</b>${esc(p.price)}</div>` : '',
+    price   ? `<div><b>요금</b>${esc(price)}</div>` : '',
+    (i.pay||[]).length ? `<div><b>결제</b>${esc(i.pay.map(k => PAY[k] || k).join(' · '))}</div>` : '',
+    i.bays  ? `<div><b>세차 칸</b>${esc(i.bays)}칸</div>` : '',
+    i.height ? `<div><b>높이 제한</b>${esc(i.height)}</div>` : '',
+    (i.svc||[]).length ? `<div><b>서비스</b>${esc(i.svc.map(k => SVC[k] || k).join(' · '))}</div>` : '',
     `<div><b>지역</b>${esc(p.region)}</div>`
   ].join('');
+
+  // 시설: 이 종류에 맞는 항목 중 아는 것 + (셀프면) 기본 4가지. 모르는 항목 수는 따로 안내
+  const groups = groupsFor(typesOf(p));
+  const shown = [], unknown = [];
+  FIELDS.filter(f => groups.has(f.g)).forEach(f => {
+    const v = fieldVal(p, f);
+    if(v !== null || (CORE.includes(f.k) && groups.has('self'))) shown.push(f); else unknown.push(f);
+  });
+  const yn = f => YESNO[f.k] || ['있음','없음'];
+
+  const checked = p.check_count
+    ? `<b>✅ 최근 확인 ${daysAgo(p.checked_at)}</b><span>· 지금까지 ${p.check_count}번 확인됐어요</span>`
+    : `<span>아직 확인한 사람이 없어요. 다녀오셨다면 알려주세요 🙌</span>`;
 
   document.getElementById('dpBody').innerHTML = `
     <div class="dp-type-tag">${esc(typeNames(p).join(' · '))}</div>
     <div class="dp-name">${esc(p.name)}</div>
     <div class="dp-addr">📍 ${esc(p.addr)}</div>
-    ${p.rating ? `
-    <div class="dp-rating-row">
-      <div class="dp-score">${p.rating}</div>
-      <div>
-        <div class="dp-stars-big">${'★'.repeat(Math.round(p.rating))}${'☆'.repeat(5-Math.round(p.rating))}</div>
-        <div class="dp-rev-count">리뷰 ${p.reviews||0}개</div>
-      </div>
-    </div>` : ''}
+    <div class="dp-check" id="dpCheck">${checked}</div>
     <div class="dp-badges">
-      ${p.open===true?'<span class="badge g">✅ 영업중</span>':p.open===false?'<span class="badge r">⛔ 영업종료</span>':''}
       ${p.foam?'<span class="badge b">💨 폼건</span>':''}
       ${p.under?'<span class="badge b">⬇️ 하부세차</span>':''}
+      ${i.hotwater?'<span class="badge b">♨️ 온수</span>':''}
       ${p.indoor?'<span class="badge y">🏠 실내베이</span>':''}
       ${p.h24?'<span class="badge g">🕐 24시간</span>':''}
     </div>
@@ -762,29 +822,14 @@ function openDetail(id) {
     </div>
     <div class="dp-section">
       <div class="dp-section-title">시설 정보</div>
-      <div class="dp-spec-grid">
-        <div class="spec-item"><div class="spec-label">폼건 사용</div>${specVal(p.foam,'가능','불가')}</div>
-        <div class="spec-item"><div class="spec-label">하부 세차</div>${specVal(p.under,'가능','불가')}</div>
-        <div class="spec-item"><div class="spec-label">실내 베이</div>${specVal(p.indoor,'있음','없음')}</div>
-        <div class="spec-item"><div class="spec-label">24시간</div>${specVal(p.h24,'운영',p.hours?'미운영':'')}</div>
+      ${shown.length ? `<div class="dp-spec-grid">${shown.map(f =>
+        `<div class="spec-item"><div class="spec-label">${esc(f.l)}</div>${specVal(fieldVal(p, f), ...yn(f))}</div>`).join('')}</div>` : ''}
+      ${unknown.length ? `<div class="dp-more">${shown.length ? '그 밖에 ' : ''}${esc(unknown.slice(0,4).map(f => f.l).join(', '))}${unknown.length > 4 ? ' 등' : ''}은 아직 몰라요.<br>아시면 알려주세요!</div>` : ''}
+      <div class="dp-two">
+        <button class="report-btn check-btn" id="checkBtn" type="button" onclick="checkPlace(${p.id})">👍 정보가 맞아요</button>
+        <button class="report-btn" type="button" onclick="startReport(${p.id})">✏️ 달라요 · 더 알려주기</button>
       </div>
-      <button class="report-btn" type="button" onclick="startReport(${p.id})">✏️ 정보가 달라요 <span>종류·시설·폐업 알려주기</span></button>
-    </div>
-    <div class="dp-section">
-      <div class="dp-section-title">빡세 리뷰</div>
-      ${reviews.length ? reviews.map(r=>`
-        <div class="review-item">
-          <div class="ri-top">
-            <div class="ri-avatar">${esc(r.nick[0])}</div>
-            <div class="ri-nick">${esc(r.nick)}</div>
-            <div class="ri-skill">${skillLabel[r.skill]||''}</div>
-            <div class="ri-date">${esc(r.date)}</div>
-          </div>
-          <div class="ri-stars">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</div>
-          <div class="ri-text">${esc(r.text)}</div>
-          <div class="ri-tags">${(r.tags||[]).map(t=>`<span class="ri-tag">#${esc(t)}</span>`).join('')}</div>
-        </div>`).join('') : '<div class="dp-empty">아직 리뷰가 없어요.<br>첫 번째 빡세 리뷰를 남겨주세요 💧</div>'}
-      <button class="write-review-btn" onclick="openReviewModal(${p.id})">✏️ 리뷰 작성하기</button>
+      <div class="dp-src">세차장 기본 정보: 행정안전부 전국세차장표준데이터(공공데이터포털) · 이용자 제보</div>
     </div>`;
 
   document.getElementById('detailPanel').classList.add('open');
@@ -801,10 +846,27 @@ function closeDetail() {
   renderList(); renderNaverMarkers();
 }
 
-function openReviewModal(id) {
-  const user = JSON.parse(localStorage.getItem('ppaxseUser')||'null');
-  if(!user || user.guest) { alert('리뷰 작성은 로그인 후 가능합니다'); location.href='login.html'; return; }
-  alert('리뷰 작성 — 커뮤니티 페이지와 연동 예정');
+// '정보가 맞아요' — 가입 없이 누를 수 있음, 한 세차장에 하루 한 번
+async function checkPlace(id) {
+  if(!PPX.ready) return toast('준비 중이에요');
+  const btn = document.getElementById('checkBtn');
+  if(btn) { btn.disabled = true; btn.textContent = '보내는 중…'; }
+  const p = places.find(x => x.id === id);
+  try {
+    await PPX.checkPlace(id);
+    if(p) { p.check_count = (p.check_count || 0) + 1; p.checked_at = new Date().toISOString(); }
+    toast('확인 고마워요! 다른 분들께 큰 도움이 돼요 💧');
+  } catch(e) {
+    const msg = PPX.koError(e);
+    toast(msg, !/이미 확인/.test(msg));
+    if(!/이미 확인/.test(msg)) { if(btn) { btn.disabled = false; btn.textContent = '👍 정보가 맞아요'; } return; }
+  }
+  if(activeId === id) {
+    const c = document.getElementById('dpCheck');
+    if(c && p) c.innerHTML = `<b>✅ 최근 확인 ${daysAgo(p.checked_at)}</b><span>· 지금까지 ${p.check_count}번 확인됐어요</span>`;
+    const b = document.getElementById('checkBtn');
+    if(b) { b.disabled = true; b.textContent = '✅ 확인했어요'; }
+  }
 }
 
 // 네이버 지도 길찾기
@@ -1002,13 +1064,6 @@ function closeAddPanel() {
 
 async function startAddPlace() {
   if(!PPX.ready) return toast('세차장 추가 기능을 준비 중이에요');
-  let me = null;
-  try { me = await PPX.me(); } catch(e) {}
-  if(!me) {
-    openAddPanel(`<div class="af-login">자주 가는 세차장이 지도에 없나요?<br>로그인하면 추가를 요청할 수 있어요.<br>운영자가 확인한 뒤 지도에 올라갑니다.
-      <div class="row"><a class="g" href="join.html">가입하기</a><a class="p" href="login.html?next=map.html">💧 로그인</a></div></div>`);
-    return;
-  }
   if(activeId) closeDetail();
   setSheet('hidden');
   document.body.classList.add('picking');
@@ -1053,7 +1108,7 @@ function renderAddForm() {
       <textarea class="af-input" id="afMemo" maxlength="500" placeholder="예: 실내 베이 4개, 폼건 가능, 24시간 운영">${esc(addForm.memo)}</textarea>
     </div>
     <button class="af-submit" id="afSubmit" type="button">요청 보내기</button>
-    <div class="af-note">운영자가 확인한 뒤 지도에 올라가요.<br>진행 상황은 마이페이지에서 볼 수 있어요.</div>`);
+    <div class="af-note">가입하지 않아도 보낼 수 있어요. 운영자가 확인한 뒤 지도에 올라가요.<br>진행 상황은 ‘내 정보’에서 볼 수 있어요. · <a href="privacy.html" target="_blank">개인정보처리방침</a></div>`);
   document.querySelectorAll('.af-type').forEach(b => b.onclick = () => {
     toggleType(addForm.types, b.dataset.t);
     document.querySelectorAll('.af-type').forEach(x => { const on = addForm.types.includes(x.dataset.t); x.classList.toggle('on', on); x.setAttribute('aria-pressed', on); });
@@ -1107,80 +1162,179 @@ function toggleType(arr, t) { const i = arr.indexOf(t); i >= 0 ? arr.splice(i, 1
 
 let reportPlaceId = null;
 const reportForm = {};
-const FAC = [['foam','폼건 사용'],['under','하부 세차'],['indoor','실내 베이'],['h24','24시간 운영']];
+let reportPhoto = null;   // 줄인 가격표 사진 (Blob)
 
 async function startReport(id) {
   if(!PPX.ready) return toast('제보 기능을 준비 중이에요');
-  let me = null;
-  try { me = await PPX.me(); } catch(e) {}
-  if(!me) {
-    openAddPanel(`<div class="af-login">세차장 정보가 실제와 다른가요?<br>로그인하면 고쳐달라고 알려줄 수 있어요.<br>운영자가 확인한 뒤 반영됩니다.
-      <div class="row"><a class="g" href="join.html">가입하기</a><a class="p" href="login.html?next=map.html">💧 로그인</a></div></div>`);
-    document.querySelector('#addPanel .rp-title').textContent = '정보 수정 제보';
-    return;
-  }
   const p = places.find(x => x.id === id);
   if(!p) return;
   reportPlaceId = id;
-  Object.assign(reportForm, { types: [...typesOf(p)], foam: p.foam ?? null, under: p.under ?? null, indoor: p.indoor ?? null, h24: p.h24 ?? null, closed: false, memo: '' });
+  reportPhoto = null;
+  const i = p.info || {};
+  Object.assign(reportForm, {
+    types: [...typesOf(p)], closed: false, memo: '', visit: null,
+    pay: [...(i.pay || [])], svc: [...(i.svc || [])],
+    bays: i.bays ?? '', pw: i.pw ?? '', pm: i.pm ?? '', height: i.height ?? '',
+    hours: p.hours || '', tel: p.tel || '', price: p.price || ''
+  });
+  FIELDS.forEach(f => { reportForm[f.k] = fieldVal(p, f); });
   renderReportForm();
+}
+
+// 글 입력칸 내용을 저장 (종류를 바꿔 화면을 다시 그리기 전에)
+function saveReportInputs() {
+  document.querySelectorAll('#addBody [data-in]').forEach(el => { reportForm[el.dataset.in] = el.value.trim(); });
+  const c = document.getElementById('rfClosed'); if(c) reportForm.closed = c.checked;
 }
 
 function renderReportForm() {
   const p = places.find(x => x.id === reportPlaceId);
+  const g = groupsFor(reportForm.types);
   const seg = (k) => [[null,'모름'],[true,'있음'],[false,'없음']].map(([v,l]) =>
     `<button type="button" class="${reportForm[k]===v?'on':''}" data-k="${k}" data-v="${v===null?'null':v}">${l}</button>`).join('');
+  const rows = grp => FIELDS.filter(f => f.g === grp).map(f =>
+    `<div class="rf-row"><div class="rf-name">${esc(f.l)}</div><div class="rf-seg">${seg(f.k)}</div></div>`).join('');
+  const chips = (key, dict) => `<div class="af-types">${Object.entries(dict).map(([k,l]) =>
+    `<button type="button" class="af-type ${reportForm[key].includes(k)?'on':''}" data-multi="${key}" data-t="${k}" aria-pressed="${reportForm[key].includes(k)}">${esc(l)}</button>`).join('')}</div>`;
+  const input = (k, ph, attrs='') => `<input class="af-input" data-in="${k}" value="${esc(reportForm[k])}" placeholder="${esc(ph)}" ${attrs}>`;
   openAddPanel(`
     <div class="af-field">
       <div class="af-label">세차장</div>
       <div class="af-loc">📍 ${esc(p.name)}</div>
     </div>
     <div class="af-field">
-      <div class="af-label">종류 <span class="rf-cur">지금: ${esc(typeNames(p).join(' · '))} · 여러 개 고를 수 있어요</span></div>
-      <div class="af-types">${Object.keys(typeLabel).map(t => `<button type="button" class="af-type ${reportForm.types.includes(t)?'on':''}" data-t="${t}" aria-pressed="${reportForm.types.includes(t)}">${typeIcon[t]} ${typeLabel[t]}</button>`).join('')}</div>
+      <div class="af-label">언제 가보셨어요? (선택)</div>
+      <div class="af-types">${Object.entries(VISIT).map(([k,l]) =>
+        `<button type="button" class="af-type ${reportForm.visit===k?'on':''}" data-visit="${k}" aria-pressed="${reportForm.visit===k}">${esc(l)}</button>`).join('')}</div>
     </div>
     <div class="af-field">
-      <div class="af-label">시설</div>
-      ${FAC.map(([k,l]) => `<div class="rf-row"><div class="rf-name">${l}</div><div class="rf-seg">${seg(k)}</div></div>`).join('')}
+      <div class="af-label">종류 <span class="rf-cur">지금: ${esc(typeNames(p).join(' · '))} · 여러 개 고를 수 있어요</span></div>
+      <div class="af-types">${Object.keys(typeLabel).map(t => `<button type="button" class="af-type ${reportForm.types.includes(t)?'on':''}" data-t="${t}" data-kind="type" aria-pressed="${reportForm.types.includes(t)}">${typeIcon[t]} ${typeLabel[t]}</button>`).join('')}</div>
     </div>
     <div class="af-field">
       <label class="rf-check"><input type="checkbox" id="rfClosed" ${reportForm.closed?'checked':''}> 폐업했거나 세차장이 아니에요</label>
     </div>
+    <div class="af-note" style="margin:0 0 6px">아는 것만 눌러 주세요. 모르는 건 그대로 두면 돼요.</div>
+
+    ${g.has('self') ? `
+    <div class="af-group">🚿 셀프세차</div>
+    ${rows('self')}
+    <div class="rf-row"><div class="rf-name">세차 칸 수</div><div class="rf-num">${input('bays','예: 6','inputmode="numeric" maxlength="2"')}칸</div></div>
+    <div class="rf-row"><div class="rf-name">기본 요금</div><div class="rf-num">${input('pw','3000','inputmode="numeric" maxlength="6"')}원 / ${input('pm','5','inputmode="numeric" maxlength="3" style="width:64px"')}분</div></div>` : ''}
+
+    ${g.has('auto') ? `
+    <div class="af-group">💦 노터치 · 자동세차</div>
+    ${rows('auto')}
+    <div class="rf-row"><div class="rf-name">차 높이 제한</div><div class="rf-num">${input('height','예: 2.1m','maxlength="10"')}</div></div>` : ''}
+
+    ${g.has('hand') ? `
+    <div class="af-group">🧽 손세차 · 디테일링</div>
+    ${rows('hand')}
+    <div class="af-field" style="margin-top:8px"><div class="af-label">하는 서비스</div>${chips('svc', SVC)}</div>` : ''}
+
+    <div class="af-group">📋 공통</div>
+    ${rows('all')}
+    <div class="af-field" style="margin-top:10px"><div class="af-label">결제 방법</div>${chips('pay', PAY)}</div>
+    <div class="af-field"><div class="af-label">운영시간</div>${input('hours','예: 06:00~24:00','maxlength="60"')}</div>
+    <div class="af-field"><div class="af-label">전화번호</div>${input('tel','세차장 전화번호','inputmode="tel" maxlength="30"')}</div>
+    ${(g.has('auto') || g.has('hand')) ? `<div class="af-field"><div class="af-label">요금 (자유롭게)</div>${input('price','예: 자동세차 8,000원 / 외부 손세차 30,000원~','maxlength="200"')}</div>` : ''}
+
+    <div class="af-field">
+      <div class="af-label">가격표 사진 (선택) — 가장 정확한 정보예요</div>
+      <label class="af-photo"><input type="file" id="rfPhoto" accept="image/*">📷 <span id="rfPhotoName">${reportPhoto ? '<b>사진 1장 골랐어요</b> (다시 누르면 바꾸기)' : '가격표나 시설 안내판을 찍어 주세요'}</span></label>
+      <div class="rf-cur" style="margin:6px 0 0">번호판·얼굴이 나오지 않게 찍어 주세요. 사진은 운영자만 봐요.</div>
+    </div>
     <div class="af-field">
       <div class="af-label">더 알려주고 싶은 점 (선택)</div>
-      <textarea class="af-input" id="rfMemo" maxlength="500" placeholder="예: 노터치 기계 2대, 주말엔 대기 30분">${esc(reportForm.memo)}</textarea>
+      <textarea class="af-input" data-in="memo" id="rfMemo" maxlength="500" placeholder="예: 노터치 기계 2대, 주말엔 대기 30분">${esc(reportForm.memo)}</textarea>
     </div>
     <button class="af-submit" id="rfSubmit" type="button">제보 보내기</button>
-    <div class="af-note">운영자가 확인한 뒤 반영돼요. 고마워요 💧</div>`);
-  document.querySelector('#addPanel .rp-title').textContent = '정보 수정 제보';
-  document.querySelectorAll('#addBody .af-type').forEach(b => b.onclick = () => {
+    <div class="af-note">가입하지 않아도 보낼 수 있어요. 운영자가 확인한 뒤 반영돼요. 고마워요 💧<br><a href="privacy.html" target="_blank">개인정보처리방침</a></div>`);
+  document.querySelector('#addPanel .rp-title').textContent = '정보 알려주기';
+  // 종류: 바꾸면 보여줄 항목이 달라지므로 다시 그림
+  document.querySelectorAll('#addBody [data-kind="type"]').forEach(b => b.onclick = () => {
+    saveReportInputs();
     toggleType(reportForm.types, b.dataset.t);
-    document.querySelectorAll('#addBody .af-type').forEach(x => { const on = reportForm.types.includes(x.dataset.t); x.classList.toggle('on', on); x.setAttribute('aria-pressed', on); });
+    const scroll = document.getElementById('addBody').scrollTop;
+    renderReportForm();
+    document.getElementById('addBody').scrollTop = scroll;
+  });
+  document.querySelectorAll('#addBody [data-visit]').forEach(b => b.onclick = () => {
+    reportForm.visit = reportForm.visit === b.dataset.visit ? null : b.dataset.visit;
+    document.querySelectorAll('#addBody [data-visit]').forEach(x => { const on = x.dataset.visit === reportForm.visit; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on); });
+  });
+  document.querySelectorAll('#addBody [data-multi]').forEach(b => b.onclick = () => {
+    const arr = reportForm[b.dataset.multi];
+    toggleType(arr, b.dataset.t);
+    const on = arr.includes(b.dataset.t); b.classList.toggle('on', on); b.setAttribute('aria-pressed', on);
   });
   document.querySelectorAll('#addBody .rf-seg button').forEach(b => b.onclick = () => {
     reportForm[b.dataset.k] = b.dataset.v === 'null' ? null : b.dataset.v === 'true';
     b.parentElement.querySelectorAll('button').forEach(x => x.classList.toggle('on', x===b));
   });
+  document.getElementById('rfPhoto').onchange = async e => {
+    const f = e.target.files && e.target.files[0];
+    if(!f) return;
+    const name = document.getElementById('rfPhotoName');
+    name.textContent = '사진 줄이는 중…';
+    try { reportPhoto = await shrinkPhoto(f); name.innerHTML = '<b>사진 1장 골랐어요</b> (다시 누르면 바꾸기)'; }
+    catch(err) { reportPhoto = null; name.textContent = '이 사진은 쓸 수 없어요. 다른 사진을 골라 주세요'; }
+  };
   document.getElementById('rfSubmit').onclick = submitReport;
 }
 
+// 사진을 긴 쪽 1600px 이하 JPEG로 줄임 (용량 절약 + 위치 등 사진 속 정보 제거)
+async function shrinkPhoto(file) {
+  if(!/^image\//.test(file.type || 'image/')) throw new Error('not image');
+  let src;
+  try { src = await createImageBitmap(file, { imageOrientation: 'from-image' }); }
+  catch(e) {
+    src = await new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = no; im.src = URL.createObjectURL(file); });
+  }
+  const w0 = src.width, h0 = src.height, k = Math.min(1, 1600 / Math.max(w0, h0));
+  const c = document.createElement('canvas');
+  c.width = Math.round(w0 * k); c.height = Math.round(h0 * k);
+  c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+  const blob = await new Promise(ok => c.toBlob(ok, 'image/jpeg', 0.82));
+  if(!blob) throw new Error('encode');
+  return blob;
+}
+
+const sameSet = (a, b) => a.length === b.length && a.every(x => b.includes(x));
+const numOrNull = v => { const n = parseInt(String(v).replace(/[^0-9]/g, ''), 10); return Number.isFinite(n) && n > 0 ? n : null; };
+
 async function submitReport() {
   const p = places.find(x => x.id === reportPlaceId);
-  reportForm.closed = document.getElementById('rfClosed').checked;
-  reportForm.memo = document.getElementById('rfMemo').value.trim();
-  // 지금 정보와 달라진 항목만 보냄
-  const suggest = {};
+  saveReportInputs();
   if(!reportForm.types.length) return toast('종류를 하나 이상 골라주세요', true);
-  const cur = typesOf(p);
-  if(reportForm.types.length !== cur.length || reportForm.types.some(t => !cur.includes(t))) suggest.types = [...reportForm.types];
-  FAC.forEach(([k]) => { if(reportForm[k] !== (p[k] ?? null)) suggest[k] = reportForm[k]; });
+  // 지금 정보와 달라진 항목만 보냄 (표의 칸은 그대로, 나머지는 info 안에)
+  const suggest = {}, info = {}, cur = p.info || {};
+  const curTypes = typesOf(p);
+  if(!sameSet(reportForm.types, curTypes)) suggest.types = [...reportForm.types];
+  const g = groupsFor(reportForm.types);
+  FIELDS.filter(f => g.has(f.g)).forEach(f => {
+    const v = reportForm[f.k];
+    if(v === (fieldVal(p, f) ?? null)) return;
+    if(f.col) suggest[f.k] = v; else info[f.k] = v;
+  });
+  if(!sameSet(reportForm.pay, cur.pay || [])) info.pay = [...reportForm.pay];
+  if(g.has('hand') && !sameSet(reportForm.svc, cur.svc || [])) info.svc = [...reportForm.svc];
+  [['bays', g.has('self')], ['pw', g.has('self')], ['pm', g.has('self')]].forEach(([k, on]) => {
+    const n = numOrNull(reportForm[k]);
+    if(on && n !== null && n !== (cur[k] ?? null)) info[k] = n;
+  });
+  if(g.has('auto') && reportForm.height && reportForm.height !== (cur.height || '')) info.height = reportForm.height.slice(0, 10);
+  ['hours','tel','price'].forEach(k => { if(reportForm[k] && reportForm[k] !== (p[k] || '')) suggest[k] = reportForm[k]; });
+  if(Object.keys(info).length) suggest.info = info;
   if(reportForm.closed) suggest.closed = true;
-  if(!Object.keys(suggest).length && !reportForm.memo) return toast('바뀐 내용이 없어요. 고칠 부분을 골라주세요', true);
+  if(!Object.keys(suggest).length && !reportForm.memo && !reportPhoto)
+    return toast('바뀐 내용이 없어요. 그대로 맞다면 ‘정보가 맞아요’를 눌러 주세요', true);
   const btn = document.getElementById('rfSubmit');
-  btn.disabled = true; btn.textContent = '보내는 중…';
+  btn.disabled = true; btn.textContent = reportPhoto ? '사진 올리는 중…' : '보내는 중…';
   try {
-    await PPX.reportPlace(p.id, suggest, reportForm.memo);
+    await PPX.reportPlace(p.id, suggest, reportForm.memo, { visit: reportForm.visit, photo: reportPhoto });
     closeAddPanel();
+    reportPhoto = null;
     toast('제보를 보냈어요! 운영자 확인 후 반영돼요 💧');
   } catch(e) {
     toast(PPX.koError(e), true);

@@ -76,6 +76,11 @@ html,body{min-height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backg
 .tchips label{display:flex;align-items:center;gap:6px;padding:8px 11px;border-radius:999px;border:1.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);font-size:13px;font-weight:700;cursor:pointer;min-height:38px}
 .tchips input{width:16px;height:16px;accent-color:#22d3ee}
 .tchips label:has(input:checked){border-color:var(--sky);background:rgba(14,165,233,.2)}
+.photo-box{margin-bottom:10px}
+.photo-box img{max-width:100%;border-radius:12px;border:1px solid rgba(255,255,255,.1);display:block}
+.photo-box button,.mini{padding:9px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#fff;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer}
+.visit{display:inline-block;font-size:11px;font-weight:900;padding:3px 8px;border-radius:999px;background:rgba(16,185,129,.14);color:#34d399;margin-left:6px}
+.blocked{color:#f87171;font-weight:900}
 .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(10px);background:rgba(16,185,129,.95);color:#fff;padding:12px 20px;border-radius:14px;font-size:13px;font-weight:700;opacity:0;transition:.25s;z-index:99;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%)}
 .toast.warn{background:rgba(239,68,68,.95)}
@@ -98,8 +103,24 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 let tab = 'pending', items = [], approved = [], selId = null;
 let map = null, reqMarker = null, nearMarkers = [];
 let searchTerm = '';
-const FAC = [['foam','폼건'],['under','하부 세차'],['indoor','실내 베이'],['h24','24시간']];
+const FIELDS = PPX.FIELDS || [], PAY = PPX.PAY || {}, SVC = PPX.SVC || {}, VISIT = PPX.VISIT || {};
+const fieldVal = PPX.fieldVal || ((p, f) => p[f.k] ?? null);
 const facText = v => v === true ? '있음' : v === false ? '없음' : '모름';
+// info 안 값 글로
+function infoText(k, v) {
+  if(v === null || v === undefined || v === '') return '모름';
+  if(k === 'pay') return (v || []).map(x => PAY[x] || x).join(' · ') || '없음';
+  if(k === 'svc') return (v || []).map(x => SVC[x] || x).join(' · ') || '없음';
+  if(k === 'bays') return v + '칸';
+  if(k === 'pw') return Number(v).toLocaleString() + '원';
+  if(k === 'pm') return v + '분';
+  if(typeof v === 'boolean') return facText(v);
+  return String(v);
+}
+const INFO_LABEL = { pay:'결제', svc:'서비스', bays:'세차 칸', pw:'기본 요금', pm:'기본 시간', height:'높이 제한' };
+FIELDS.forEach(f => { INFO_LABEL[f.k] = f.l; });
+// 제보한 사람: 닉네임, 없으면 가입 안 한 기기 번호 앞자리
+const whoOf = (prof, uid) => prof && prof.nickname ? esc(prof.nickname) : `가입 안 한 기기 #${esc(String(uid || '').slice(0, 6) || '?')}`;
 const typesOf = p => (p && p.types && p.types.length) ? p.types : (p ? [p.type] : []);
 const typesText = ts => (ts || []).map(t => typeLabel[t] || t).join(' · ');
 // 대표 종류(지도 아이콘) + 함께 있는 종류(체크) 입력칸
@@ -217,8 +238,8 @@ function nearbyOf(loc, selfId) {
   return approved.filter(p => p.id !== selfId).map(p => ({p, d: distM(loc, p)})).filter(x => x.d < 300).sort((a,b) => a.d-b.d);
 }
 
-function facSelect(k, v) {
-  return `<select class="f-fac" data-fac="${k}">
+function facSelect(k, v, where) {
+  return `<select class="f-fac" ${where === 'info' ? 'data-info-fac' : 'data-fac'}="${k}">
     <option value="null" ${v==null?'selected':''}>모름</option>
     <option value="true" ${v===true?'selected':''}>있음</option>
     <option value="false" ${v===false?'selected':''}>없음</option></select>`;
@@ -226,10 +247,10 @@ function facSelect(k, v) {
 
 function cardPending(it) {
   const near = nearbyOf(it, it.id).slice(0, 3);
-  const who = it.submitter ? esc(it.submitter.nickname) : '알 수 없음';
+  const who = whoOf(it.submitter, it.submitted_by);
   return `
     <div class="card ${it.id===selId?'sel':''}" data-id="${it.id}">
-      <div class="c-top"><span class="c-who">요청: <b style="color:#fff">${who}</b></span><span class="c-when">${ago(it.created_at)}</span></div>
+      <div class="c-top"><span class="c-who">요청: <b style="color:#fff">${who}</b>${it.submitter && it.submitter.blocked ? ' <span class="blocked">(막힘)</span>' : ''}</span><span class="c-when">${ago(it.created_at)}</span></div>
       ${it.memo ? `<div class="memo">💬 ${esc(it.memo)}</div>` : ''}
       ${near.length ? `<div class="near">⚠️ 300m 안에 등록된 세차장이 있어요. 중복인지 확인하세요.<br>${near.map(x => `· ${esc(x.p.name)} (${Math.round(x.d)}m)`).join('<br>')}</div>` : ''}
       <div class="f"><label>세차장 이름</label><input data-k="name" value="${esc(it.name)}" maxlength="60"></div>
@@ -247,25 +268,34 @@ function cardPending(it) {
 
 function cardReport(it) {
   const p = it.place;
-  const who = it.reporter_p ? esc(it.reporter_p.nickname) : '알 수 없음';
+  const who = whoOf(it.reporter_p, it.reporter);
   if(!p) return `<div class="card" data-id="${it.id}"><div class="c-who">세차장이 삭제됐어요</div>
     <div class="acts"><button class="no" type="button" data-act="dismiss">목록에서 지우기</button></div></div>`;
   const sg = it.suggest || {};
   const rows = [];
-  if(Array.isArray(sg.types) && sg.types.length) rows.push(`<label><input type="checkbox" data-s="types" checked><span class="k">종류</span><span class="from">${esc(typesText(typesOf(p)))}</span>→<span class="to">${esc(typesText(sg.types.filter(t => typeLabel[t])))}</span></label>`);
-  else if('type' in sg && typeLabel[sg.type]) rows.push(`<label><input type="checkbox" data-s="type" checked><span class="k">종류</span><span class="from">${esc(typesText(typesOf(p)))}</span>→<span class="to">${typeLabel[sg.type]}</span></label>`);
-  FAC.forEach(([k, l]) => { if(k in sg) rows.push(`<label><input type="checkbox" data-s="${k}" checked><span class="k">${l}</span><span class="from">${facText(p[k])}</span>→<span class="to">${facText(sg[k])}</span></label>`); });
+  const row = (key, label, from, to, attr) => rows.push(`<label><input type="checkbox" ${attr || `data-s="${key}"`} checked><span class="k">${esc(label)}</span><span class="from">${esc(from)}</span>→<span class="to">${esc(to)}</span></label>`);
+  if(Array.isArray(sg.types) && sg.types.length) row('types', '종류', typesText(typesOf(p)), typesText(sg.types.filter(t => typeLabel[t])));
+  else if('type' in sg && typeLabel[sg.type]) row('type', '종류', typesText(typesOf(p)), typeLabel[sg.type]);
+  FIELDS.filter(f => f.col).forEach(f => { if(f.k in sg) row(f.k, f.l, facText(p[f.k] ?? null), facText(sg[f.k])); });
+  [['hours','운영시간'],['tel','전화'],['price','요금']].forEach(([k, l]) => { if(k in sg) row(k, l, p[k] || '없음', sg[k]); });
+  Object.entries(sg.info || {}).forEach(([k, v]) => {
+    if(!(k in INFO_LABEL)) return;
+    row(null, INFO_LABEL[k], infoText(k, (p.info || {})[k]), infoText(k, v), `data-info="${esc(k)}"`);
+  });
   if(sg.closed) rows.push(`<label><input type="checkbox" data-s="closed" checked><span class="k">상태</span><span class="warn">폐업·세차장 아님 → 지도에서 숨김</span></label>`);
+  const blocked = it.reporter_p && it.reporter_p.blocked;
   return `
     <div class="card ${it.id===selId?'sel':''}" data-id="${it.id}">
       <div class="c-top"><span class="c-name">${esc(p.name)}</span><span class="c-when">${ago(it.created_at)}</span></div>
-      <div class="c-who" style="margin-bottom:10px">${esc(p.addr || p.region || '')} · 제보: <b style="color:#fff">${who}</b>${p.status==='closed' ? ' · <span class="state closed">이미 숨김</span>' : ''}</div>
+      <div class="c-who" style="margin-bottom:10px">${esc(p.addr || p.region || '')} · 제보: <b style="color:#fff">${who}</b>${blocked ? ' <span class="blocked">(막힘)</span>' : ''}${it.visit ? `<span class="visit">${esc(VISIT[it.visit] || it.visit)}</span>` : ''}${p.status==='closed' ? ' · <span class="state closed">이미 숨김</span>' : ''}</div>
       ${rows.length ? `<div class="diff">${rows.join('')}</div>` : ''}
       ${it.memo ? `<div class="memo">💬 ${esc(it.memo)}</div>` : ''}
+      ${it.photo ? `<div class="photo-box" data-photo="${esc(it.photo)}"><button type="button" data-act="photo">📷 가격표 사진 보기</button></div>` : ''}
       <div class="acts">
         <button class="no" type="button" data-act="dismiss">무시</button>
         <button class="ok" type="button" data-act="apply">${rows.length ? '✅ 체크한 내용 반영' : '✅ 확인함'}</button>
       </div>
+      ${it.reporter ? `<div style="text-align:right;margin-top:8px"><button class="mini" type="button" data-act="${blocked ? 'unblock' : 'block'}">${blocked ? '이 사람 제보 다시 받기' : '🚫 장난 제보면: 이 사람 제보 막기'}</button></div>` : ''}
     </div>`;
 }
 
@@ -285,7 +315,16 @@ function cardEdit(it) {
         <div class="f"><label>전화번호</label><input data-k="tel" value="${esc(it.tel||'')}" maxlength="30"></div>
         <div class="f"><label>운영시간</label><input data-k="hours" value="${esc(it.hours||'')}" placeholder="예: 06:00~23:00" maxlength="60"></div>
       </div>
-      <div class="f-row">${FAC.map(([k, l]) => `<div class="f"><label>${l}</label>${facSelect(k, it[k] ?? null)}</div>`).join('')}</div>
+      <div class="f-row">${FIELDS.map(f => `<div class="f"><label>${esc(f.l)}</label>${facSelect(f.k, fieldVal(it, f), f.col ? '' : 'info')}</div>`).join('')}</div>
+      <div class="f-row">
+        <div class="f"><label>세차 칸 수</label><input data-info-in="bays" value="${esc((it.info||{}).bays ?? '')}" inputmode="numeric" maxlength="2"></div>
+        <div class="f"><label>기본 요금(원)</label><input data-info-in="pw" value="${esc((it.info||{}).pw ?? '')}" inputmode="numeric" maxlength="6"></div>
+        <div class="f"><label>기본 시간(분)</label><input data-info-in="pm" value="${esc((it.info||{}).pm ?? '')}" inputmode="numeric" maxlength="3"></div>
+        <div class="f"><label>높이 제한</label><input data-info-in="height" value="${esc((it.info||{}).height ?? '')}" maxlength="10"></div>
+      </div>
+      <div class="f"><label>요금 (자유롭게)</label><input data-k="price" value="${esc(it.price||'')}" maxlength="200"></div>
+      <div class="f"><label>결제 방법</label><div class="tchips">${Object.entries(PAY).map(([k,l]) => `<label><input type="checkbox" data-info-multi="pay" data-v="${k}" ${((it.info||{}).pay||[]).includes(k)?'checked':''}>${esc(l)}</label>`).join('')}</div></div>
+      <div class="f"><label>서비스 (손세차·디테일링)</label><div class="tchips">${Object.entries(SVC).map(([k,l]) => `<label><input type="checkbox" data-info-multi="svc" data-v="${k}" ${((it.info||{}).svc||[]).includes(k)?'checked':''}>${esc(l)}</label>`).join('')}</div></div>
       <div class="f"><label>지도 표시</label><select data-k="status">
         <option value="approved" ${it.status==='approved'?'selected':''}>지도에 표시</option>
         <option value="closed" ${it.status==='closed'?'selected':''}>숨김 (폐업·세차장 아님)</option>
@@ -301,10 +340,10 @@ function cardDone(it) {
       <div class="card ${it.id===selId?'sel':''}" data-id="${it.id}">
         <div class="c-top"><span class="state ${it.status}">${it.status==='applied'?'제보 반영':'제보 무시'}</span>
           <b>${esc(p ? p.name : '(삭제된 세차장)')}</b><span class="c-when">${ago(it.reviewed_at)}</span></div>
-        <div class="c-who">제보: ${it.reporter_p ? esc(it.reporter_p.nickname) : '알 수 없음'}${it.memo ? ' · ' + esc(it.memo) : ''}</div>
+        <div class="c-who">제보: ${whoOf(it.reporter_p, it.reporter)}${it.memo ? ' · ' + esc(it.memo) : ''}</div>
       </div>`;
   }
-  const who = it.submitter ? esc(it.submitter.nickname) : '알 수 없음';
+  const who = whoOf(it.submitter, it.submitted_by);
   return `
     <div class="card ${it.id===selId?'sel':''}" data-id="${it.id}">
       <div class="c-top"><span class="state ${it.status}">${it.status==='approved'?'승인':'반려'}</span>
@@ -356,13 +395,38 @@ function showOnMap() {
     icon: { content: `<div style="transform:translate(-50%,-50%);display:flex;align-items:center;gap:4px;white-space:nowrap"><span style="width:14px;height:14px;border-radius:50%;background:#0ea5e9;border:2px solid #fff;display:inline-block"></span><span style="font-size:11px;font-weight:700;color:#fff;background:rgba(4,17,30,.9);padding:2px 6px;border-radius:6px">${esc(p.name)}</span></div>`, anchor: new naver.maps.Point(0,0) } })));
 }
 
+// 확인을 마친 제보의 가격표 사진은 바로 지움 (개인정보처리방침 약속)
+async function dropPhoto(it) {
+  if(!it || !it.photo) return;
+  try { await PPX.db.storage.from('report-photos').remove([it.photo]); } catch(e) {}
+}
+
 function readFields(card) {
   const fields = {};
   card.querySelectorAll('[data-k]').forEach(el => {
     const k = el.dataset.k, v = el.value.trim();
-    fields[k] = v || (['tel','hours'].includes(k) ? null : '');
+    fields[k] = v || (['tel','hours','price'].includes(k) ? null : '');
   });
   card.querySelectorAll('[data-fac]').forEach(el => { fields[el.dataset.fac] = el.value === 'null' ? null : el.value === 'true'; });
+  if(card.querySelector('[data-info-fac],[data-info-in],[data-info-multi]')) {
+    const it = items.find(x => x.id === selId) || {};
+    const info = { ...(it.info || {}) };
+    card.querySelectorAll('[data-info-fac]').forEach(el => {
+      const v = el.value === 'null' ? null : el.value === 'true';
+      if(v === null) delete info[el.dataset.infoFac]; else info[el.dataset.infoFac] = v;
+    });
+    card.querySelectorAll('[data-info-in]').forEach(el => {
+      const k = el.dataset.infoIn, raw = el.value.trim();
+      if(!raw) { delete info[k]; return; }
+      if(k === 'height') info[k] = raw.slice(0, 10);
+      else { const n = parseInt(raw.replace(/[^0-9]/g, ''), 10); if(n > 0) info[k] = n; else delete info[k]; }
+    });
+    ['pay','svc'].forEach(k => {
+      const v = [...card.querySelectorAll(`[data-info-multi="${k}"]:checked`)].map(el => el.dataset.v);
+      if(v.length) info[k] = v; else delete info[k];
+    });
+    fields.info = info;
+  }
   if(card.querySelector('[data-type]')) {
     const checked = [...card.querySelectorAll('[data-type]:checked')].map(el => el.dataset.type);
     fields.types = [fields.type, ...checked.filter(t => t !== fields.type)];   // 대표 종류가 맨 앞
@@ -398,12 +462,30 @@ async function act(card, id, what) {
         else if(k === 'type') { fields.type = sg.type; fields.types = [sg.type]; }   // 예전 형식 제보
         else fields[k] = sg[k];
       });
+      const pick = [...card.querySelectorAll('[data-info]:checked')].map(el => el.dataset.info);
+      if(pick.length) {
+        const info = { ...(it.place.info || {}) };
+        pick.forEach(k => { const v = sg.info[k]; if(v === null || (Array.isArray(v) && !v.length)) delete info[k]; else info[k] = v; });
+        fields.info = info;
+      }
       if(Object.keys(fields).length && it.place) await PPX.adminUpdate(it.place.id, fields);
       await PPX.adminResolveReport(id, 'applied');
+      await dropPhoto(it);
       toast(Object.keys(fields).length ? '반영했어요. 지도에 바로 적용돼요 ✅' : '확인 처리했어요');
     } else if(what === 'dismiss') {
       await PPX.adminResolveReport(id, 'dismissed');
+      await dropPhoto(it);
       toast('무시했어요');
+    } else if(what === 'photo') {
+      const box = card.querySelector('.photo-box');
+      const url = await PPX.adminPhotoUrl(box.dataset.photo);
+      box.innerHTML = `<a href="${esc(url)}" target="_blank" rel="noopener"><img src="${esc(url)}" alt="가격표 사진"></a>`;
+      btns.forEach(b => b.disabled = false);
+      return;
+    } else if(what === 'block' || what === 'unblock') {
+      if(what === 'block' && !confirm('이 사람(기기)이 앞으로 제보·요청을 못 보내게 할까요?')) { btns.forEach(b => b.disabled = false); return; }
+      await PPX.adminBlock(it.reporter, what === 'block');
+      toast(what === 'block' ? '막았어요. 이 사람의 새 제보는 들어오지 않아요' : '다시 받을 수 있게 했어요');
     } else if(what === 'save') {
       const fields = readFields(card);
       if(!fields.name) { toast('이름을 입력해 주세요', true); btns.forEach(b => b.disabled = false); return; }
