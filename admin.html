@@ -72,6 +72,10 @@ html,body{min-height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backg
 .state.closed,.state.dismissed{background:rgba(255,255,255,.08);color:rgba(255,255,255,.6)}
 .state.applied{background:rgba(16,185,129,.15);color:#34d399}
 .f select.f-fac{height:40px}
+.tchips{display:flex;flex-wrap:wrap;gap:6px}
+.tchips label{display:flex;align-items:center;gap:6px;padding:8px 11px;border-radius:999px;border:1.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);font-size:13px;font-weight:700;cursor:pointer;min-height:38px}
+.tchips input{width:16px;height:16px;accent-color:#22d3ee}
+.tchips label:has(input:checked){border-color:var(--sky);background:rgba(14,165,233,.2)}
 .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(10px);background:rgba(16,185,129,.95);color:#fff;padding:12px 20px;border-radius:14px;font-size:13px;font-weight:700;opacity:0;transition:.25s;z-index:99;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%)}
 .toast.warn{background:rgba(239,68,68,.95)}
@@ -96,6 +100,16 @@ let map = null, reqMarker = null, nearMarkers = [];
 let searchTerm = '';
 const FAC = [['foam','폼건'],['under','하부 세차'],['indoor','실내 베이'],['h24','24시간']];
 const facText = v => v === true ? '있음' : v === false ? '없음' : '모름';
+const typesOf = p => (p && p.types && p.types.length) ? p.types : (p ? [p.type] : []);
+const typesText = ts => (ts || []).map(t => typeLabel[t] || t).join(' · ');
+// 대표 종류(지도 아이콘) + 함께 있는 종류(체크) 입력칸
+function typeFields(it) {
+  const has = typesOf(it);
+  return `
+    <div class="f"><label>대표 종류 (지도 아이콘)</label><select data-k="type">${Object.keys(typeLabel).map(t => `<option value="${t}" ${t===it.type?'selected':''}>${typeLabel[t]}</option>`).join('')}</select></div>
+    <div class="f"><label>함께 있는 종류 (여러 개)</label><div class="tchips">${Object.keys(typeLabel).map(t =>
+      `<label><input type="checkbox" data-type="${t}" ${has.includes(t)?'checked':''}>${typeLabel[t]}</label>`).join('')}</div></div>`;
+}
 
 function toast(msg, warn) {
   const t = document.getElementById('toast');
@@ -219,10 +233,8 @@ function cardPending(it) {
       ${it.memo ? `<div class="memo">💬 ${esc(it.memo)}</div>` : ''}
       ${near.length ? `<div class="near">⚠️ 300m 안에 등록된 세차장이 있어요. 중복인지 확인하세요.<br>${near.map(x => `· ${esc(x.p.name)} (${Math.round(x.d)}m)`).join('<br>')}</div>` : ''}
       <div class="f"><label>세차장 이름</label><input data-k="name" value="${esc(it.name)}" maxlength="60"></div>
-      <div class="f-row">
-        <div class="f"><label>종류</label><select data-k="type">${Object.keys(typeLabel).map(t => `<option value="${t}" ${t===it.type?'selected':''}>${typeLabel[t]}</option>`).join('')}</select></div>
-        <div class="f"><label>지역</label><input data-k="region" value="${esc(it.region)}" placeholder="예: 인천 남동구" maxlength="30"></div>
-      </div>
+      ${typeFields(it)}
+      <div class="f"><label>지역</label><input data-k="region" value="${esc(it.region)}" placeholder="예: 인천 남동구" maxlength="30"></div>
       <div class="f"><label>주소</label><input data-k="addr" value="${esc(it.addr)}" maxlength="200"></div>
       <div class="f"><label>전화번호</label><input data-k="tel" value="${esc(it.tel||'')}" maxlength="30"></div>
       <div class="acts">
@@ -240,7 +252,8 @@ function cardReport(it) {
     <div class="acts"><button class="no" type="button" data-act="dismiss">목록에서 지우기</button></div></div>`;
   const sg = it.suggest || {};
   const rows = [];
-  if('type' in sg && typeLabel[sg.type]) rows.push(`<label><input type="checkbox" data-s="type" checked><span class="k">종류</span><span class="from">${typeLabel[p.type]}</span>→<span class="to">${typeLabel[sg.type]}</span></label>`);
+  if(Array.isArray(sg.types) && sg.types.length) rows.push(`<label><input type="checkbox" data-s="types" checked><span class="k">종류</span><span class="from">${esc(typesText(typesOf(p)))}</span>→<span class="to">${esc(typesText(sg.types.filter(t => typeLabel[t])))}</span></label>`);
+  else if('type' in sg && typeLabel[sg.type]) rows.push(`<label><input type="checkbox" data-s="type" checked><span class="k">종류</span><span class="from">${esc(typesText(typesOf(p)))}</span>→<span class="to">${typeLabel[sg.type]}</span></label>`);
   FAC.forEach(([k, l]) => { if(k in sg) rows.push(`<label><input type="checkbox" data-s="${k}" checked><span class="k">${l}</span><span class="from">${facText(p[k])}</span>→<span class="to">${facText(sg[k])}</span></label>`); });
   if(sg.closed) rows.push(`<label><input type="checkbox" data-s="closed" checked><span class="k">상태</span><span class="warn">폐업·세차장 아님 → 지도에서 숨김</span></label>`);
   return `
@@ -260,15 +273,13 @@ function cardEdit(it) {
   if(it.id !== selId) return `
     <div class="card" data-id="${it.id}">
       <div class="c-top"><span class="c-name">${esc(it.name)}</span>${it.status==='closed' ? '<span class="state closed" style="margin-left:auto">숨김</span>' : it.status==='unlocated' ? '<span class="state closed" style="margin-left:auto">위치 확인 필요</span>' : ''}</div>
-      <div class="c-who">${esc(typeLabel[it.type]||'')} · ${esc(it.addr || it.region || '')}</div>
+      <div class="c-who">${esc(typesText(typesOf(it)))} · ${esc(it.addr || it.region || '')}</div>
     </div>`;
   return `
     <div class="card sel" data-id="${it.id}">
       <div class="f"><label>세차장 이름</label><input data-k="name" value="${esc(it.name)}" maxlength="60"></div>
-      <div class="f-row">
-        <div class="f"><label>종류</label><select data-k="type">${Object.keys(typeLabel).map(t => `<option value="${t}" ${t===it.type?'selected':''}>${typeLabel[t]}</option>`).join('')}</select></div>
-        <div class="f"><label>지역</label><input data-k="region" value="${esc(it.region)}" maxlength="30"></div>
-      </div>
+      ${typeFields(it)}
+      <div class="f"><label>지역</label><input data-k="region" value="${esc(it.region)}" maxlength="30"></div>
       <div class="f"><label>주소</label><input data-k="addr" value="${esc(it.addr)}" maxlength="200"></div>
       <div class="f-row">
         <div class="f"><label>전화번호</label><input data-k="tel" value="${esc(it.tel||'')}" maxlength="30"></div>
@@ -298,7 +309,7 @@ function cardDone(it) {
     <div class="card ${it.id===selId?'sel':''}" data-id="${it.id}">
       <div class="c-top"><span class="state ${it.status}">${it.status==='approved'?'승인':'반려'}</span>
         <b>${esc(it.name)}</b><span class="c-when">${ago(it.reviewed_at)}</span></div>
-      <div class="c-who">${esc(typeLabel[it.type]||'')} · ${esc(it.addr||it.region||'')} · 요청: ${who}</div>
+      <div class="c-who">${esc(typesText(typesOf(it)))} · ${esc(it.addr||it.region||'')} · 요청: ${who}</div>
       ${it.status==='rejected' && it.reject_reason ? `<div class="c-who" style="margin-top:6px">사유: ${esc(it.reject_reason)}</div>` : ''}
     </div>`;
 }
@@ -352,6 +363,10 @@ function readFields(card) {
     fields[k] = v || (['tel','hours'].includes(k) ? null : '');
   });
   card.querySelectorAll('[data-fac]').forEach(el => { fields[el.dataset.fac] = el.value === 'null' ? null : el.value === 'true'; });
+  if(card.querySelector('[data-type]')) {
+    const checked = [...card.querySelectorAll('[data-type]:checked')].map(el => el.dataset.type);
+    fields.types = [fields.type, ...checked.filter(t => t !== fields.type)];   // 대표 종류가 맨 앞
+  }
   return fields;
 }
 
@@ -375,6 +390,12 @@ async function act(card, id, what) {
         if(!el.checked) return;
         const k = el.dataset.s;
         if(k === 'closed') fields.status = 'closed';
+        else if(k === 'types') {
+          const ts = sg.types.filter(t => typeLabel[t]);
+          fields.types = ts;
+          if(!ts.includes(it.place.type)) fields.type = ts[0];   // 대표 종류가 빠졌으면 첫 번째로
+        }
+        else if(k === 'type') { fields.type = sg.type; fields.types = [sg.type]; }   // 예전 형식 제보
         else fields[k] = sg[k];
       });
       if(Object.keys(fields).length && it.place) await PPX.adminUpdate(it.place.id, fields);

@@ -37,7 +37,7 @@ FLEET = re.compile(r"운수|여객|버스|차고지|청소차|교통\s*(?:㈜|\(
 
 TYPE_RULES = [  # 위에서부터 먼저 맞는 것으로 분류
     ("detail", re.compile(r"디테일|광택|코팅|랩핑|카케어|유리막|PPF|썬팅", re.I)),
-    ("self", re.compile(r"셀프(?!\s*(주유|충전))")),
+    ("self", re.compile(r"셀프(?!\s*(?:서비스|주유|충전))")),
     ("notouch", re.compile(r"무인|노터치|터치리스")),
     ("hand", re.compile(r"손세차")),
     ("auto", re.compile(r"주유|충전|오일뱅크|칼텍스|S-?OIL|에너지|자동세차|자동식|기계세차|터널|문형", re.I)),
@@ -75,6 +75,28 @@ def classify(row):
         if rx.search(name_type if t in ("detail", "self", "notouch", "hand") else text):
             return t
     return "wash"
+
+
+# 함께 있는 종류(여러 개) 찾기 — 대표 종류 말고도 상호명·세차유형에 단서가 있으면 추가
+# (주유소라는 이유만으로 '자동세차'를 붙이지는 않음: 세차유형이나 상호명에 직접 나온 경우만)
+EXTRA_RULES = [
+    ("self", re.compile(r"셀프(?!\s*(?:서비스|주유|충전))")),
+    ("hand", re.compile(r"손\s*세차|(?:^|[,/+(\s])손(?=[,/+)\s]|$)|손\+")),
+    ("detail", re.compile(r"디테일|광택|코팅|유리막|PPF", re.I)),
+    ("notouch", re.compile(r"무인|노터치|터치리스")),
+    ("auto", re.compile(r"자동\s*세차|자동식|자동(?=[,/+)\s]|$)|기계|터널|문형")),
+]
+TYPE_ORDER = ["self", "hand", "detail", "notouch", "auto", "wash", "etc"]
+
+
+def all_types(row, main):
+    """(대표 종류, 함께 있는 종류 목록). '일반 세차장(wash)'은 '모름'이라 다른 단서가 있으면 빠짐"""
+    text = str(row.get("사업장명") or "") + " " + str(row.get("세차유형") or "")
+    found = {t for t, rx in EXTRA_RULES if rx.search(text)}
+    if main == "wash" and found:
+        main = [t for t in TYPE_ORDER if t in found][0]
+    found.add(main)
+    return main, [main] + [t for t in TYPE_ORDER if t in found and t != main]
 
 
 def hours(row):
@@ -155,6 +177,9 @@ def main(src, out, add_from=None):
             "lng": c[1],
         }
         p["_ref"] = f'{r["개방자치단체코드"]}-{r["관리번호"]}'  # 공공데이터 고유번호 (DB 중복 방지용)
+        p["type"], tys = all_types(r, p["type"])
+        if len(tys) > 1:
+            p["types"] = tys        # 여러 종류일 때만 저장 (하나면 type 과 같음)
         tel = r["세차장전화번호"]
         if isinstance(tel, str) and re.search(r"\d{3,}", tel):
             p["tel"] = tel.strip()[:30]
@@ -214,7 +239,7 @@ def main(src, out, add_from=None):
     # 2) Supabase 'places' 테이블에 가져올 CSV (Table Editor → Import data from CSV)
     seed = os.path.join(os.path.dirname(os.path.abspath(out)), "supabase", "places_seed.csv")
     os.makedirs(os.path.dirname(seed), exist_ok=True)
-    cols = ["name", "addr", "region", "type", "lat", "lng", "tel", "hours", "price", "h24",
+    cols = ["name", "addr", "region", "type", "types", "lat", "lng", "tel", "hours", "price", "h24",
             "status", "source", "source_ref"]
     with open(seed, "w", encoding="utf-8", newline="") as f:
         w = csv.writer(f)
@@ -222,6 +247,7 @@ def main(src, out, add_from=None):
         for p, st in [(p, "approved") for p in places] + [(p, "unlocated") for p in unlocated]:
             row = dict(p, status=st, source="public_data", source_ref=p["_ref"])
             row["h24"] = "true" if p.get("h24") else ""
+            row["types"] = "{" + ",".join(p.get("types") or [p["type"]]) + "}"   # Postgres 배열
             w.writerow(["" if row.get(c) is None else row.get(c, "") for c in cols])
     stats["Supabase용 CSV"] = os.path.relpath(seed)
 
@@ -241,6 +267,7 @@ def main(src, out, add_from=None):
                     w.writerow(row)
                     n += 1
         stats["추가분 CSV"] = f"{os.path.relpath(add)} ({n}곳)"
+    stats["여러 종류인 곳"] = sum(1 for p in places + unlocated if p.get("types"))
     by_sido = pd.Series([p["region"].split(" ")[0] for p in places]).value_counts().to_dict()
     stats["시·도별"] = by_sido
     # 이미 Supabase에 들어간 것 중 '위치 확인 필요'로 바꿔야 할 공공데이터 번호

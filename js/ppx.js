@@ -8,7 +8,7 @@
   const ready = !!(cfg.url && cfg.key && window.supabase && window.supabase.createClient);
   const db = ready ? window.supabase.createClient(cfg.url, cfg.key) : null;
 
-  const PLACE_COLS = 'id,name,addr,region,type,lat,lng,tel,hours,price,h24,foam,under,indoor,myitem,reserve';
+  const PLACE_COLS = 'id,name,addr,region,type,types,lat,lng,tel,hours,price,h24,foam,under,indoor,myitem,reserve';
 
   // 다른 페이지(마이페이지·커뮤니티)가 아직 쓰는 예전 형식의 로그인 정보도 맞춰 둠
   function syncLocalUser(profile, email) {
@@ -147,6 +147,7 @@
     async requestPlace(p) {
       const { data, error } = await db.from('places').insert({
         name: p.name, addr: p.addr || '', region: p.region || '', type: p.type,
+        types: p.types && p.types.length ? p.types : [p.type],
         lat: p.lat, lng: p.lng, tel: p.tel || null, memo: p.memo || null
       }).select('id,name,status').single();
       if (error) throw error;
@@ -167,7 +168,7 @@
     // ── 운영자 전용 (서버 권한 규칙으로도 막혀 있음) ──
     async adminList(status) {
       let q = db.from('places')
-        .select('id,name,addr,region,type,lat,lng,tel,memo,status,reject_reason,created_at,reviewed_at,submitter:profiles!places_submitted_by_fkey(nickname)');
+        .select('id,name,addr,region,type,types,lat,lng,tel,memo,status,reject_reason,created_at,reviewed_at,submitter:profiles!places_submitted_by_fkey(nickname)');
       q = status === 'pending'
         ? q.eq('status', 'pending').order('created_at', { ascending: true })
         : q.in('status', ['approved', 'rejected']).eq('source', 'user').order('reviewed_at', { ascending: false }).limit(50);

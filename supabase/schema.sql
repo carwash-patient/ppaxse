@@ -66,7 +66,8 @@ create table if not exists public.places (
   addr          text not null default '' check (char_length(addr) <= 200),
   region        text not null default '',          -- 예: '인천 남동구'
   type          text not null default 'wash'
-                check (type in ('self','hand','detail','notouch','auto','wash','etc')),
+                check (type in ('self','hand','detail','notouch','auto','wash','etc')),   -- 대표 종류 (지도 아이콘)
+  types         text[] not null default '{}',   -- 함께 있는 종류 전부 (예: {self,notouch}). 비면 type 하나
   lat           double precision not null check (lat between 33 and 39),
   lng           double precision not null check (lng between 124 and 132),
   tel           text check (char_length(tel) <= 30),
@@ -89,6 +90,29 @@ create table if not exists public.places (
   created_at    timestamptz not null default now(),
   updated_at    timestamptz not null default now()
 );
+
+-- 함께 있는 종류 (예전에 만든 표에도 추가)
+alter table public.places add column if not exists types text[] not null default '{}';
+alter table public.places drop constraint if exists places_types_check;
+alter table public.places add constraint places_types_check
+  check (types <@ array['self','hand','detail','notouch','auto','wash','etc']::text[] and cardinality(types) <= 7);
+
+-- 대표 종류는 항상 '함께 있는 종류' 맨 앞에 들어가도록 정리 (중복 제거)
+create or replace function public.places_fix_types()
+returns trigger language plpgsql as $$
+begin
+  new.types := array(
+    select t from unnest(array[new.type] || coalesce(new.types, '{}')) with ordinality as x(t, i)
+    group by t order by min(i));
+  return new;
+end $$;
+
+drop trigger if exists places_fix_types on public.places;
+create trigger places_fix_types
+  before insert or update of type, types on public.places
+  for each row execute function public.places_fix_types();
+
+create index if not exists places_types_idx on public.places using gin (types);
 
 -- 예전에 만든 표에도 'unlocated' 상태를 허용
 alter table public.places drop constraint if exists places_status_check;

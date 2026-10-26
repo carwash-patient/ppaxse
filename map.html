@@ -394,8 +394,13 @@ const typeLabel={self:'셀프세차',hand:'손세차',detail:'디테일링샵',n
 const typeIcon={self:'🚿',hand:'🧽',detail:'✨',notouch:'💦',auto:'⛽',wash:'💧',etc:'🔧'};
 const skillLabel={beginner:'🌱세린이',mid:'💨중수',pro:'✨고수',maniac:'🫧세차환자'};
 const facilityKeys=['foam','under','indoor','h24'];
+// 필터: 종류는 여러 개 골라 '또는'(하나라도 되는 곳), 시설은 여러 개 골라 '그리고'(모두 되는 곳)
+const selTypes = new Set(), selFac = new Set();
+// 세차장의 종류 전부 (대표 종류가 맨 앞)
+const typesOf = p => (p.types && p.types.length) ? p.types : [p.type];
+const typeNames = p => typesOf(p).map(t => typeLabel[t] || t);
 
-let activeFilter='all', activeId=null, sheetState='hidden', sheetBeforeDetail='hidden', sortBy='dist';
+let activeId=null, sheetState='hidden', sheetBeforeDetail='hidden', sortBy='dist';
 let naverMap=null, naverMarkers=[], myPos=null;
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -572,7 +577,7 @@ function renderNaverMarkers() {
     const key = Math.floor((p.lat-sw.lat())/cellLat) + ':' + Math.floor((p.lng-sw.lng())/cellLng);
     const g = cells[key] || (cells[key] = {n:0, self:0, lat:0, lng:0, one:null});
     g.n++; g.lat += p.lat; g.lng += p.lng; g.one = p;
-    if(p.type==='self') g.self++;
+    if(typesOf(p).includes('self')) g.self++;
   });
   Object.values(cells).forEach(g => {
     if(g.n === 1) {
@@ -591,11 +596,21 @@ function updateMarkerSelected(id) { renderNaverMarkers(); }
 // ══════════════════════════════════════════════════
 //  필터 / 정렬 / 검색
 // ══════════════════════════════════════════════════
+function syncChips() {
+  document.querySelectorAll('.chip').forEach(c => {
+    const f = c.dataset.f;
+    c.classList.toggle('on', f === 'all' ? !selTypes.size && !selFac.size : selTypes.has(f) || selFac.has(f));
+  });
+}
 document.querySelectorAll('.chip').forEach(chip => {
   chip.onclick = () => {
-    document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
-    chip.classList.add('on');
-    activeFilter = chip.dataset.f;
+    const f = chip.dataset.f;
+    if(f === 'all') { selTypes.clear(); selFac.clear(); }
+    else {
+      const set = typeLabel[f] ? selTypes : selFac;
+      set.has(f) ? set.delete(f) : set.add(f);
+    }
+    syncChips();
     closeDetail();
   };
 });
@@ -645,10 +660,8 @@ function searchQuery(){ return document.getElementById('searchInput').value.trim
 function filteredPlaces() {
   const q = searchQuery();
   let list = q ? places.filter(p => p.name.includes(q) || p.addr.includes(q) || p.region.includes(q)) : areaPlaces;
-  if(activeFilter !== 'all') {
-    if(typeLabel[activeFilter]) list = list.filter(p => p.type===activeFilter);
-    else list = list.filter(p => p[activeFilter]===true);
-  }
+  if(selTypes.size) list = list.filter(p => typesOf(p).some(t => selTypes.has(t)));
+  if(selFac.size)   list = list.filter(p => [...selFac].every(k => p[k] === true));
   return list;
 }
 
@@ -680,7 +693,7 @@ function renderList() {
         </div>
       </div>
       <div class="pc-badges">
-        <span class="badge b">${typeLabel[p.type]}</span>
+        ${typeNames(p).map(n => `<span class="badge b">${n}</span>`).join('')}
         ${p.foam?'<span class="badge b">💨 폼건</span>':''}
         ${p.under?'<span class="badge g">⬇️ 하부</span>':''}
         ${p.indoor?'<span class="badge y">🏠 실내베이</span>':''}
@@ -688,7 +701,7 @@ function renderList() {
       </div>
     </div>`).join('');
   if(!places.length) html = '<div class="list-note">세차장 정보를 불러오는 중이에요…</div>';
-  else if(!fp.length) html = facilityKeys.includes(activeFilter) && activeFilter!=='h24'
+  else if(!fp.length) html = [...selFac].some(k => k !== 'h24')
     ? '<div class="list-note">아직 이 시설 정보가 등록된 세차장이 없어요.<br>리뷰와 제보로 하나씩 채워갈 예정이에요!</div>'
     : '<div class="list-note">이 지역에는 해당하는 세차장이 없어요.<br>지도를 움직이거나 축소해 보세요.</div>';
   else if(fp.length > MAX_LIST) html += `<div class="list-note">가까운 ${MAX_LIST}곳만 보여드려요.<br>지도를 확대하면 더 정확하게 볼 수 있어요.</div>`;
@@ -721,7 +734,7 @@ function openDetail(id) {
   ].join('');
 
   document.getElementById('dpBody').innerHTML = `
-    <div class="dp-type-tag">${typeLabel[p.type]}</div>
+    <div class="dp-type-tag">${esc(typeNames(p).join(' · '))}</div>
     <div class="dp-name">${esc(p.name)}</div>
     <div class="dp-addr">📍 ${esc(p.addr)}</div>
     ${p.rating ? `
@@ -968,7 +981,7 @@ document.getElementById('regionDim').onclick = closeRegionPanel;
 //  세차장 추가 요청 (로그인 → 위치 정하기 → 정보 입력 → '확인 대기'로 저장)
 // ══════════════════════════════════════════════════
 let pickLatLng = null;
-const addForm = { name:'', type:'self', addr:'', tel:'', memo:'' };
+const addForm = { name:'', types:[], addr:'', tel:'', memo:'' };
 
 function toast(msg, warn) {
   const t = document.getElementById('ppxToast');
@@ -1024,8 +1037,8 @@ function renderAddForm() {
       <input class="af-input" id="afName" maxlength="60" placeholder="간판에 적힌 이름" value="${esc(addForm.name)}">
     </div>
     <div class="af-field">
-      <div class="af-label">종류 <b>*</b></div>
-      <div class="af-types">${types.map(t => `<button type="button" class="af-type ${addForm.type===t?'on':''}" data-t="${t}">${typeIcon[t]} ${typeLabel[t]}</button>`).join('')}</div>
+      <div class="af-label">종류 <b>*</b> <span class="rf-cur">함께 있으면 여러 개 골라주세요 (예: 셀프 + 노터치)</span></div>
+      <div class="af-types">${types.map(t => `<button type="button" class="af-type ${addForm.types.includes(t)?'on':''}" data-t="${t}" aria-pressed="${addForm.types.includes(t)}">${typeIcon[t]} ${typeLabel[t]}</button>`).join('')}</div>
     </div>
     <div class="af-field">
       <div class="af-label">주소 (선택)</div>
@@ -1042,8 +1055,8 @@ function renderAddForm() {
     <button class="af-submit" id="afSubmit" type="button">요청 보내기</button>
     <div class="af-note">운영자가 확인한 뒤 지도에 올라가요.<br>진행 상황은 마이페이지에서 볼 수 있어요.</div>`);
   document.querySelectorAll('.af-type').forEach(b => b.onclick = () => {
-    addForm.type = b.dataset.t;
-    document.querySelectorAll('.af-type').forEach(x => x.classList.toggle('on', x===b));
+    toggleType(addForm.types, b.dataset.t);
+    document.querySelectorAll('.af-type').forEach(x => { const on = addForm.types.includes(x.dataset.t); x.classList.toggle('on', on); x.setAttribute('aria-pressed', on); });
   });
   document.getElementById('afSubmit').onclick = submitAddPlace;
 }
@@ -1058,15 +1071,16 @@ function saveAddForm() {
 async function submitAddPlace() {
   saveAddForm();
   if(!addForm.name) return toast('세차장 이름을 입력해 주세요', true);
+  if(!addForm.types.length) return toast('종류를 하나 이상 골라주세요', true);
   const btn = document.getElementById('afSubmit');
   btn.disabled = true; btn.textContent = '보내는 중…';
   try {
     await PPX.requestPlace({
-      ...addForm, lat: +pickLatLng.lat.toFixed(6), lng: +pickLatLng.lng.toFixed(6),
+      ...addForm, type: addForm.types[0], lat: +pickLatLng.lat.toFixed(6), lng: +pickLatLng.lng.toFixed(6),
       region: nearestRegion(pickLatLng.lat, pickLatLng.lng)
     });
     closeAddPanel();
-    Object.assign(addForm, { name:'', type:'self', addr:'', tel:'', memo:'' });
+    Object.assign(addForm, { name:'', types:[], addr:'', tel:'', memo:'' });
     toast('요청을 보냈어요! 운영자 확인 후 지도에 올라가요 💧');
   } catch(e) {
     toast(PPX.koError(e), true);
@@ -1088,6 +1102,9 @@ document.getElementById('addDim').onclick = closeAddPanel;
 // ══════════════════════════════════════════════════
 //  정보 제보 ("정보가 달라요") → 운영자 확인 후 반영
 // ══════════════════════════════════════════════════
+// 종류 버튼 켜고 끄기 (누른 순서대로, 처음 고른 것이 대표 종류)
+function toggleType(arr, t) { const i = arr.indexOf(t); i >= 0 ? arr.splice(i, 1) : arr.push(t); }
+
 let reportPlaceId = null;
 const reportForm = {};
 const FAC = [['foam','폼건 사용'],['under','하부 세차'],['indoor','실내 베이'],['h24','24시간 운영']];
@@ -1105,7 +1122,7 @@ async function startReport(id) {
   const p = places.find(x => x.id === id);
   if(!p) return;
   reportPlaceId = id;
-  Object.assign(reportForm, { type: p.type, foam: p.foam ?? null, under: p.under ?? null, indoor: p.indoor ?? null, h24: p.h24 ?? null, closed: false, memo: '' });
+  Object.assign(reportForm, { types: [...typesOf(p)], foam: p.foam ?? null, under: p.under ?? null, indoor: p.indoor ?? null, h24: p.h24 ?? null, closed: false, memo: '' });
   renderReportForm();
 }
 
@@ -1119,8 +1136,8 @@ function renderReportForm() {
       <div class="af-loc">📍 ${esc(p.name)}</div>
     </div>
     <div class="af-field">
-      <div class="af-label">종류 <span class="rf-cur">지금: ${typeLabel[p.type]}</span></div>
-      <div class="af-types">${Object.keys(typeLabel).map(t => `<button type="button" class="af-type ${reportForm.type===t?'on':''}" data-t="${t}">${typeIcon[t]} ${typeLabel[t]}</button>`).join('')}</div>
+      <div class="af-label">종류 <span class="rf-cur">지금: ${esc(typeNames(p).join(' · '))} · 여러 개 고를 수 있어요</span></div>
+      <div class="af-types">${Object.keys(typeLabel).map(t => `<button type="button" class="af-type ${reportForm.types.includes(t)?'on':''}" data-t="${t}" aria-pressed="${reportForm.types.includes(t)}">${typeIcon[t]} ${typeLabel[t]}</button>`).join('')}</div>
     </div>
     <div class="af-field">
       <div class="af-label">시설</div>
@@ -1137,8 +1154,8 @@ function renderReportForm() {
     <div class="af-note">운영자가 확인한 뒤 반영돼요. 고마워요 💧</div>`);
   document.querySelector('#addPanel .rp-title').textContent = '정보 수정 제보';
   document.querySelectorAll('#addBody .af-type').forEach(b => b.onclick = () => {
-    reportForm.type = b.dataset.t;
-    document.querySelectorAll('#addBody .af-type').forEach(x => x.classList.toggle('on', x===b));
+    toggleType(reportForm.types, b.dataset.t);
+    document.querySelectorAll('#addBody .af-type').forEach(x => { const on = reportForm.types.includes(x.dataset.t); x.classList.toggle('on', on); x.setAttribute('aria-pressed', on); });
   });
   document.querySelectorAll('#addBody .rf-seg button').forEach(b => b.onclick = () => {
     reportForm[b.dataset.k] = b.dataset.v === 'null' ? null : b.dataset.v === 'true';
@@ -1153,7 +1170,9 @@ async function submitReport() {
   reportForm.memo = document.getElementById('rfMemo').value.trim();
   // 지금 정보와 달라진 항목만 보냄
   const suggest = {};
-  if(reportForm.type !== p.type) suggest.type = reportForm.type;
+  if(!reportForm.types.length) return toast('종류를 하나 이상 골라주세요', true);
+  const cur = typesOf(p);
+  if(reportForm.types.length !== cur.length || reportForm.types.some(t => !cur.includes(t))) suggest.types = [...reportForm.types];
   FAC.forEach(([k]) => { if(reportForm[k] !== (p[k] ?? null)) suggest[k] = reportForm[k]; });
   if(reportForm.closed) suggest.closed = true;
   if(!Object.keys(suggest).length && !reportForm.memo) return toast('바뀐 내용이 없어요. 고칠 부분을 골라주세요', true);
