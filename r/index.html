@@ -108,7 +108,18 @@ textarea:focus,.in:focus{border-color:var(--aqua)}
 .done .big{font-size:56px;margin-bottom:8px}
 .done h2{font-size:22px;font-weight:900;margin-bottom:8px}
 .done p{color:var(--muted);margin-bottom:22px}
-.done .btn{margin-bottom:10px}
+.done{padding-bottom:4px}
+.done p{margin-bottom:16px}
+.done .gift{margin-bottom:0}
+.about{margin:18px 0;padding:18px 16px;border-radius:18px;background:var(--card);border:1px solid var(--line)}
+.about .k{font-size:12px;font-weight:700;color:var(--aqua);margin-bottom:6px}
+.about h3{font-size:19px;font-weight:900;line-height:1.35;margin-bottom:14px}
+.about .ab{display:flex;gap:12px;padding:12px 0;border-top:1px solid rgba(255,255,255,.06)}
+.about .ab .i{flex-shrink:0;width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;background:rgba(14,165,233,.14);border:1px solid rgba(14,165,233,.25)}
+.about .ab b{font-size:14px}
+.about .ab p{font-size:12.5px;color:var(--muted);line-height:1.6;margin-top:2px}
+.about .more{display:block;margin-top:6px;padding-top:12px;border-top:1px solid rgba(255,255,255,.06);text-align:center;font-size:13px;font-weight:700;color:var(--aqua);text-decoration:none}
+.done-acts .btn{margin-bottom:10px}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(10px);max-width:calc(100% - 32px);background:rgba(16,185,129,.96);color:#fff;font-size:14px;font-weight:700;padding:12px 18px;border-radius:14px;opacity:0;transition:.25s;pointer-events:none;z-index:50;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%)}
 .toast.warn{background:rgba(239,68,68,.96)}
@@ -125,8 +136,8 @@ textarea:focus,.in:focus{border-color:var(--aqua)}
 <body>
 <div class="wrap">
   <div class="top">
-    <a class="brand" href="../map.html"><img src="../icons/icon-192.png" alt="">빡<em>세</em></a>
-    <a class="map" href="../map.html">🗺️ 지도 보기</a>
+    <a class="brand" href="../"><img src="../icons/icon-192.png" alt="">빡<em>세</em></a>
+    <a class="map" href="../">💧 빡세가 뭐예요?</a>
   </div>
 
   <!-- 1. 처음 화면: 소개 + 찾기 -->
@@ -232,6 +243,16 @@ textarea:focus,.in:focus{border-color:var(--aqua)}
         <div class="tx"><b>지금 가입하면 방금 남긴 후기도 응모돼요</b><br>추첨을 통해 기프티콘을 보내드려요!<small>이 기기로 남긴 후기가 계정으로 옮겨져요</small></div>
         <div class="go"><a href="../join.html?next=r/">가입하기</a><a class="l" href="../login.html?next=r/">로그인</a></div>
       </div>
+    </div>
+    <div class="about">
+      <div class="k">💧 빡세는 이런 곳이에요</div>
+      <h3>남겨주신 이야기는<br>이렇게 쓰여요</h3>
+      <div class="ab"><div class="i">🗺️</div><div><b>전국 세차장을 한 지도에</b><p>브랜드 상관없이 전국 세차장을 지도에 모았어요. 셀프·노터치·손세차로 골라 볼 수 있어요.</p></div></div>
+      <div class="ab"><div class="i">💨</div><div><b>가 보기 전에 미리 알 수 있게</b><p>폼건·온수·하부세차가 되는지, 기본 요금이 얼마인지. 방금처럼 다녀온 분들이 알려준 정보로 채워요.</p></div></div>
+      <div class="ab"><div class="i">✅</div><div><b>언제 확인된 정보인지 함께</b><p>‘최근 확인 3일 전’처럼 얼마나 최신인지 보여드려요. 정보는 운영자가 확인한 뒤 반영하고, 한마디는 바로 보여요.</p></div></div>
+      <a class="more" href="../">빡세 더 알아보기 →</a>
+    </div>
+    <div class="done-acts">
       <button class="btn p w" type="button" data-go="home">🚗 다녀온 곳 하나 더 알려주기</button>
       <a class="btn g w" href="../map.html">🗺️ 세차장 지도 구경하기</a>
     </div>
