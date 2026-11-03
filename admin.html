@@ -51,6 +51,7 @@ html,body{min-height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backg
 .reject-box input{flex:1;height:44px;border:1.5px solid rgba(239,68,68,.4);border-radius:11px;background:rgba(255,255,255,.05);color:#fff;padding:0 12px;font-family:inherit;font-size:13px;outline:none}
 .reject-box button{padding:0 16px;border-radius:11px;border:none;background:#ef4444;color:#fff;font-family:inherit;font-weight:900;cursor:pointer}
 .state{font-size:11px;font-weight:900;padding:3px 9px;border-radius:999px}
+.state.pending{background:rgba(251,191,36,.16);color:#fbbf24}
 .state.approved{background:rgba(16,185,129,.15);color:#34d399}
 .state.rejected{background:rgba(239,68,68,.12);color:#f87171}
 .msg{text-align:center;padding:60px 24px;color:var(--muted);line-height:1.9;font-size:14px}
@@ -162,7 +163,7 @@ async function init() {
       <button class="tab on" data-t="pending" type="button">추가 요청<b id="pendingN"></b></button>
       <button class="tab" data-t="reports" type="button">정보 제보<b id="reportsN"></b></button>
       <button class="tab" data-t="edit" type="button">세차장 고치기</button>
-      <button class="tab" data-t="comments" type="button">한마디</button>
+      <button class="tab" data-t="comments" type="button">한마디<b id="commentsN"></b></button>
       <button class="tab" data-t="done" type="button">처리 내역</button>
     </div>
     <div id="searchBox"></div>
@@ -184,7 +185,19 @@ async function init() {
   load();
 }
 
+// 한마디는 바로 올라가므로, 마지막으로 '한마디' 탭을 본 뒤 새로 올라온 것을 셈 (이 기기에 기억)
+const CM_SEEN = 'ppxAdminCommentsSeen';
+let cmSeenBefore = null;
+const cmSeen = () => { try { return localStorage.getItem(CM_SEEN) || ''; } catch(e) { return ''; } };
+async function refreshComments() {
+  try {
+    const list = await PPX.adminComments(), seen = cmSeen();
+    const n = list.filter(c => c.created_at > seen).length;
+    document.getElementById('commentsN').textContent = n ? ' ' + n : '';
+  } catch(e) {}
+}
 async function refreshCounts() {
+  refreshComments();
   try {
     const [a, b] = await Promise.all([PPX.adminList('pending'), PPX.adminReports('pending')]);
     document.getElementById('pendingN').textContent = a.length ? ' ' + a.length : '';
@@ -220,8 +233,13 @@ async function load() {
     if(tab === 'pending') items = await PPX.adminList('pending');
     else if(tab === 'reports') items = await PPX.adminReports('pending');
     else if(tab === 'edit') items = searchTerm ? await PPX.adminSearch(searchTerm) : [];
-    else if(tab === 'comments') items = (await PPX.adminComments()).map(c => ({ ...c, kind: 'cm', id: 'c' + c.id, cid: c.id,
-      lat: (approved.find(p => p.id === c.place_id) || {}).lat, lng: (approved.find(p => p.id === c.place_id) || {}).lng }));
+    else if(tab === 'comments') {
+      cmSeenBefore = cmSeen();
+      try { localStorage.setItem(CM_SEEN, new Date().toISOString()); } catch(e) {}
+      document.getElementById('commentsN').textContent = '';
+      items = (await PPX.adminComments()).map(c => ({ ...c, kind: 'cm', id: 'c' + c.id, cid: c.id,
+        lat: (approved.find(p => p.id === c.place_id) || {}).lat, lng: (approved.find(p => p.id === c.place_id) || {}).lng }));
+    }
     else {
       const [a, b] = await Promise.all([PPX.adminList('done'), PPX.adminReports('done')]);
       items = [...a.map(x => ({...x, kind:'req'})), ...b.map(x => ({...x, kind:'rep', id:'r'+x.id}))]
@@ -307,7 +325,7 @@ function cardReport(it) {
 function cardComment(it) {
   return `
     <div class="card ${it.id===selId?'sel':''}" data-id="${it.id}">
-      <div class="c-top"><span class="c-name">${esc(it.place ? it.place.name : '(지도에서 내려간 세차장)')}</span><span class="c-when">${ago(it.created_at)}</span></div>
+      <div class="c-top"><span class="c-name">${it.created_at > (cmSeenBefore || '') ? '<span class="state pending" style="margin-right:6px">NEW</span>' : ''}${esc(it.place ? it.place.name : '(지도에서 내려간 세차장)')}</span><span class="c-when">${ago(it.created_at)}</span></div>
       <div class="memo" style="${it.hidden ? 'opacity:.5;text-decoration:line-through' : ''}">💬 ${esc(it.body)}</div>
       <div class="c-who">${esc(it.nickname || '익명 세차러')}${it.hidden ? ' · <span class="blocked">숨김</span>' : ''}</div>
       <div class="acts">

@@ -319,6 +319,7 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
   <div class="chip" data-f="under">⬇️ 하부세차</div>
   <div class="chip" data-f="indoor">🏠 실내베이</div>
   <div class="chip" data-f="h24">🕐 24시간</div>
+  <div class="chip" data-f="talk">💬 한마디</div>
 </div>
 
 <div id="mapArea">
@@ -522,8 +523,9 @@ function dropMarkerHTML(p, selected) {
   return `<div style="position:relative;width:0;height:0">
    <div style="position:absolute;left:0;bottom:4px;transform:translateX(-50%)">
     <div style="display:flex;flex-direction:column;align-items:center;cursor:pointer;${scale}transform-origin:50% 100%;${glow}">
-      <div style="width:40px;height:47px;background:${c.bg};border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.4);border:2.5px solid rgba(255,255,255,.35)">
+      <div style="position:relative;width:40px;height:47px;background:${c.bg};border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.4);border:2.5px solid rgba(255,255,255,.35)">
         <span style="font-size:18px">${typeIcon[p.type]||'💧'}</span>
+        ${p.comment_count ? `<span style="position:absolute;top:-8px;right:-14px;min-width:22px;padding:1px 6px;border-radius:999px;background:#fbbf24;color:#04111e;font-size:11px;font-weight:900;line-height:16px;border:2px solid #04111e;font-family:'Noto Sans KR',sans-serif;white-space:nowrap">💬${p.comment_count}</span>` : ''}
       </div>
       <div style="margin-top:4px;background:rgba(4,17,30,.95);border:1px solid rgba(14,165,233,.35);padding:3px 8px;border-radius:7px;font-size:11px;font-weight:700;color:#fff;white-space:nowrap;font-family:'Noto Sans KR',sans-serif">
         ${esc(short)}
@@ -686,7 +688,7 @@ function filteredPlaces() {
   const q = searchQuery();
   let list = q ? places.filter(p => p.name.includes(q) || p.addr.includes(q) || p.region.includes(q)) : areaPlaces;
   if(selTypes.size) list = list.filter(p => typesOf(p).some(t => selTypes.has(t)));
-  if(selFac.size)   list = list.filter(p => [...selFac].every(k => p[k] === true));
+  if(selFac.size)   list = list.filter(p => [...selFac].every(k => k === 'talk' ? p.comment_count > 0 : p[k] === true));
   return list;
 }
 
@@ -718,6 +720,7 @@ function renderList() {
         </div>
       </div>
       <div class="pc-badges">
+        ${p.comment_count ? `<span class="badge y">💬 한마디 ${p.comment_count}</span>` : ''}
         ${typeNames(p).map(n => `<span class="badge b">${n}</span>`).join('')}
         ${p.foam?'<span class="badge b">💨 폼건</span>':''}
         ${p.under?'<span class="badge g">⬇️ 하부</span>':''}
