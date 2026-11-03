@@ -1,0 +1,16 @@
+{
+  "name": "빡세 후기 · 다녀온 세차장 알려주기",
+  "short_name": "빡세 후기",
+  "description": "다녀온 세차장의 폼건·온수·가격을 1분 만에 알려주세요",
+  "lang": "ko",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#04111e",
+  "theme_color": "#04111e",
+  "icons": [
+    { "src": "../icons/review-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "../icons/review-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "../icons/review-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
