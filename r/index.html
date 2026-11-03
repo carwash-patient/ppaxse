@@ -37,6 +37,11 @@ h1 span{background:linear-gradient(90deg,var(--sky),var(--aqua));-webkit-backgro
 .lead b{color:#fff}
 .perks{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
 .perks span{font-size:12px;font-weight:700;padding:6px 10px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
+.mini{display:block;position:relative;height:190px;border-radius:18px;overflow:hidden;border:1px solid var(--line);margin-bottom:16px;background:#0b1d33 linear-gradient(135deg,rgba(14,165,233,.08),transparent);text-decoration:none}
+.mini #miniMap{position:absolute;inset:0;pointer-events:none}
+.mini .cap{position:absolute;left:10px;right:10px;bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 12px;border-radius:12px;background:rgba(4,17,30,.88);color:#fff;font-size:13px;font-weight:700;z-index:5}
+.mini .cap span{color:var(--aqua);white-space:nowrap}
+.mini .wait{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px}
 .stat{font-size:13px;color:var(--foam);margin-bottom:18px;min-height:20px}
 .stat b{color:var(--aqua);font-size:15px}
 .search{display:flex;gap:8px;margin-bottom:10px}
@@ -119,6 +124,11 @@ textarea:focus,.in:focus{border-color:var(--aqua)}
     <h1>어떤 세차장이<br><span>좋았나요? 🚗✨</span></h1>
     <p class="lead">폼건이 되는지, 온수가 나오는지, 3분에 얼마인지…<br>막상 가 보기 전엔 알기 어렵죠. 😅<br><b>직접 다녀온 분들의 이야기</b>를 모아서 누구나 볼 수 있는 세차장 지도를 만들고 있어요.</p>
     <div class="perks"><span>⏱️ 1분이면 끝</span><span>🙈 가입 없이</span><span>👆 아는 것만 톡톡</span></div>
+    <a class="mini" id="mini" href="../map.html" aria-label="세차장 지도 크게 보기">
+      <div class="wait" id="miniWait">🗺️ 세차장 지도 불러오는 중…</div>
+      <div id="miniMap"></div>
+      <div class="cap"><b id="miniCap">지금까지 만든 세차장 지도</b><span>크게 보기 →</span></div>
+    </a>
     <div class="stat" id="stat"></div>
     <form class="search" id="searchForm" autocomplete="off">
       <input id="q" type="search" enterkeyhint="search" placeholder="이름이나 동네 (예: 구월동 셀프)" maxlength="40">
@@ -316,6 +326,7 @@ $('nearBtn').onclick = async () => {
     list = list.map(p => ({...p, _d: distKm(myPos, p)})).filter(p => p._d <= 3).sort((a, b) => a._d - b._d).slice(0, 30);
     lastQuery = '';
     renderResults(list, { near: true });
+    showMini(myPos, list, '내 주변 세차장');
   } catch(err) { toast(err.message || PPX.koError(err), true); }
   b.disabled = false; b.textContent = '📍 내 주변 세차장 보기';
 };
@@ -494,6 +505,30 @@ $('nSend').onclick = async () => {
   } catch(e) { toast(PPX.koError(e), true); }
   btn.disabled = false; btn.textContent = '알려주기 💧';
 };
+
+// ── 지도 미리보기: 지금까지 만든 지도를 보여주고, 누르면 큰 지도로 ──
+const DOT = {self:'#22d3ee', notouch:'#34d399', auto:'#818cf8', hand:'#fbbf24', detail:'#c084fc', wash:'#94a3b8', etc:'#94a3b8'};
+let miniMap = null, miniDots = [];
+async function showMini(center, list, caption) {
+  try { await loadNaver(); } catch(e) { $('mini').hidden = true; return; }
+  const c = new naver.maps.LatLng(center.lat, center.lng);
+  if(!miniMap) miniMap = new naver.maps.Map('miniMap', { center: c, zoom: 13, draggable: false, pinchZoom: false, scrollWheel: false,
+    keyboardShortcuts: false, disableDoubleClickZoom: true, scaleControl: false, logoControl: true, mapDataControl: false, zoomControl: false });
+  else { miniMap.setCenter(c); miniMap.setZoom(13); }
+  miniDots.forEach(m => m.setMap(null));
+  miniDots = (list || []).slice(0, 300).map(p => new naver.maps.Marker({ position: new naver.maps.LatLng(p.lat, p.lng), map: miniMap,
+    icon: { content: `<div style="width:9px;height:9px;border-radius:50%;background:${DOT[p.type] || '#94a3b8'};border:1.5px solid #fff;transform:translate(-50%,-50%)"></div>`, anchor: new naver.maps.Point(0, 0) } }));
+  $('miniWait').hidden = true;
+  if(caption) $('miniCap').textContent = caption;
+}
+// 처음엔 서울 시내를 보여줌 (화면이 먼저 뜬 뒤 불러옴)
+setTimeout(async () => {
+  if(!PPX.ready) { $('mini').hidden = true; return; }
+  const c = { lat: 37.5547, lng: 126.9707 };
+  let list = [];
+  try { list = await PPX.nearPlaces(c.lat, c.lng, 6); } catch(e) {}
+  showMini(c, list, '지금까지 만든 세차장 지도');
+}, 300);
 
 // 지도에서 '한마디 남기기'로 들어온 경우 (?p=세차장번호)
 (async () => {
