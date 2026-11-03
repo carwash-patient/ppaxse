@@ -160,7 +160,10 @@
 
     // 반환값: 바로 로그인되면 회원 정보, 메일 인증이 필요하면 { needsConfirm: true }
     async signUp({ email, password, nickname, skill, cars }) {
-      const back = location.href.replace(/[^/]*$/, '') + 'login.html';
+      // 인증 메일 링크를 누르면 로그인 화면 → 원래 보던 곳(?next=)으로
+      const nx = new URLSearchParams(location.search).get('next');
+      const back = location.href.replace(/[^/]*$/, '') + 'login.html' +
+        (nx && /^(r\/(\?[\w=&%-]*)?|[\w-]+\.html(\?[\w=&%-]*)?)$/.test(nx) ? '?next=' + encodeURIComponent(nx) : '');
       await prepareClaim();
       const { data, error } = await db.auth.signUp({
         email, password,
@@ -358,6 +361,13 @@
     // 모인 정보 수 (누구나)
     async stats() {
       const { data, error } = await db.rpc('ppx_stats');
+      if (error) throw error;
+      return data;
+    },
+
+    // 운영자: 이벤트(기프티콘 추첨) 응모자 — 기간 안에 후기를 남긴 가입 회원
+    async adminEventEntries(from, to) {
+      const { data, error } = await db.rpc('admin_event_entries', { p_from: from, p_to: to });
       if (error) throw error;
       return data;
     },

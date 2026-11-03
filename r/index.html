@@ -42,6 +42,14 @@ h1 span{background:linear-gradient(90deg,var(--sky),var(--aqua));-webkit-backgro
 .mini .cap{position:absolute;left:10px;right:10px;top:10px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 12px;border-radius:12px;background:rgba(4,17,30,.88);color:#fff;font-size:13px;font-weight:700;z-index:5}
 .mini .cap span{color:var(--aqua);white-space:nowrap}
 .mini .wait{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px}
+.gift{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:16px;background:linear-gradient(135deg,rgba(251,191,36,.16),rgba(244,114,182,.12));border:1px solid rgba(251,191,36,.45);margin-bottom:16px}
+.gift .ic{font-size:30px;line-height:1}
+.gift .tx{flex:1;font-size:13px;line-height:1.55;color:#fde68a}
+.gift .tx b{color:#fff;font-size:14px}
+.gift .tx small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.gift .go{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+.gift .go a{display:flex;align-items:center;justify-content:center;min-height:38px;padding:0 13px;border-radius:11px;font-size:13px;font-weight:900;text-decoration:none;color:#04111e;background:#fbbf24;white-space:nowrap}
+.gift .go a.l{background:transparent;color:#fde68a;border:1px solid rgba(251,191,36,.5);min-height:32px;font-size:12px}
 .stat{font-size:13px;color:var(--foam);margin-bottom:18px;min-height:20px}
 .stat b{color:var(--aqua);font-size:15px}
 .search{display:flex;gap:8px;margin-bottom:10px}
@@ -130,6 +138,11 @@ textarea:focus,.in:focus{border-color:var(--aqua)}
       <div class="cap"><b id="miniCap">지금까지 만든 세차장 지도</b><span>크게 보기 →</span></div>
     </a>
     <div class="stat" id="stat"></div>
+    <div class="gift" id="gift">
+      <div class="ic">🎁</div>
+      <div class="tx" id="giftText"><b>회원가입 후 후기를 남기면</b><br>추첨을 통해 기프티콘을 보내드려요!<small>당첨되면 가입한 이메일로 연락드려요</small></div>
+      <div class="go" id="giftGo"><a href="../join.html?next=r/">가입하기</a><a class="l" href="../login.html?next=r/">로그인</a></div>
+    </div>
     <form class="search" id="searchForm" autocomplete="off">
       <input id="q" type="search" enterkeyhint="search" placeholder="이름이나 동네 (예: 구월동 셀프)" maxlength="40">
       <button class="btn p" type="submit">찾기</button>
@@ -211,6 +224,11 @@ textarea:focus,.in:focus{border-color:var(--aqua)}
       <div class="big">🙌</div>
       <h2>고마워요!</h2>
       <p id="doneText">덕분에 세차장 지도가 한 칸 더 채워졌어요.</p>
+      <div class="gift" id="giftDone" style="text-align:left" hidden>
+        <div class="ic">🎁</div>
+        <div class="tx"><b>지금 가입하면 방금 남긴 후기도 응모돼요</b><br>추첨을 통해 기프티콘을 보내드려요!<small>이 기기로 남긴 후기가 계정으로 옮겨져요</small></div>
+        <div class="go"><a href="../join.html?next=r/">가입하기</a><a class="l" href="../login.html?next=r/">로그인</a></div>
+      </div>
       <button class="btn p w" type="button" data-go="home">🚗 다녀온 곳 하나 더 알려주기</button>
       <a class="btn g w" href="../map.html">🗺️ 세차장 지도 구경하기</a>
     </div>
@@ -265,6 +283,17 @@ function ago(iso) {
   const d = Math.floor((Date.now() - new Date(iso)) / 86400000);
   return d <= 0 ? '오늘' : d === 1 ? '어제' : d < 30 ? `${d}일 전` : d < 365 ? `${Math.floor(d/30)}달 전` : `${Math.floor(d/365)}년 전`;
 }
+
+// ── 기프티콘 추첨 안내: 로그인했으면 '응모 중' ──
+let me = null;
+(async () => {
+  if(!PPX.ready) return;
+  try { me = await PPX.me(); } catch(e) {}
+  if(me) {
+    $('giftText').innerHTML = `<b>${esc(me.nickname || '회원')}님, 기프티콘 추첨에 응모 중이에요 🎉</b><br>다녀온 세차장 후기를 남겨 주세요!<small>당첨되면 가입한 이메일로 연락드려요</small>`;
+    $('giftGo').hidden = true;
+  }
+})();
 
 // ── 모인 정보 수 ──
 (async () => {
@@ -439,6 +468,7 @@ try { const n = localStorage.getItem('ppxNick'); if(n) $('nick').value = n; } ca
 
 function done(text) {
   $('doneText').textContent = text;
+  $('giftDone').hidden = !!me;   // 가입 안 했으면 '가입하면 응모돼요'
   $('q').value = ''; $('results').innerHTML = '';
   history.replaceState(null, '', location.pathname);
   show('vDone');

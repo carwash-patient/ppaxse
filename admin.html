@@ -164,6 +164,7 @@ async function init() {
       <button class="tab" data-t="reports" type="button">정보 제보<b id="reportsN"></b></button>
       <button class="tab" data-t="edit" type="button">세차장 고치기</button>
       <button class="tab" data-t="comments" type="button">한마디<b id="commentsN"></b></button>
+      <button class="tab" data-t="event" type="button">🎁 추첨</button>
       <button class="tab" data-t="done" type="button">처리 내역</button>
     </div>
     <div id="searchBox"></div>
@@ -214,9 +215,11 @@ async function load() {
     reports: '📍 빨간 핀 = 제보된 세차장 · 파란 점 = 근처 세차장',
     edit: '📍 빨간 핀 = 고치는 세차장 · 파란 점 = 근처 세차장',
     comments: '📍 한마디가 달린 세차장',
+    event: '🎁 기간 안에 후기(제보·한마디·정보가 맞아요·추가 요청)를 남긴 가입 회원이에요. 가입 전에 남긴 후기도 가입하면 포함돼요.',
     done: '📍 처리한 항목의 위치'
   }[tab];
   document.getElementById('mapNote').textContent = note;
+  if(tab === 'event') return loadEvent();
   document.getElementById('searchBox').innerHTML = tab === 'edit' ? `
     <form class="search" id="searchForm">
       <input id="searchInput" placeholder="세차장 이름, 주소, 지역 (예: 컴인워시, 남동구)" value="${esc(searchTerm)}" maxlength="40">
@@ -333,6 +336,68 @@ function cardComment(it) {
         <button class="no" type="button" data-act="cblock">🚫 쓴 사람 막기</button>
       </div>
     </div>`;
+}
+
+// ── 🎁 기프티콘 추첨 ──
+let evFrom = null, evTo = null, evList = [], evWinners = [];
+const ymd = d => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+async function loadEvent() {
+  if(reqMarker) reqMarker.setMap(null);
+  nearMarkers.forEach(m => m.setMap(null)); nearMarkers = [];
+  if(!evFrom) { const t = new Date(); evTo = ymd(t); evFrom = ymd(new Date(t.getTime() - 30 * 86400000)); }
+  document.getElementById('searchBox').innerHTML = `
+    <form class="search" id="evForm" style="flex-wrap:wrap">
+      <input type="date" id="evFrom" value="${evFrom}" style="flex:1;min-width:130px">
+      <input type="date" id="evTo" value="${evTo}" style="flex:1;min-width:130px">
+      <button type="submit">응모자 보기</button>
+    </form>`;
+  document.getElementById('evForm').onsubmit = e => { e.preventDefault(); evFrom = document.getElementById('evFrom').value; evTo = document.getElementById('evTo').value; evWinners = []; loadEvent(); };
+  const list = document.getElementById('list');
+  list.innerHTML = '<div class="msg">불러오는 중…</div>';
+  try {
+    const to = new Date(evTo + 'T00:00:00'); to.setDate(to.getDate() + 1);   // 끝 날짜 하루 전체 포함
+    evList = await PPX.adminEventEntries(new Date(evFrom + 'T00:00:00').toISOString(), to.toISOString());
+  } catch(e) { list.innerHTML = `<div class="msg">불러오지 못했어요<br>${esc(PPX.koError(e))}</div>`; return; }
+  renderEvent();
+}
+function renderEvent() {
+  const list = document.getElementById('list');
+  if(!evList.length) { list.innerHTML = '<div class="msg">이 기간에 후기를 남긴 가입 회원이 없어요</div>'; return; }
+  const total = evList.reduce((a, x) => a + x.total, 0);
+  list.innerHTML = `
+    <div class="card sel">
+      <div class="c-top"><span class="c-name">응모자 ${evList.length}명 · 후기 ${total}개</span></div>
+      <div class="f-row" style="align-items:flex-end">
+        <div class="f"><label>뽑을 인원</label><input id="evN" type="number" min="1" max="${evList.length}" value="${Math.min(3, evList.length)}"></div>
+        <div class="f"><label style="display:flex;gap:6px;align-items:center;min-height:40px"><input type="checkbox" id="evW" style="width:18px;height:18px"> 후기를 많이 남길수록 확률 ↑</label></div>
+      </div>
+      <div class="acts"><button class="ok" type="button" id="evDraw">🎲 추첨하기</button></div>
+      ${evWinners.length ? `<div class="diff" style="margin-top:10px">${evWinners.map((w, i) => `<label><span class="k">🎉 ${i + 1}</span><span class="to">${esc(w.nickname || '(닉네임 없음)')}</span><span style="margin-left:auto;color:#fff">${esc(w.email)}</span></label>`).join('')}</div>
+        <div class="acts"><button class="no" type="button" id="evCopy">당첨자 이메일 복사</button></div>` : ''}
+    </div>
+    ${evList.map(x => `
+      <div class="card">
+        <div class="c-top"><span class="c-name">${esc(x.nickname || '(닉네임 없음)')}</span><span class="c-when">${esc(x.email)}</span></div>
+        <div class="c-who">후기 ${x.total}개 · 제보 ${x.reports} · 한마디 ${x.comments} · 정보가 맞아요 ${x.checks} · 추가 요청 ${x.places}</div>
+      </div>`).join('')}`;
+  document.getElementById('evDraw').onclick = () => {
+    const n = Math.max(1, Math.min(evList.length, parseInt(document.getElementById('evN').value, 10) || 1));
+    const weighted = document.getElementById('evW').checked;
+    const pool = evList.map(x => ({ x, w: weighted ? x.total : 1 })), out = [];
+    const rnd = () => crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296;   // 공정한 무작위
+    while(out.length < n && pool.length) {
+      let r = rnd() * pool.reduce((a, p) => a + p.w, 0), i = 0;
+      while(r >= pool[i].w && i < pool.length - 1) { r -= pool[i].w; i++; }
+      out.push(pool.splice(i, 1)[0].x);
+    }
+    evWinners = out; renderEvent();
+    toast(`${out.length}명을 뽑았어요 🎉`);
+  };
+  const cp = document.getElementById('evCopy');
+  if(cp) cp.onclick = async () => {
+    const t = evWinners.map(w => `${w.nickname || ''} <${w.email}>`).join('\n');
+    try { await navigator.clipboard.writeText(t); toast('복사했어요'); } catch(e) { prompt('아래 내용을 복사하세요', t); }
+  };
 }
 
 function cardEdit(it) {

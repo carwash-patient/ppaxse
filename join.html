@@ -331,6 +331,13 @@ document.getElementById('avatarInput').onchange = function() {
   reader.readAsDataURL(file);
 };
 
+// 가입 후 돌아갈 곳 (예: join.html?next=r/ → 후기 페이지)
+const nextPage = (() => {
+  const n = new URLSearchParams(location.search).get('next') || 'map.html';
+  return /^(r\/(\?[\w=&%-]*)?|[\w-]+\.html(\?[\w=&%-]*)?)$/.test(n) ? n : 'map.html';
+})();
+{ const a = document.querySelector('.login-link a'); if(a) a.href = 'login.html?next=' + encodeURIComponent(nextPage); }
+
 async function doJoin() {
   const required = document.querySelectorAll('.agreeItem');
   const checked = [...required].slice(0, 2).filter(c => c.checked);
@@ -355,10 +362,10 @@ async function doJoin() {
           메일의 링크를 누르면 가입이 끝나고 빡세로 돌아옵니다.<br>
           메일이 안 보이면 스팸함도 확인해 주세요.
         </div>
-        <button class="btn btn-primary" onclick="location.href='login.html'">로그인 화면으로</button>`;
+        <button class="btn btn-primary" onclick="location.href='login.html?next='+encodeURIComponent(nextPage)">로그인 화면으로</button>`;
       return;
     }
-    location.href = 'map.html';
+    location.href = nextPage;
   } catch(e) {
     showToast(PPX.koError(e));
     btn.disabled = false; btn.textContent = '🫧 빡세 시작하기';
@@ -372,7 +379,7 @@ function showToast(msg) {
 }
 
 // 이미 로그인 상태면 바로 이동
-(async () => { try { if(PPX.ready && await PPX.me()) location.href='map.html'; } catch(e) {} })();
+(async () => { try { if(PPX.ready && await PPX.me()) location.href = nextPage; } catch(e) {} })();
 </script>
 </body>
 </html>
