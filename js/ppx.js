@@ -306,10 +306,77 @@
         if (up.error) throw up.error;
       }
       const { data, error } = await db.from('place_reports')
-        .insert({ place_id: placeId, suggest: suggest || {}, memo: memo || null, visit: ex.visit || null, photo })
+        .insert({ place_id: placeId, suggest: suggest || {}, memo: memo || null, visit: ex.visit || null, photo, via: ex.via || 'map' })
         .select('id,status').single();
       if (error) throw error;
       return data;
+    },
+
+    // ── 후기 페이지 (r/) ──
+    // 이름·주소·지역 검색. 띄어쓰기로 나눈 낱말이 모두 들어간 곳 (예: "구월 셀프")
+    async searchPlaces(text, limit) {
+      const words = String(text || '').replace(/[,()%*\\.]/g, ' ').split(/\s+/).filter(Boolean).slice(0, 4);
+      if (!words.length) return [];
+      let q = db.from('places').select(PLACE_COLS).eq('status', 'approved');
+      words.forEach(w => { q = q.or(`name.ilike.%${w}%,addr.ilike.%${w}%,region.ilike.%${w}%`); });
+      const { data, error } = await q.order('name').limit(limit || 30);
+      if (error) throw error;
+      return data;
+    },
+
+    // 내 주변: 위치 둘레 네모 안에서 찾기 (가까운 순 정렬은 화면에서)
+    async nearPlaces(lat, lng, km) {
+      const d = (km || 3) / 111, dl = d / Math.cos(lat * Math.PI / 180);
+      const { data, error } = await db.from('places').select(PLACE_COLS).eq('status', 'approved')
+        .gte('lat', lat - d).lte('lat', lat + d).gte('lng', lng - dl).lte('lng', lng + dl).limit(300);
+      if (error) throw error;
+      return data;
+    },
+
+    async placeById(id) {
+      const { data, error } = await db.from('places').select(PLACE_COLS).eq('id', id).eq('status', 'approved').maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+
+    // 한마디
+    async comments(placeId, limit) {
+      const { data, error } = await db.from('place_comments').select('id,nickname,body,created_at')
+        .eq('place_id', placeId).eq('hidden', false).order('created_at', { ascending: false }).limit(limit || 20);
+      if (error) throw error;
+      return data;
+    },
+    async addComment(placeId, body, nickname) {
+      await PPX.ensureUser();
+      const { data, error } = await db.from('place_comments')
+        .insert({ place_id: placeId, body: String(body).trim().slice(0, 200), nickname: nickname ? String(nickname).trim().slice(0, 20) : null })
+        .select('id,nickname,body,created_at').single();
+      if (error) throw error;
+      return data;
+    },
+
+    // 모인 정보 수 (누구나)
+    async stats() {
+      const { data, error } = await db.rpc('ppx_stats');
+      if (error) throw error;
+      return data;
+    },
+
+    // 운영자: 한마디 관리
+    async adminComments() {
+      const { data, error } = await db.from('place_comments')
+        .select('id,place_id,nickname,body,hidden,created_at,place:places!place_comments_place_id_fkey(name,region)')
+        .order('created_at', { ascending: false }).limit(60);
+      if (error) throw error;
+      return data;
+    },
+    async adminHideComment(id, hide) {
+      const { error } = await db.from('place_comments').update({ hidden: !!hide }).eq('id', id);
+      if (error) throw error;
+    },
+    async adminBlockCommenter(id) {
+      const { error } = await db.rpc('admin_block_commenter', { cid: id });
+      if (error) throw error;
     },
 
     // 내가 보낸 제보 (가입 없이 보낸 것 포함)
@@ -346,7 +413,7 @@
 
     async adminReports(status) {
       let q = db.from('place_reports')
-        .select('id,place_id,suggest,memo,visit,photo,reporter,status,created_at,reviewed_at,' +
+        .select('id,place_id,suggest,memo,visit,photo,via,reporter,status,created_at,reviewed_at,' +
                 'place:places!place_reports_place_id_fkey(' + PLACE_COLS + ',status),' +
                 'reporter_p:profiles!place_reports_reporter_fkey(nickname,blocked)');
       q = status === 'pending'

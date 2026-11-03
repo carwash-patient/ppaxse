@@ -831,7 +831,13 @@ function openDetail(id) {
         <button class="report-btn" type="button" onclick="startReport(${p.id})">✏️ 달라요 · 더 알려주기</button>
       </div>
       <div class="dp-src">세차장 기본 정보: 행정안전부 전국세차장표준데이터(공공데이터포털) · 이용자 제보</div>
+    </div>
+    <div class="dp-section">
+      <div class="dp-section-title">한마디 💬</div>
+      <div id="dpComments"><div class="dp-more" style="margin:0">불러오는 중…</div></div>
+      <a class="report-btn" style="text-decoration:none" href="r/?p=${p.id}">💬 한마디 남기기 <span>가입 없이</span></a>
     </div>`;
+  loadComments(p.id);
 
   document.getElementById('detailPanel').classList.add('open');
   if(sheetState !== 'hidden') sheetBeforeDetail = sheetState;
@@ -845,6 +851,21 @@ function closeDetail() {
   // 상세를 닫을 때만 이전 화면(지도 또는 목록)으로 돌아감
   if(wasOpen) { setSheet(sheetBeforeDetail); sheetBeforeDetail = 'hidden'; }
   renderList(); renderNaverMarkers();
+}
+
+// 한마디 (다른 사람들이 남긴 짧은 글)
+async function loadComments(id) {
+  const box = document.getElementById('dpComments');
+  if(!box) return;
+  if(!PPX.ready || !PPX.comments) { box.innerHTML = '<div class="dp-more" style="margin:0">아직 한마디가 없어요.</div>'; return; }
+  try {
+    const list = await PPX.comments(id, 5);
+    if(activeId !== id) return;
+    box.innerHTML = list.length ? list.map(c => `
+      <div class="review-item"><div class="ri-text" style="color:#fff">${esc(c.body)}</div>
+      <div class="ri-date" style="margin:4px 0 0">${esc(c.nickname || '익명 세차러')} · ${daysAgo(c.created_at)}</div></div>`).join('')
+      : '<div class="dp-more" style="margin:0 0 8px">아직 한마디가 없어요. 다녀오셨다면 첫 한마디를 남겨 주세요!</div>';
+  } catch(e) { box.innerHTML = ''; }
 }
 
 // '정보가 맞아요' — 가입 없이 누를 수 있음, 한 세차장에 하루 한 번
