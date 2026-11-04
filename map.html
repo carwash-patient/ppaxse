@@ -795,7 +795,7 @@ function openDetail(id) {
     i.height ? `<div><b>높이 제한</b>${esc(i.height)}</div>` : '',
     (i.svc||[]).length ? `<div><b>서비스</b>${esc(i.svc.map(k => SVC[k] || k).join(' · '))}</div>` : '',
     `<div><b>지역</b>${esc(p.region)}</div>`,
-    p.price_note ? `<details class="dp-note"><summary>💰 요금표 자세히 보기</summary><div>${esc(p.price_note)}</div></details>` : ''
+    p.price_note ? `<details class="dp-note"><summary>📋 자세히 보기 (요금·안내)</summary><div>${esc(p.price_note)}</div></details>` : ''
   ].join('');
 
   // 시설: 이 종류에 맞는 항목 중 아는 것 + (셀프면) 기본 4가지. 모르는 항목 수는 따로 안내

@@ -426,7 +426,7 @@ function cardEdit(it) {
         <div class="f"><label>높이 제한</label><input data-info-in="height" value="${esc((it.info||{}).height ?? '')}" maxlength="10"></div>
       </div>
       <div class="f"><label>요금 (짧게 · 지도에 한 줄로 보임)</label><input data-k="price" value="${esc(it.price||'')}" maxlength="200"></div>
-      <div class="f"><label>요금표 자세히 (긴 가격표·메뉴 · '요금표 자세히 보기'로 보임)</label><textarea data-k="price_note" maxlength="3000" rows="5">${esc(it.price_note||'')}</textarea></div>
+      <div class="f"><label>자세히 (가격표·메뉴·안내 · '자세히 보기'를 누르면 보임)</label><textarea data-k="price_note" maxlength="3000" rows="5">${esc(it.price_note||'')}</textarea></div>
       <div class="f"><label>결제 방법</label><div class="tchips">${Object.entries(PAY).map(([k,l]) => `<label><input type="checkbox" data-info-multi="pay" data-v="${k}" ${((it.info||{}).pay||[]).includes(k)?'checked':''}>${esc(l)}</label>`).join('')}</div></div>
       <div class="f"><label>서비스 (손세차·디테일링)</label><div class="tchips">${Object.entries(SVC).map(([k,l]) => `<label><input type="checkbox" data-info-multi="svc" data-v="${k}" ${((it.info||{}).svc||[]).includes(k)?'checked':''}>${esc(l)}</label>`).join('')}</div></div>
       <div class="f"><label>지도 표시</label><select data-k="status">
