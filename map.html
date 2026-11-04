@@ -1435,15 +1435,19 @@ async function geoPermission() {
 
 async function decideStart() {
   try { homeRegion = PPX.getHome ? await PPX.getHome() : null; } catch(e) { homeRegion = null; }
-  // ① 이미 허용한 사람: 묻지 않고 지금 위치로 (출장지에서 열면 출장지)
-  if(await geoPermission() === 'granted' && await locateMe(true)) return 'location';
-  // ② 기본 지역
+  // ① 기본 지역을 정한 사람: 그 지역 먼저 (지금 위치는 📍 버튼으로)
   if(homeRegion) {
     const [sido, ...rest] = homeRegion.split(' ');
     const sgg = rest.join(' ');
     const ok = sgg ? (regionIndex[sido] || {})[sgg] : regionIndex[sido];
-    if(ok) { selectRegion(homeRegion); return 'home'; }
+    if(ok) {
+      selectRegion(homeRegion);
+      toast(`⭐ 기본 지역 ‘${homeRegion}’을 보여드려요 · 지금 위치는 📍 버튼`, false, 4000);
+      return 'home';
+    }
   }
+  // ② 기본 지역이 없고 위치를 이미 허용한 사람: 묻지 않고 지금 위치로
+  if(await geoPermission() === 'granted' && await locateMe(true)) return 'location';
   // ③ 안내 (닫은 적 있으면 다시 안 띄움)
   showStartHint();
   return 'hint';
