@@ -152,6 +152,8 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
 .rp-item{padding:12px 6px;border-radius:13px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#fff;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
 .rp-item small{font-size:11px;color:var(--muted);font-weight:300}
 .rp-item.all{grid-column:1/-1;flex-direction:row;justify-content:center;gap:8px;background:rgba(14,165,233,.08);border-color:rgba(14,165,233,.25)}
+.rp-item.empty{border-style:dashed;border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.05)}
+.rp-item.empty small{color:#fde68a;font-weight:700}
 .rp-item.on{border-color:var(--aqua);background:rgba(34,211,238,.16)}
 .rp-item:active{transform:scale(.97)}
 
@@ -959,6 +961,20 @@ document.getElementById('locateBtn').onclick = () => locateMe(false);
 // ══════════════════════════════════════════════════
 const SIDO_ORDER = ['서울','경기','인천','부산','대구','광주','대전','울산','세종','강원','충북','충남','전북','전남','전남광주','경북','경남','제주'];
 let regionIndex = {};      // {서울: {강남구: [places...]}, ...}
+// 공공데이터(전국세차장표준데이터)에 세차장 자료를 올리지 않은 시·군·구 — 목록에 '자료 없음'으로 보여주고 추가를 부탁함
+// [중심 위도, 경도, 대략 반경 km] (추가할 때 이 반경 안이면 이 지역으로 기록)
+const NODATA = {
+  '서울': {'강동구':[37.5301,127.1238,3.5], '도봉구':[37.6688,127.0471,3]},
+  '인천': {'부평구':[37.5070,126.7219,3.5]},
+  '대구': {'군위군':[36.2428,128.5728,15]},
+  '전남광주': {'고흥군':[34.6112,127.2850,15]},
+  '강원': {'속초시':[38.2070,128.5918,5], '양구군':[38.1100,127.9897,12], '철원군':[38.1467,127.3133,15]},
+  '충북': {'청주시':[36.6424,127.4890,12]},
+  '충남': {'계룡시':[36.2745,127.2487,4]},
+  '전북': {'남원시':[35.4164,127.3904,12]},
+  '경북': {'영덕군':[36.4150,129.3653,12]},
+  '경남': {'밀양시':[35.5037,128.7466,12]},
+};
 let regionTab = '서울', selectedRegion = null;
 
 function buildRegionIndex() {
@@ -975,15 +991,18 @@ function renderRegionPanel() {
     `<button class="rp-tab ${s===regionTab?'on':''}" type="button" data-sido="${s}">${s}</button>`).join('');
   const groups = regionIndex[regionTab] || {};
   const total = Object.values(groups).reduce((a,l) => a+l.length, 0);
-  const names = Object.keys(groups).sort((a,b) => a.localeCompare(b,'ko'));
+  const empty = NODATA[regionTab] || {};
+  const names = [...new Set([...Object.keys(groups), ...Object.keys(empty)])].sort((a,b) => a.localeCompare(b,'ko'));
   document.getElementById('regionGrid').innerHTML =
     `<button class="rp-item all ${selectedRegion===regionTab?'on':''}" type="button" data-region="${regionTab}">${regionTab} 전체 <small>${total.toLocaleString()}곳</small></button>` +
     names.map(n => {
       const key = regionTab+' '+n;
+      if(!groups[n]) return `<button class="rp-item empty" type="button" data-empty="${esc(key)}">${esc(n)}<small>자료 없음 · ＋추가</small></button>`;
       return `<button class="rp-item ${selectedRegion===key?'on':''}" type="button" data-region="${esc(key)}">${esc(n)}<small>${groups[n].length}곳</small></button>`;
     }).join('');
   document.querySelectorAll('.rp-tab').forEach(b => b.onclick = () => { regionTab = b.dataset.sido; renderRegionPanel(); });
-  document.querySelectorAll('.rp-item').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.rp-item[data-empty]').forEach(b => b.onclick = () => addInEmptyRegion(b.dataset.empty));
+  document.querySelectorAll('.rp-item[data-region]').forEach(b => b.onclick = () => {
     const key = b.dataset.region;
     if(saveAsHome) { homeRegion = key; saveAsHome = false; PPX.setHome && PPX.setHome(key); toast(`⭐ 기본 지역을 ‘${key}’(으)로 정했어요`); }
     selectRegion(key);
@@ -1052,6 +1071,18 @@ function selectRegion(key) {
   }
 }
 
+// 자료가 없는 지역: 그 지역으로 지도를 옮기고 바로 '세차장 추가'(위치 고르기)를 시작
+function addInEmptyRegion(key) {
+  const [sido, ...rest] = key.split(' ');
+  const c = (NODATA[sido] || {})[rest.join(' ')];
+  if(!c) return;
+  closeRegionPanel();
+  if(activeId) closeDetail();
+  if(naverMap) { naverMap.setCenter(new naver.maps.LatLng(c[0], c[1])); naverMap.setZoom(c[2] > 6 ? 12 : 14); }
+  toast(`${key}는 공공데이터에 세차장 자료가 아직 없어요. 아는 세차장 위치를 눌러 알려주세요 🙏`, false, 5000);
+  startAddPlace();
+}
+
 document.getElementById('regionBtn').onclick = () => openRegionPanel(false);
 
 // 사용자가 지도를 직접 끌어서 다른 곳으로 가면 지역 표시는 처음 상태로
@@ -1070,10 +1101,10 @@ document.getElementById('regionDim').onclick = closeRegionPanel;
 let pickLatLng = null;
 const addForm = { name:'', types:[], addr:'', tel:'', memo:'' };
 
-function toast(msg, warn) {
+function toast(msg, warn, ms) {
   const t = document.getElementById('ppxToast');
   t.textContent = msg; t.className = 'ppx-toast show' + (warn ? ' warn' : '');
-  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2800);
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), ms || 2800);
 }
 
 function openAddPanel(html) {
@@ -1097,6 +1128,9 @@ async function startAddPlace() {
 function stopPicking() { document.body.classList.remove('picking'); }
 
 function nearestRegion(lat, lng) {
+  // 자료가 없는 지역 안이면 그 지역으로 (주변 다른 구의 세차장이 더 가까워도)
+  for(const [sido, m] of Object.entries(NODATA)) for(const [sgg, c] of Object.entries(m))
+    if(distKm({lat,lng}, {lat:c[0], lng:c[1]}) < c[2]) return sido+' '+sgg;
   let best = null, bd = 5;   // 5km 안의 가장 가까운 세차장 지역을 따라감
   places.forEach(p => { const d = distKm({lat,lng}, p); if(d < bd) { bd = d; best = p; } });
   return best ? best.region : '';
