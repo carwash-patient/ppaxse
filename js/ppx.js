@@ -8,7 +8,7 @@
   const ready = !!(cfg.url && cfg.key && window.supabase && window.supabase.createClient);
   const db = ready ? window.supabase.createClient(cfg.url, cfg.key) : null;
 
-  const PLACE_COLS = 'id,name,addr,region,type,types,lat,lng,tel,hours,price,h24,foam,under,indoor,myitem,reserve,info,checked_at,check_count,comment_count';
+  const PLACE_COLS = 'id,name,addr,region,type,types,lat,lng,tel,hours,price,price_note,h24,foam,under,indoor,myitem,reserve,info,checked_at,check_count,comment_count';
 
   // 다른 페이지(마이페이지·커뮤니티)가 아직 쓰는 예전 형식의 로그인 정보도 맞춰 둠
   function syncLocalUser(profile, email) {

@@ -36,6 +36,7 @@ html,body{min-height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backg
 .c-when{margin-left:auto;font-size:11px;color:rgba(255,255,255,.4)}
 .f{margin-bottom:9px}
 .f label{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px}
+.f textarea{width:100%;border:1.5px solid var(--line);border-radius:11px;background:rgba(255,255,255,.05);color:#fff;padding:10px 12px;font-family:inherit;font-size:13px;line-height:1.6;outline:none;resize:vertical}
 .f input,.f select{width:100%;height:42px;border:1.5px solid var(--line);border-radius:11px;background:rgba(255,255,255,.05);color:#fff;padding:0 12px;font-family:inherit;font-size:14px;outline:none}
 .f select option{color:#000}
 .f-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -424,7 +425,8 @@ function cardEdit(it) {
         <div class="f"><label>기본 시간(분)</label><input data-info-in="pm" value="${esc((it.info||{}).pm ?? '')}" inputmode="numeric" maxlength="3"></div>
         <div class="f"><label>높이 제한</label><input data-info-in="height" value="${esc((it.info||{}).height ?? '')}" maxlength="10"></div>
       </div>
-      <div class="f"><label>요금 (자유롭게)</label><input data-k="price" value="${esc(it.price||'')}" maxlength="200"></div>
+      <div class="f"><label>요금 (짧게 · 지도에 한 줄로 보임)</label><input data-k="price" value="${esc(it.price||'')}" maxlength="200"></div>
+      <div class="f"><label>요금표 자세히 (긴 가격표·메뉴 · '요금표 자세히 보기'로 보임)</label><textarea data-k="price_note" maxlength="3000" rows="5">${esc(it.price_note||'')}</textarea></div>
       <div class="f"><label>결제 방법</label><div class="tchips">${Object.entries(PAY).map(([k,l]) => `<label><input type="checkbox" data-info-multi="pay" data-v="${k}" ${((it.info||{}).pay||[]).includes(k)?'checked':''}>${esc(l)}</label>`).join('')}</div></div>
       <div class="f"><label>서비스 (손세차·디테일링)</label><div class="tchips">${Object.entries(SVC).map(([k,l]) => `<label><input type="checkbox" data-info-multi="svc" data-v="${k}" ${((it.info||{}).svc||[]).includes(k)?'checked':''}>${esc(l)}</label>`).join('')}</div></div>
       <div class="f"><label>지도 표시</label><select data-k="status">
@@ -508,7 +510,7 @@ function readFields(card) {
   const fields = {};
   card.querySelectorAll('[data-k]').forEach(el => {
     const k = el.dataset.k, v = el.value.trim();
-    fields[k] = v || (['tel','hours','price'].includes(k) ? null : '');
+    fields[k] = v || (['tel','hours','price','price_note'].includes(k) ? null : '');
   });
   card.querySelectorAll('[data-fac]').forEach(el => { fields[el.dataset.fac] = el.value === 'null' ? null : el.value === 'true'; });
   if(card.querySelector('[data-info-fac],[data-info-in],[data-info-multi]')) {
