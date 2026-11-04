@@ -207,7 +207,9 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
 .pc-icon.wash,.pc-icon.etc{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12)}
 .list-note{text-align:center;font-size:12px;color:var(--muted);padding:18px 10px 24px;line-height:1.7}
 .pc-new{font-size:11px;color:rgba(255,255,255,.4);font-weight:700}
-.spec-val.u{color:rgba(255,255,255,.35);font-weight:700}
+.spec-val.u{color:#fde68a;font-weight:700}
+.spec-item.ask{display:flex;flex-direction:column;gap:4px;width:100%;text-align:left;font-family:inherit;color:inherit;cursor:pointer;border-style:dashed;border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.05)}
+.spec-item.ask:active{transform:scale(.98)}
 .dp-info{padding:14px;border-radius:15px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);font-size:13px;line-height:1.8;color:var(--muted)}
 .dp-note{margin-top:8px;border-top:1px solid rgba(255,255,255,.07);padding-top:8px}
 .dp-note summary{cursor:pointer;color:var(--aqua);font-weight:900;min-height:32px;display:flex;align-items:center;list-style:none}
@@ -759,7 +761,7 @@ const YESNO = { foam:['가능','불가'], under:['가능','불가'], myitem:['�
 function specVal(v, yes, no) {
   if(v===true)  return `<div class="spec-val y">✅ ${yes}</div>`;
   if(v===false) return `<div class="spec-val n">❌ ${no}</div>`;
-  return `<div class="spec-val u">정보 준비중</div>`;
+  return `<div class="spec-val u">알려주실 수 있나요? ✏️</div>`;   // 모르는 항목: 누르면 제보 창 (spec-item.ask)
 }
 
 // 며칠 전
@@ -834,8 +836,10 @@ function openDetail(id) {
     <div class="dp-section">
       <div class="dp-section-title">시설 정보</div>
       ${shown.length ? `<div class="dp-spec-grid">${shown.map(f =>
-        `<div class="spec-item"><div class="spec-label">${esc(f.l)}</div>${specVal(fieldVal(p, f), ...yn(f))}</div>`).join('')}</div>` : ''}
-      ${unknown.length ? `<div class="dp-more">${shown.length ? '그 밖에 ' : ''}${esc(unknown.slice(0,4).map(f => f.l).join(', '))}${unknown.length > 4 ? ' 등' : ''}은 아직 몰라요.<br>아시면 알려주세요!</div>` : ''}
+        fieldVal(p, f) === null
+          ? `<button type="button" class="spec-item ask" onclick="startReport(${p.id})"><div class="spec-label">${esc(f.l)}</div>${specVal(null)}</button>`
+          : `<div class="spec-item"><div class="spec-label">${esc(f.l)}</div>${specVal(fieldVal(p, f), ...yn(f))}</div>`).join('')}</div>` : ''}
+      ${unknown.length ? `<div class="dp-more">${shown.length ? '그 밖에 ' : ''}${esc(unknown.slice(0,4).map(f => f.l).join(', '))}${unknown.length > 4 ? ' 등' : ''}도<br>다녀오셨다면 <b>알려주세요</b> 🙏</div>` : ''}
       <div class="dp-two">
         <button class="report-btn check-btn" id="checkBtn" type="button" onclick="checkPlace(${p.id})">👍 정보가 맞아요</button>
         <button class="report-btn" type="button" onclick="startReport(${p.id})">✏️ 달라요 · 더 알려주기</button>
