@@ -315,6 +315,7 @@ function cardReport(it) {
       <div class="c-who" style="margin-bottom:10px">${esc(p.addr || p.region || '')} · 제보: <b style="color:#fff">${who}</b>${blocked ? ' <span class="blocked">(막힘)</span>' : ''}${it.visit ? `<span class="visit">${esc(VISIT[it.visit] || it.visit)}</span>` : ''}${it.via === 'review' ? '<span class="visit" style="background:rgba(168,85,247,.18);color:#d8b4fe">후기 페이지</span>' : ''}${p.status==='closed' ? ' · <span class="state closed">이미 숨김</span>' : ''}</div>
       ${rows.length ? `<div class="diff">${rows.join('')}</div>` : ''}
       ${it.memo ? `<div class="memo">💬 ${esc(it.memo)}</div>` : ''}
+      <div class="f"><label>세차장 이름 (바꿀 때만 고치세요 · 체인·가맹점은 '학익점'처럼 지점명까지)</label><input data-rename value="${esc(p.name)}" maxlength="60"></div>
       ${it.photo ? `<div class="photo-box" data-photo="${esc(it.photo)}"><button type="button" data-act="photo">📷 가격표 사진 보기</button></div>` : ''}
       <div class="acts">
         <button class="no" type="button" data-act="dismiss">무시</button>
@@ -570,6 +571,9 @@ async function act(card, id, what) {
         pick.forEach(k => { const v = sg.info[k]; if(v === null || (Array.isArray(v) && !v.length)) delete info[k]; else info[k] = v; });
         fields.info = info;
       }
+      const rn = card.querySelector('[data-rename]');
+      const newName = rn ? rn.value.trim().replace(/\s+/g, ' ') : '';
+      if(newName && it.place && newName !== it.place.name) fields.name = newName;
       if(Object.keys(fields).length && it.place) await PPX.adminUpdate(it.place.id, fields);
       await PPX.adminResolveReport(id, 'applied');
       await dropPhoto(it);
