@@ -166,6 +166,7 @@ async function init() {
       <button class="tab" data-t="edit" type="button">세차장 고치기</button>
       <button class="tab" data-t="comments" type="button">한마디<b id="commentsN"></b></button>
       <button class="tab" data-t="commentReports" type="button">한마디 신고<b id="commentReportsN"></b></button>
+      <button class="tab" data-t="abuse" type="button">이상 요청<b id="abuseN"></b></button>
       <button class="tab" data-t="event" type="button">🎁 추첨</button>
       <button class="tab" data-t="done" type="button">처리 내역</button>
     </div>
@@ -205,7 +206,8 @@ async function refreshCounts() {
     const [a, b, c] = await Promise.all([PPX.adminList('pending'), PPX.adminReports('pending'), PPX.adminCommentReports('pending')]);
     document.getElementById('pendingN').textContent = a.length ? ' ' + a.length : '';
     document.getElementById('reportsN').textContent = b.length ? ' ' + b.length : '';
-    document.getElementById('commentReportsN').textContent = c.length ? ' ' + c.length : '';
+    const cn = new Set(c.map(x => x.comment_id)).size;   // 신고된 한마디 수 (같은 글 여러 신고는 1개)
+    document.getElementById('commentReportsN').textContent = cn ? ' ' + cn : '';
   } catch(e) {}
 }
 
@@ -218,7 +220,8 @@ async function load() {
     reports: '📍 빨간 핀 = 제보된 세차장 · 파란 점 = 근처 세차장',
     edit: '📍 빨간 핀 = 고치는 세차장 · 파란 점 = 근처 세차장',
     comments: '📍 한마디가 달린 세차장',
-    commentReports: '🚩 이용자가 신고한 한마디가 달린 세차장',
+    commentReports: '🚩 신고가 많이 쌓인 한마디부터 보여요',
+    abuse: '⚠️ 최근 7일 동안 도배 방지 제한에 걸린 사람(기기)이에요. 많은 순',
     event: '🎁 기간 안에 후기(제보·한마디·정보가 맞아요·추가 요청)를 남긴 가입 회원이에요. 가입 전에 남긴 후기도 가입하면 포함돼요.',
     done: '📍 처리한 항목의 위치'
   }[tab];
@@ -248,16 +251,26 @@ async function load() {
         lat: (approved.find(p => p.id === c.place_id) || {}).lat, lng: (approved.find(p => p.id === c.place_id) || {}).lng }));
     }
     else if(tab === 'commentReports') {
-      items = (await PPX.adminCommentReports('pending')).map(x => ({
-        ...x, kind: 'creport', id: 's' + x.id, rid: x.id, cid: x.comment_id,
-        body: x.comment ? x.comment.body : '(삭제된 한마디)',
-        nickname: x.comment ? x.comment.nickname : '',
-        hidden: x.comment ? x.comment.hidden : true,
-        place: x.comment ? x.comment.place : null,
-        lat: x.comment && x.comment.place ? x.comment.place.lat : null,
-        lng: x.comment && x.comment.place ? x.comment.place.lng : null
-      }));
+      // 같은 한마디에 들어온 신고를 하나로 묶고, 신고가 많은 글부터
+      const groups = new Map();
+      for(const x of await PPX.adminCommentReports('pending')) {
+        let g = groups.get(x.comment_id);
+        if(!g) {
+          const c = x.comment;
+          g = { kind: 'creport', id: 's' + x.comment_id, cid: x.comment_id, n: 0, reasons: {}, created_at: x.created_at,
+            body: c ? c.body : '(삭제된 한마디)', nickname: c ? c.nickname : '', hidden: c ? c.hidden : true,
+            place: c ? c.place : null, lat: c && c.place ? c.place.lat : null, lng: c && c.place ? c.place.lng : null };
+          groups.set(x.comment_id, g);
+        }
+        g.n++; g.reasons[x.reason] = (g.reasons[x.reason] || 0) + 1;
+        if(x.created_at < g.created_at) g.created_at = x.created_at;
+      }
+      items = [...groups.values()].sort((a, b) => b.n - a.n || (a.created_at < b.created_at ? -1 : 1));
       document.getElementById('commentReportsN').textContent = items.length ? ' ' + items.length : '';
+    }
+    else if(tab === 'abuse') {
+      items = (await PPX.adminAbuseSummary()).map(x => ({ ...x, kind: 'abuse', id: 'u' + x.user_id, created_at: x.last_at }));
+      document.getElementById('abuseN').textContent = items.length ? ' ' + items.length : '';
     }
     else {
       const [a, b] = await Promise.all([PPX.adminList('done'), PPX.adminReports('done')]);
@@ -342,17 +355,35 @@ function cardReport(it) {
 }
 
 // 한마디: 바로 보이는 글이라 이상한 글은 숨기기, 반복하면 쓴 사람 막기
+const REPORT_REASONS = { abuse: '욕설·비방', spam: '광고·도배', privacy: '개인정보 노출', other: '기타' };
 function cardCommentReport(it) {
-  const reasons = { abuse: '욕설·비방', spam: '광고·도배', privacy: '개인정보 노출', other: '기타' };
+  const why = Object.entries(it.reasons).sort((a, b) => b[1] - a[1])
+    .map(([k, n]) => esc(REPORT_REASONS[k] || '기타') + (n > 1 ? ' ' + n : '')).join(' · ');
   return `
     <div class="card ${it.id===selId?'sel':''}" data-id="${it.id}">
-      <div class="c-top"><span class="c-name">${esc(it.place ? it.place.name : '(세차장 정보 없음)')}</span><span class="c-when">${ago(it.created_at)}</span></div>
-      <div class="memo">🚩 신고 사유: ${esc(reasons[it.reason] || '기타')}</div>
+      <div class="c-top"><span class="c-name">${it.n >= 3 ? '<span class="state pending" style="margin-right:6px">신고 많음</span>' : ''}${esc(it.place ? it.place.name : '(세차장 정보 없음)')}</span><span class="c-when">${ago(it.created_at)}</span></div>
+      <div class="memo">🚩 신고 ${it.n}건 — ${why}</div>
       <div class="memo" style="${it.hidden ? 'opacity:.5;text-decoration:line-through' : ''}">💬 ${esc(it.body)}</div>
       <div class="c-who">${esc(it.nickname || '익명 세차러')}${it.hidden ? ' · 숨김 상태' : ''}</div>
       <div class="acts">
-        <button class="no" type="button" data-act="sr-dismiss">신고만 처리</button>
+        <button class="no" type="button" data-act="sr-dismiss">문제없음 (신고 처리)</button>
         ${it.hidden ? '' : '<button class="no" type="button" data-act="sr-hide">한마디 숨기고 처리</button>'}
+        <button class="no" type="button" data-act="sr-block">🚫 쓴 사람 막기</button>
+      </div>
+    </div>`;
+}
+
+// 이상 요청: 제한에 여러 번 걸린 사람(기기)
+function cardAbuse(it) {
+  const kinds = { report: '정보 제보', place: '추가 요청', comment: '한마디', check: '정보가 맞아요', comment_report: '한마디 신고' };
+  return `
+    <div class="card ${it.id===selId?'sel':''}" data-id="${it.id}">
+      <div class="c-top"><span class="c-name">${it.cnt >= 10 ? '<span class="state pending" style="margin-right:6px">많음</span>' : ''}제한에 ${it.cnt}번 걸림</span><span class="c-when">${ago(it.last_at)}</span></div>
+      <div class="memo">어디서: ${(it.kinds || []).map(k => esc(kinds[k] || k)).join(' · ')}</div>
+      <div class="memo">마지막 안내: ${esc(it.last_message || '')}</div>
+      <div class="c-who">기기 번호 ${esc(String(it.user_id).slice(0, 8))}${it.blocked ? ' · <span class="blocked">막힘</span>' : ''}</div>
+      <div class="acts">
+        <button class="no" type="button" data-act="${it.blocked ? 'ab-unblock' : 'ab-block'}">${it.blocked ? '다시 받기' : '🚫 이 사람 막기'}</button>
       </div>
     </div>`;
 }
@@ -497,14 +528,15 @@ function render() {
       edit: searchTerm ? '검색 결과가 없어요' : '고칠 세차장을 위에서 검색해 주세요',
       comments: '아직 한마디가 없어요',
       commentReports: '접수된 한마디 신고가 없어요 🎉',
+      abuse: '최근 7일 동안 이상 요청이 없어요 🎉',
       done: '아직 처리한 내역이 없어요'
     }[tab]}</div>`;
     return;
   }
-  const make = { pending: cardPending, reports: cardReport, edit: cardEdit, done: cardDone, comments: cardComment, commentReports: cardCommentReport }[tab];
+  const make = { pending: cardPending, reports: cardReport, edit: cardEdit, done: cardDone, comments: cardComment, commentReports: cardCommentReport, abuse: cardAbuse }[tab];
   list.innerHTML = items.map(make).join('');
   list.querySelectorAll('.card').forEach(card => {
-    const id = /^[rcs]/.test(card.dataset.id) ? card.dataset.id : +card.dataset.id;
+    const id = /^[rcsu]/.test(card.dataset.id) ? card.dataset.id : +card.dataset.id;
     card.addEventListener('click', e => {
       if(e.target.closest('input,select,button,label')) return;
       if(selId === id) return;
@@ -579,12 +611,21 @@ async function act(card, id, what) {
     if(it && it.kind === 'creport') {
       if(what === 'sr-hide') {
         await PPX.adminHideComment(it.cid, true);
-        await PPX.adminResolveCommentReport(it.rid);
+        await PPX.adminResolveCommentReports(it.cid);
         toast('한마디를 숨기고 신고를 처리했어요');
       } else if(what === 'sr-dismiss') {
-        await PPX.adminResolveCommentReport(it.rid);
+        await PPX.adminResolveCommentReports(it.cid);
         toast('신고를 처리했어요');
+      } else if(what === 'sr-block') {
+        if(!confirm('이 한마디를 쓴 사람(기기)을 막을까요? 그 사람의 한마디는 모두 숨겨져요.')) { btns.forEach(b => b.disabled = false); return; }
+        await PPX.adminBlockCommenter(it.cid);
+        await PPX.adminResolveCommentReports(it.cid);
+        toast('막았어요. 그 사람의 한마디가 모두 숨겨졌어요');
       }
+    } else if(it && it.kind === 'abuse') {
+      if(what === 'ab-block' && !confirm('이 사람(기기)이 앞으로 제보·요청·한마디를 못 보내게 할까요?')) { btns.forEach(b => b.disabled = false); return; }
+      await PPX.adminBlock(it.user_id, what === 'ab-block');
+      toast(what === 'ab-block' ? '막았어요' : '다시 받을 수 있게 했어요');
     } else if(what === 'approve') {
       const fields = readFields(card);
       if(!fields.name) { toast('이름을 입력해 주세요', true); btns.forEach(b => b.disabled = false); return; }
