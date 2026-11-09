@@ -452,6 +452,15 @@
       if (error) throw error;
     },
     // 운영자: 최근 7일 이상 요청 (사람별로 묶음, 많은 순)
+    // 운영자: 방문자 통계 (최근 days일)
+    async adminVisitStats(days) {
+      const { data, error } = await db.rpc('admin_visit_stats', { days: days || 14 });
+      if (error) throw error;
+      return data;
+    },
+    // 이 기기를 방문자 수에서 빼기 (운영자 기기)
+    noTrack() { try { localStorage.setItem('ppxNoTrack', '1'); } catch (e) {} },
+
     async adminAbuseSummary() {
       const { data, error } = await db.rpc('admin_abuse_summary');
       if (error) throw error;
@@ -529,4 +538,24 @@
   };
 
   window.PPX = PPX;
+
+  // ── 방문자 수 세기 ──
+  // 기기마다 임의 번호 하나(개인을 알 수 있는 정보 아님)로 '오늘 이 화면을 봤다'만 남김.
+  // 운영자 기기, 자동 프로그램은 세지 않음. 실패해도 화면에는 영향 없음.
+  try {
+    const path = location.pathname;
+    const name = /\/r\/(index\.html)?$/.test(path) ? 'review'
+      : ((path.match(/([\w-]+)\.html$/) || [, 'index'])[1]);
+    const PAGE = { index: 'home', map: 'map', review: 'review', login: 'login', join: 'join', mypage: 'mypage' };
+    if (ready && name !== 'admin' && !navigator.webdriver && !localStorage.getItem('ppxNoTrack')) {
+      let v = localStorage.getItem('ppxVisitor');
+      if (!v || !/^[0-9a-f-]{36}$/.test(v)) {
+        v = (crypto.randomUUID ? crypto.randomUUID()
+          : '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, c =>
+              (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)));
+        localStorage.setItem('ppxVisitor', v);
+      }
+      setTimeout(() => { db.rpc('ppx_track', { v, p: PAGE[name] || 'other' }).then(() => {}, () => {}); }, 1200);
+    }
+  } catch (e) { /* 저장소를 못 쓰는 환경이면 세지 않음 */ }
 })();

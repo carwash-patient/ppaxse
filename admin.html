@@ -158,6 +158,7 @@ async function init() {
   try { me = await PPX.me(); } catch(e) {}
   if(!me) return gate('운영자 계정으로 로그인해 주세요.<br><a href="login.html?next=admin.html">💧 로그인</a>');
   if(me.role !== 'admin') return gate('운영자만 볼 수 있는 화면이에요.<br><a href="map.html">지도로 돌아가기</a>');
+  PPX.noTrack();   // 운영자 기기는 방문자 수에서 뺌
 
   document.getElementById('app').innerHTML = `
     <div class="tabs">
@@ -168,6 +169,7 @@ async function init() {
       <button class="tab" data-t="commentReports" type="button">한마디 신고<b id="commentReportsN"></b></button>
       <button class="tab" data-t="abuse" type="button">이상 요청<b id="abuseN"></b></button>
       <button class="tab" data-t="event" type="button">🎁 추첨</button>
+      <button class="tab" data-t="visits" type="button">📊 방문자</button>
       <button class="tab" data-t="done" type="button">처리 내역</button>
     </div>
     <div id="searchBox"></div>
@@ -227,6 +229,7 @@ async function load() {
   }[tab];
   document.getElementById('mapNote').textContent = note;
   if(tab === 'event') return loadEvent();
+  if(tab === 'visits') return loadVisits();
   document.getElementById('searchBox').innerHTML = tab === 'edit' ? `
     <form class="search" id="searchForm">
       <input id="searchInput" placeholder="세차장 이름, 주소, 지역 (예: 컴인워시, 남동구)" value="${esc(searchTerm)}" maxlength="40">
@@ -405,6 +408,44 @@ function cardComment(it) {
 // ── 🎁 기프티콘 추첨 ──
 let evFrom = null, evTo = null, evList = [], evWinners = [];
 const ymd = d => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+// ── 📊 방문자 ──
+const PAGE_NAMES = { home: '홈', map: '지도', review: '후기 페이지', login: '로그인', join: '가입', mypage: '마이페이지', other: '기타' };
+async function loadVisits() {
+  if(reqMarker) reqMarker.setMap(null);
+  nearMarkers.forEach(m => m.setMap(null)); nearMarkers = [];
+  document.getElementById('searchBox').innerHTML = '';
+  const list = document.getElementById('list');
+  list.innerHTML = '<div class="msg">불러오는 중…</div>';
+  try {
+    const s = await PPX.adminVisitStats(14);
+    const days = s.days || [], td = days[0] || {}, yd = days[1] || {};
+    const max = Math.max(1, ...days.map(d => d.visitors));
+    const wk = ['일','월','화','수','목','금','토'];
+    const label = d => { const t = new Date(d + 'T00:00:00'); return `${t.getMonth() + 1}/${t.getDate()}(${wk[t.getDay()]})`; };
+    const box = (t, n, sub) => `<div style="flex:1;min-width:0;padding:12px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)">
+      <div style="font-size:12px;color:rgba(255,255,255,.6)">${t}</div><div style="font-size:22px;font-weight:900;margin:2px 0">${n.toLocaleString()}명</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.5)">${sub}</div></div>`;
+    list.innerHTML = `
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        ${box('오늘', td.visitors || 0, `본 횟수 ${(td.views || 0).toLocaleString()} · 처음 ${td.new_visitors || 0}명`)}
+        ${box('어제', yd.visitors || 0, `본 횟수 ${(yd.views || 0).toLocaleString()} · 처음 ${yd.new_visitors || 0}명`)}
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        ${box('최근 7일', s.uniq7 || 0, '겹치지 않게 센 기기 수')}
+        ${box('최근 30일', s.uniq30 || 0, `지금까지 전체 ${(s.total || 0).toLocaleString()}명`)}
+      </div>
+      <div class="memo" style="margin-bottom:6px;font-weight:900">날짜별 방문자</div>
+      ${days.map(d => `<div style="display:flex;align-items:center;gap:8px;font-size:13px;margin:5px 0">
+        <span style="width:62px;flex:none;color:rgba(255,255,255,.7)">${label(d.day)}</span>
+        <span style="flex:1;height:10px;border-radius:5px;background:rgba(255,255,255,.06);overflow:hidden"><span style="display:block;height:100%;width:${Math.round(d.visitors / max * 100)}%;background:var(--sky)"></span></span>
+        <span style="width:44px;flex:none;text-align:right;font-weight:700">${d.visitors}명</span></div>`).join('')}
+      <div class="memo" style="margin:14px 0 6px;font-weight:900">오늘 본 화면</div>
+      ${(s.pages_today || []).length ? s.pages_today.map(p => `<div style="display:flex;justify-content:space-between;font-size:13px;margin:5px 0">
+        <span>${esc(PAGE_NAMES[p.page] || p.page)}</span><span>${p.visitors}명 · ${p.views}회</span></div>`).join('') : '<div class="msg">아직 오늘 방문이 없어요</div>'}
+      <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:14px;line-height:1.6">· 같은 휴대폰·브라우저는 하루 1명으로 세요. 브라우저를 바꾸거나 기록을 지우면 새 사람으로 셀 수 있어요.<br>· 운영자 화면을 연 기기는 세지 않아요. 날짜는 한국 시간 기준이에요.<br>· 이 숫자는 운영자만 봐요. 홈 화면 등에 공개하지 않아요.</div>`;
+  } catch(e) { list.innerHTML = `<div class="msg">${esc(PPX.koError(e))}</div>`; }
+}
+
 async function loadEvent() {
   if(reqMarker) reqMarker.setMap(null);
   nearMarkers.forEach(m => m.setMap(null)); nearMarkers = [];
