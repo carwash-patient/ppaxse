@@ -427,8 +427,13 @@ async function loadComments(id) {
       if(!reason) return toast('신고 사유를 골라 주세요', true);
       if(!confirm('이 한마디를 신고할까요?')) return;
       btn.disabled = true;
-      try { await PPX.reportComment(Number(row.dataset.commentId), reason); toast('신고를 접수했어요. 확인 후 조치할게요.'); }
-      catch(e) { toast(PPX.koError(e), true); btn.disabled = false; }
+      btn.textContent = '보내는 중…';
+      try { await PPX.reportComment(Number(row.dataset.commentId), reason); btn.textContent = '접수됨'; row.querySelector('.report-reason').disabled = true; toast('신고를 접수했어요. 확인 후 조치할게요.'); }
+      catch(e) {
+        const msg = PPX.koError(e); toast(msg, true);
+        if(/이미 신고/.test(msg)) { btn.textContent = '접수됨'; row.querySelector('.report-reason').disabled = true; }
+        else { btn.disabled = false; btn.textContent = '신고'; }
+      }
     });
   } catch(e) {}
 }

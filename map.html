@@ -876,9 +876,35 @@ async function loadComments(id) {
     const list = await PPX.comments(id, 5);
     if(activeId !== id) return;
     box.innerHTML = list.length ? list.map(c => `
-      <div class="review-item"><div class="ri-text" style="color:#fff">${esc(c.body)}</div>
-      <div class="ri-date" style="margin:4px 0 0">${esc(c.nickname || '익명 세차러')} · ${daysAgo(c.created_at)}</div></div>`).join('')
+      <div class="review-item" data-cid="${c.id}"><div class="ri-text" style="color:#fff">${esc(c.body)}</div>
+      <div class="ri-date" style="margin:4px 0 0;display:flex;justify-content:space-between;align-items:center;gap:8px"><span>${esc(c.nickname || '익명 세차러')} · ${daysAgo(c.created_at)}</span><button class="cm-flag" type="button" style="background:none;border:0;color:#8a8f98;font-size:12px;padding:6px 2px;cursor:pointer">🚩 신고</button></div>
+      <div class="cm-rep" hidden style="margin-top:6px;display:flex;gap:6px;align-items:center">
+        <select aria-label="신고 사유" style="flex:1;min-width:0;height:36px;border-radius:8px;border:1px solid #444;background:#1c1f24;color:#fff;font-size:13px;padding:0 8px">
+          <option value="">신고 사유를 골라 주세요</option><option value="abuse">욕설·비방</option><option value="spam">광고·도배</option><option value="privacy">개인정보 노출</option><option value="other">기타</option>
+        </select>
+        <button class="cm-send" type="button" style="height:36px;padding:0 12px;border-radius:8px;border:0;background:#ff5a36;color:#fff;font-size:13px;font-weight:700">보내기</button>
+      </div></div>`).join('')
       : '<div class="dp-more" style="margin:0 0 8px">아직 한마디가 없어요. 다녀오셨다면 첫 한마디를 남겨 주세요!</div>';
+    box.querySelectorAll('.review-item[data-cid]').forEach(row => {
+      const rep = row.querySelector('.cm-rep'), flag = row.querySelector('.cm-flag'), send = row.querySelector('.cm-send');
+      rep.style.display = 'none';
+      flag.onclick = () => { const open = rep.style.display === 'none'; rep.style.display = open ? 'flex' : 'none'; flag.textContent = open ? '닫기' : '🚩 신고'; };
+      send.onclick = async () => {
+        const reason = rep.querySelector('select').value;
+        if(!reason) return toast('신고 사유를 골라 주세요', true);
+        send.disabled = true; send.textContent = '보내는 중…';
+        try {
+          await PPX.reportComment(Number(row.dataset.cid), reason);
+          rep.style.display = 'none'; flag.textContent = '신고 접수됨'; flag.disabled = true;
+          toast('신고를 접수했어요. 확인 후 조치할게요.');
+        } catch(e) {
+          const msg = PPX.koError(e);
+          toast(msg, true);
+          if(/이미 신고/.test(msg)) { rep.style.display = 'none'; flag.textContent = '신고 접수됨'; flag.disabled = true; }
+          else { send.disabled = false; send.textContent = '보내기'; }
+        }
+      };
+    });
   } catch(e) { box.innerHTML = ''; }
 }
 
