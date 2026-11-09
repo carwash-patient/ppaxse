@@ -421,7 +421,15 @@ async function loadComments(id) {
     const list = await PPX.comments(id, 10);
     if(!list.length) return;
     box.innerHTML = `<div class="q" style="margin-bottom:8px"><h2>다른 분들 한마디 💬</h2></div>` +
-      list.map(c => `<div class="cm">${esc(c.body)}<div class="w">${esc(c.nickname || '익명 세차러')} · ${ago(c.created_at)}</div></div>`).join('');
+      list.map(c => `<div class="cm" data-comment-id="${c.id}">${esc(c.body)}<div class="w">${esc(c.nickname || '익명 세차러')} · ${ago(c.created_at)}<div style="display:flex;gap:6px;margin-top:7px;align-items:center"><select class="in report-reason" aria-label="신고 사유" style="height:36px;min-width:0;flex:1;font-size:12px;padding:0 8px"><option value="">문제 신고</option><option value="abuse">욕설·비방</option><option value="spam">광고·도배</option><option value="privacy">개인정보 노출</option><option value="other">기타</option></select><button class="btn g report-comment" type="button" style="min-height:36px;padding:0 12px;font-size:12px">신고</button></div></div></div>`).join('');
+    box.querySelectorAll('.report-comment').forEach(btn => btn.onclick = async () => {
+      const row = btn.closest('[data-comment-id]'), reason = row.querySelector('.report-reason').value;
+      if(!reason) return toast('신고 사유를 골라 주세요', true);
+      if(!confirm('이 한마디를 신고할까요?')) return;
+      btn.disabled = true;
+      try { await PPX.reportComment(Number(row.dataset.commentId), reason); toast('신고를 접수했어요. 확인 후 조치할게요.'); }
+      catch(e) { toast(PPX.koError(e), true); btn.disabled = false; }
+    });
   } catch(e) {}
 }
 
