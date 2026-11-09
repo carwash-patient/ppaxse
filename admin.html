@@ -165,6 +165,7 @@ async function init() {
       <button class="tab" data-t="reports" type="button">정보 제보<b id="reportsN"></b></button>
       <button class="tab" data-t="edit" type="button">세차장 고치기</button>
       <button class="tab" data-t="comments" type="button">한마디<b id="commentsN"></b></button>
+      <button class="tab" data-t="commentReports" type="button">한마디 신고<b id="commentReportsN"></b></button>
       <button class="tab" data-t="event" type="button">🎁 추첨</button>
       <button class="tab" data-t="done" type="button">처리 내역</button>
     </div>
@@ -201,9 +202,10 @@ async function refreshComments() {
 async function refreshCounts() {
   refreshComments();
   try {
-    const [a, b] = await Promise.all([PPX.adminList('pending'), PPX.adminReports('pending')]);
+    const [a, b, c] = await Promise.all([PPX.adminList('pending'), PPX.adminReports('pending'), PPX.adminCommentReports('pending')]);
     document.getElementById('pendingN').textContent = a.length ? ' ' + a.length : '';
     document.getElementById('reportsN').textContent = b.length ? ' ' + b.length : '';
+    document.getElementById('commentReportsN').textContent = c.length ? ' ' + c.length : '';
   } catch(e) {}
 }
 
@@ -216,6 +218,7 @@ async function load() {
     reports: '📍 빨간 핀 = 제보된 세차장 · 파란 점 = 근처 세차장',
     edit: '📍 빨간 핀 = 고치는 세차장 · 파란 점 = 근처 세차장',
     comments: '📍 한마디가 달린 세차장',
+    commentReports: '🚩 이용자가 신고한 한마디가 달린 세차장',
     event: '🎁 기간 안에 후기(제보·한마디·정보가 맞아요·추가 요청)를 남긴 가입 회원이에요. 가입 전에 남긴 후기도 가입하면 포함돼요.',
     done: '📍 처리한 항목의 위치'
   }[tab];
@@ -243,6 +246,18 @@ async function load() {
       document.getElementById('commentsN').textContent = '';
       items = (await PPX.adminComments()).map(c => ({ ...c, kind: 'cm', id: 'c' + c.id, cid: c.id,
         lat: (approved.find(p => p.id === c.place_id) || {}).lat, lng: (approved.find(p => p.id === c.place_id) || {}).lng }));
+    }
+    else if(tab === 'commentReports') {
+      items = (await PPX.adminCommentReports('pending')).map(x => ({
+        ...x, kind: 'creport', id: 's' + x.id, rid: x.id, cid: x.comment_id,
+        body: x.comment ? x.comment.body : '(삭제된 한마디)',
+        nickname: x.comment ? x.comment.nickname : '',
+        hidden: x.comment ? x.comment.hidden : true,
+        place: x.comment ? x.comment.place : null,
+        lat: x.comment && x.comment.place ? x.comment.place.lat : null,
+        lng: x.comment && x.comment.place ? x.comment.place.lng : null
+      }));
+      document.getElementById('commentReportsN').textContent = items.length ? ' ' + items.length : '';
     }
     else {
       const [a, b] = await Promise.all([PPX.adminList('done'), PPX.adminReports('done')]);
@@ -323,6 +338,22 @@ function cardReport(it) {
         <button class="ok" type="button" data-act="apply">${rows.length ? '✅ 체크한 내용 반영' : '✅ 확인함'}</button>
       </div>
       ${it.reporter ? `<div style="text-align:right;margin-top:8px"><button class="mini" type="button" data-act="${blocked ? 'unblock' : 'block'}">${blocked ? '이 사람 제보 다시 받기' : '🚫 장난 제보면: 이 사람 제보 막기'}</button></div>` : ''}
+    </div>`;
+}
+
+// 한마디: 바로 보이는 글이라 이상한 글은 숨기기, 반복하면 쓴 사람 막기
+function cardCommentReport(it) {
+  const reasons = { abuse: '욕설·비방', spam: '광고·도배', privacy: '개인정보 노출', other: '기타' };
+  return `
+    <div class="card ${it.id===selId?'sel':''}" data-id="${it.id}">
+      <div class="c-top"><span class="c-name">${esc(it.place ? it.place.name : '(세차장 정보 없음)')}</span><span class="c-when">${ago(it.created_at)}</span></div>
+      <div class="memo">🚩 신고 사유: ${esc(reasons[it.reason] || '기타')}</div>
+      <div class="memo" style="${it.hidden ? 'opacity:.5;text-decoration:line-through' : ''}">💬 ${esc(it.body)}</div>
+      <div class="c-who">${esc(it.nickname || '익명 세차러')}${it.hidden ? ' · 숨김 상태' : ''}</div>
+      <div class="acts">
+        <button class="no" type="button" data-act="sr-dismiss">신고만 처리</button>
+        ${it.hidden ? '' : '<button class="no" type="button" data-act="sr-hide">한마디 숨기고 처리</button>'}
+      </div>
     </div>`;
 }
 
@@ -465,14 +496,15 @@ function render() {
       reports: '확인할 정보 제보가 없어요 🎉',
       edit: searchTerm ? '검색 결과가 없어요' : '고칠 세차장을 위에서 검색해 주세요',
       comments: '아직 한마디가 없어요',
+      commentReports: '접수된 한마디 신고가 없어요 🎉',
       done: '아직 처리한 내역이 없어요'
     }[tab]}</div>`;
     return;
   }
-  const make = { pending: cardPending, reports: cardReport, edit: cardEdit, done: cardDone, comments: cardComment }[tab];
+  const make = { pending: cardPending, reports: cardReport, edit: cardEdit, done: cardDone, comments: cardComment, commentReports: cardCommentReport }[tab];
   list.innerHTML = items.map(make).join('');
   list.querySelectorAll('.card').forEach(card => {
-    const id = /^[rc]/.test(card.dataset.id) ? card.dataset.id : +card.dataset.id;
+    const id = /^[rcs]/.test(card.dataset.id) ? card.dataset.id : +card.dataset.id;
     card.addEventListener('click', e => {
       if(e.target.closest('input,select,button,label')) return;
       if(selId === id) return;
@@ -544,7 +576,16 @@ async function act(card, id, what) {
   const btns = card.querySelectorAll('button'); btns.forEach(b => b.disabled = true);
   try {
     const it = items.find(x => x.id === id);
-    if(what === 'approve') {
+    if(it && it.kind === 'creport') {
+      if(what === 'sr-hide') {
+        await PPX.adminHideComment(it.cid, true);
+        await PPX.adminResolveCommentReport(it.rid);
+        toast('한마디를 숨기고 신고를 처리했어요');
+      } else if(what === 'sr-dismiss') {
+        await PPX.adminResolveCommentReport(it.rid);
+        toast('신고를 처리했어요');
+      }
+    } else if(what === 'approve') {
       const fields = readFields(card);
       if(!fields.name) { toast('이름을 입력해 주세요', true); btns.forEach(b => b.disabled = false); return; }
       await PPX.adminReview(id, 'approved', fields);
