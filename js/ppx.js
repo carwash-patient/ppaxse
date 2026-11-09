@@ -372,7 +372,7 @@
       return data;
     },
 
-    // 한마디 신고 (한마디당 기기별 1회, 하루 10회 제한은 DB에서 검사)
+    // 한마디 신고 (한 익명 로그인 세션/계정당 한마디 1회, 하루 10회 제한은 DB에서 검사)
     async reportComment(commentId, reason) {
       await PPX.ensureUser();
       const { error } = await db.from('place_comment_reports').insert({ comment_id: commentId, reason });
