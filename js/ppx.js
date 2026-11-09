@@ -372,6 +372,28 @@
       return data;
     },
 
+    // 한마디 신고 (한마디당 기기별 1회, 하루 10회 제한은 DB에서 검사)
+    async reportComment(commentId, reason) {
+      await PPX.ensureUser();
+      const { error } = await db.from('place_comment_reports').insert({ comment_id: commentId, reason });
+      if (error) throw error;
+    },
+
+    // 운영자: 접수된 한마디 신고
+    async adminCommentReports(status) {
+      let q = db.from('place_comment_reports')
+        .select('id,comment_id,reason,status,created_at,comment:place_comments!place_comment_reports_comment_id_fkey(id,place_id,body,nickname,hidden,created_at,place:places!place_comments_place_id_fkey(name,region,lat,lng))');
+      q = status === 'pending' ? q.eq('status', 'pending').order('created_at', { ascending: true })
+        : q.eq('status', 'resolved').order('created_at', { ascending: false }).limit(60);
+      const { data, error } = await q;
+      if (error) throw error;
+      return data;
+    },
+    async adminResolveCommentReport(id) {
+      const { error } = await db.from('place_comment_reports').update({ status: 'resolved' }).eq('id', id);
+      if (error) throw error;
+    },
+
     // 운영자: 한마디 관리
     async adminComments() {
       const { data, error } = await db.from('place_comments')
