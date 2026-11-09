@@ -873,10 +873,11 @@ async function loadComments(id) {
   if(!box) return;
   if(!PPX.ready || !PPX.comments) { box.innerHTML = '<div class="dp-more" style="margin:0">아직 한마디가 없어요.</div>'; return; }
   try {
-    const list = await PPX.comments(id, 5);
+    const list = await PPX.comments(id, 20);
     if(activeId !== id) return;
-    box.innerHTML = list.length ? list.map(c => `
-      <div class="review-item" data-cid="${c.id}"><div class="ri-text" style="color:#fff">${esc(c.body)}</div>
+    const allShown = list.length < 20;   // 다 불러왔으면 맨 마지막이 이 세차장의 첫 한마디
+    box.innerHTML = (list.length ? list.map((c, i) => `
+      <div class="review-item" data-cid="${c.id}" ${i >= 3 ? 'data-more hidden' : ''}><div class="ri-text" style="color:#fff">${allShown && i === list.length - 1 ? '<span style="display:inline-block;margin-right:6px;padding:0 7px;border-radius:999px;background:rgba(52,211,153,.16);color:#6ee7b7;font-size:11px;font-weight:900">🏁 첫 한마디</span>' : ''}${esc(c.body)}</div>
       <div class="ri-date" style="margin:4px 0 0;display:flex;justify-content:space-between;align-items:center;gap:8px"><span>${esc(c.nickname || '익명 세차러')} · ${daysAgo(c.created_at)}</span><button class="cm-flag" type="button" style="background:none;border:0;color:#8a8f98;font-size:12px;padding:6px 2px;cursor:pointer">🚩 신고</button></div>
       <div class="cm-rep" hidden style="margin-top:6px;display:flex;gap:6px;align-items:center">
         <select aria-label="신고 사유" style="flex:1;min-width:0;height:36px;border-radius:8px;border:1px solid #444;background:#1c1f24;color:#fff;font-size:13px;padding:0 8px">
@@ -884,7 +885,11 @@ async function loadComments(id) {
         </select>
         <button class="cm-send" type="button" style="height:36px;padding:0 12px;border-radius:8px;border:0;background:#ff5a36;color:#fff;font-size:13px;font-weight:700">보내기</button>
       </div></div>`).join('')
-      : '<div class="dp-more" style="margin:0 0 8px">아직 한마디가 없어요. 다녀오셨다면 첫 한마디를 남겨 주세요!</div>';
+      : '<div class="dp-more" style="margin:0 0 8px">아직 한마디가 없어요. 다녀오셨다면 <b>🏁 첫 한마디</b>를 남겨 주세요!</div>')
+      + (list.length > 3 ? `<button class="cm-more" type="button" style="width:100%;min-height:44px;margin:4px 0 8px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:#cfe8ff;font-size:13px">한마디 ${list.length - 3}개 더 보기${allShown ? '' : '+'}</button>` : '')
+      + `<a href="r/?p=${id}" style="display:block;margin:2px 0 8px;font-size:12px;color:#fde68a;text-decoration:none">🎁 한마디 이벤트 진행 중 · 매주 기프티콘 추첨 (자세히 →)</a>`;
+    const more = box.querySelector('.cm-more');
+    if(more) more.onclick = () => { box.querySelectorAll('[data-more]').forEach(el => el.hidden = false); more.remove(); };
     box.querySelectorAll('.review-item[data-cid]').forEach(row => {
       const rep = row.querySelector('.cm-rep'), flag = row.querySelector('.cm-flag'), send = row.querySelector('.cm-send');
       rep.style.display = 'none';
