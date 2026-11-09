@@ -52,6 +52,20 @@ h1 span{background:linear-gradient(90deg,var(--sky),var(--aqua));-webkit-backgro
 .gift .tx small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
 .gift .go{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
 .gift .go a{display:flex;align-items:center;justify-content:center;min-height:38px;padding:0 13px;border-radius:11px;font-size:13px;font-weight:900;text-decoration:none;color:#04111e;background:#fbbf24;white-space:nowrap}
+.ev{margin:-6px 0 16px;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid var(--line);font-size:13px;line-height:1.6;color:var(--foam)}
+.ev .row{display:flex;justify-content:space-between;gap:8px}
+.ev .row b{color:#fff}
+.ev .mine{margin-top:8px;padding:8px 10px;border-radius:10px;background:rgba(251,191,36,.12);color:#fde68a}
+.ev .mine b{color:#fff;letter-spacing:1px}
+.ev .last{margin-top:8px;font-size:12px;color:var(--muted)}
+.ev details{margin-top:8px;font-size:12px;color:var(--muted)}
+.ev summary{cursor:pointer;color:var(--foam);min-height:32px;display:flex;align-items:center}
+.ev ul{margin:4px 0 0;padding-left:18px}
+.code{margin:14px 0 4px;padding:16px;border-radius:16px;background:rgba(251,191,36,.14);border:1.5px dashed #fbbf24;text-align:center}
+.code .n{font-size:30px;font-weight:900;letter-spacing:3px;color:#fff;margin:4px 0}
+.code small{display:block;color:#fde68a;font-size:12px;line-height:1.6}
+.evnote{margin:12px 0 0;font-size:13px;color:var(--muted);line-height:1.6}
+.first{display:inline-block;margin-right:6px;padding:0 7px;border-radius:999px;background:rgba(52,211,153,.16);color:#6ee7b7;font-size:11px;font-weight:900}
 .gift .go a.l{background:transparent;color:#fde68a;border:1px solid rgba(251,191,36,.5);min-height:32px;font-size:12px}
 .stat{font-size:13px;color:var(--foam);margin-bottom:18px;min-height:20px}
 .stat b{color:var(--aqua);font-size:15px}
@@ -154,9 +168,10 @@ textarea:focus,.in:focus{border-color:var(--aqua)}
     <div class="stat" id="stat"></div>
     <div class="gift" id="gift">
       <div class="ic">🎁</div>
-      <div class="tx" id="giftText"><b>회원가입 후 후기를 남기면</b><br>추첨을 통해 기프티콘을 보내드려요!<small>당첨되면 가입한 이메일로 연락드려요</small></div>
+      <div class="tx" id="giftText"><b>한마디만 남겨도 매주 기프티콘 추첨</b><br>가입하면 회원 추첨까지 <b>기회 2번!</b></div>
       <div class="go" id="giftGo"><a href="../join.html?next=r/">가입하기</a><a class="l" href="../login.html?next=r/">로그인</a></div>
     </div>
+    <div class="ev" id="evBox" hidden></div>
     <form class="search" id="searchForm" autocomplete="off">
       <input id="q" type="search" enterkeyhint="search" placeholder="이름이나 동네 (예: 구월동 셀프)" maxlength="40">
       <button class="btn p" type="submit">찾기</button>
@@ -195,7 +210,7 @@ textarea:focus,.in:focus{border-color:var(--aqua)}
     </div>
     <div class="q">
       <h2>한마디 남기기 💬 <small style="color:var(--muted);font-weight:400">(선택)</small></h2>
-      <p>다른 분들께 바로 보여요. 번개 때 같이 갔다면 각자 한마디씩!</p>
+      <p>다른 분들께 바로 보여요. <b style="color:#fde68a">10자 이상</b> 남기고 위에서 하나라도 골라 주시면 기프티콘 추첨에 응모돼요 🎁</p>
       <textarea id="comment" maxlength="200" placeholder="예) 수압 최고 💦 주말 오후엔 대기 조금 있어요"></textarea>
       <div class="row2"><input class="in" id="nick" maxlength="20" placeholder="닉네임 (선택, 없으면 '익명 세차러')"></div>
     </div>
@@ -238,11 +253,7 @@ textarea:focus,.in:focus{border-color:var(--aqua)}
       <div class="big">🙌</div>
       <h2>고마워요!</h2>
       <p id="doneText">덕분에 세차장 지도가 한 칸 더 채워졌어요.</p>
-      <div class="gift" id="giftDone" style="text-align:left" hidden>
-        <div class="ic">🎁</div>
-        <div class="tx"><b>지금 가입하면 방금 남긴 후기도 응모돼요</b><br>추첨을 통해 기프티콘을 보내드려요!<small>이 기기로 남긴 후기가 계정으로 옮겨져요</small></div>
-        <div class="go"><a href="../join.html?next=r/">가입하기</a><a class="l" href="../login.html?next=r/">로그인</a></div>
-      </div>
+      <div id="evDone" style="text-align:left"></div>
     </div>
     <div class="about">
       <div class="k">💧 빡세는 이런 곳이에요</div>
@@ -308,15 +319,51 @@ function ago(iso) {
   return d <= 0 ? '오늘' : d === 1 ? '어제' : d < 30 ? `${d}일 전` : d < 365 ? `${Math.floor(d/30)}달 전` : `${Math.floor(d/365)}년 전`;
 }
 
-// ── 기프티콘 추첨 안내: 로그인했으면 '응모 중' ──
-let me = null;
+// ── 한마디 기프티콘 주간 추첨: 이번 주 참여 현황(실제 숫자), 내 응모번호, 지난 회차 당첨 번호 ──
+let me = null, evSt = null;
+const WD = ['일','월','화','수','목','금','토'];
+const md = s => { const d = new Date(s + 'T00:00:00'); return `${d.getMonth() + 1}/${d.getDate()}(${WD[d.getDay()]})`; };
+const RULES = `<details><summary>추첨 규칙 보기</summary><ul>
+  <li>응모 기간: 매주 토요일 0시 ~ 금요일 밤 12시, 당첨 발표는 다음 주 월요일</li>
+  <li>응모 방법: 다녀온 세차장 정보(다녀온 시기·시설 등)를 하나 이상 고르고 한마디를 10자 이상 남기기</li>
+  <li>한 사람(기기·계정)당 한 주에 1번 응모돼요. 여러 개 남겨도 응모는 1번이에요</li>
+  <li>매주 ‘누구나 추첨’ 2명 + ‘회원 추첨’ 2명 (회원은 두 추첨 모두 참여, 한 사람이 두 번 당첨되지는 않아요)</li>
+  <li>당첨되면 응모번호와 기프티콘 받을 휴대폰 번호를 ppaxse@gmail.com으로 보내 주세요 (발표 후 7일 안에)</li>
+  <li>욕설·광고·성의 없는 글, 가 보지 않은 곳의 글은 추첨에서 빠질 수 있어요</li>
+  <li>응모할 때는 연락처를 받지 않아요. 당첨자의 휴대폰 번호는 기프티콘을 보낸 뒤 지워요</li>
+</ul></details>`;
+const countLine = (label, n, w) => `<div class="row"><span>${label}</span><span>${n ? `<b>${n}명</b> 참여 중` : '아직 참여자가 없어요'} · ${w}명 당첨</span></div>`;
+function renderEvent() {
+  const st = evSt; if(!st) return;
+  const today = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
+  const before = today < st.start;
+  const isMember = !!me;
+  $('giftText').innerHTML = before
+    ? `<b>${md(st.start)}부터 한마디 기프티콘 추첨!</b><br>가입 없이 한마디만 남겨도 매주 추첨해요<small>가입하면 회원 추첨까지 기회 2번</small>`
+    : isMember
+      ? `<b>${esc(me.nickname || '회원')}님은 회원 추첨까지 기회 2번 🎉</b><br>한마디만 남기면 매주 기프티콘 추첨<small>이번 주 응모 ${md(st.week)}~${md(st.week_end)} · 발표 ${md(st.draw_date)}</small>`
+      : `<b>한마디만 남겨도 매주 기프티콘 추첨</b><br>가입하면 회원 추첨까지 <b>기회 2번!</b><small>이번 주 응모 ${md(st.week)}~${md(st.week_end)} · 발표 ${md(st.draw_date)}</small>`;
+  $('giftGo').hidden = isMember;
+  const mine = (st.mine || []), now = mine.find(m => m.week === st.week), won = mine.find(m => m.won);
+  let h = before ? `<div>첫 회차: ${md(st.week)} ~ ${md(st.week_end)} 응모 · ${md(st.draw_date)} 발표</div>`
+    : `<div style="margin-bottom:2px;color:#fff;font-weight:700">이번 주 참여 현황</div>` + countLine('누구나 추첨', st.all_count, st.winners_all) + countLine('회원 추첨', st.member_count, st.winners_member);
+  if(won) h += `<div class="mine">🎉 <b>${esc(won.code)}</b> 당첨됐어요! 응모번호와 받을 휴대폰 번호를 ppaxse@gmail.com으로 보내 주세요</div>`;
+  else if(now) h += `<div class="mine">이번 주 내 응모번호 <b>${esc(now.code)}</b> · 발표 ${md(st.draw_date)}</div>`;
+  if(st.last && st.last.winners) {
+    const w = st.last.winners, mem = w.filter(x => x.pool === 'member').map(x => x.code), all = w.filter(x => x.pool === 'all').map(x => x.code);
+    h += `<div class="last">지난 회차(${md(st.last.week)}~) 당첨 번호 · 회원 ${esc(mem.join(', ') || '-')} (${st.last.member_count}명 중) · 누구나 ${esc(all.join(', ') || '-')} (${st.last.all_count}명 중)</div>`;
+  }
+  $('evBox').innerHTML = h + RULES;
+  $('evBox').hidden = false;
+}
+async function loadEvent() {
+  if(!PPX.ready || !PPX.eventStatus) return;
+  try { evSt = await PPX.eventStatus(); renderEvent(); } catch(e) {}
+}
 (async () => {
   if(!PPX.ready) return;
   try { me = await PPX.me(); } catch(e) {}
-  if(me) {
-    $('giftText').innerHTML = `<b>${esc(me.nickname || '회원')}님, 기프티콘 추첨에 응모 중이에요 🎉</b><br>다녀온 세차장 후기를 남겨 주세요!<small>당첨되면 가입한 이메일로 연락드려요</small>`;
-    $('giftGo').hidden = true;
-  }
+  loadEvent();
 })();
 
 // ── 모인 정보 수 ──
@@ -421,7 +468,7 @@ async function loadComments(id) {
     const list = await PPX.comments(id, 10);
     if(!list.length) return;
     box.innerHTML = `<div class="q" style="margin-bottom:8px"><h2>다른 분들 한마디 💬</h2></div>` +
-      list.map(c => `<div class="cm" data-comment-id="${c.id}">${esc(c.body)}<div class="w">${esc(c.nickname || '익명 세차러')} · ${ago(c.created_at)}<div style="display:flex;gap:6px;margin-top:7px;align-items:center"><select class="in report-reason" aria-label="신고 사유" style="height:36px;min-width:0;flex:1;font-size:12px;padding:0 8px"><option value="">문제 신고</option><option value="abuse">욕설·비방</option><option value="spam">광고·도배</option><option value="privacy">개인정보 노출</option><option value="other">기타</option></select><button class="btn g report-comment" type="button" style="min-height:36px;padding:0 12px;font-size:12px">신고</button></div></div></div>`).join('');
+      list.map((c, i) => `<div class="cm" data-comment-id="${c.id}">${list.length < 10 && i === list.length - 1 ? '<span class="first">🏁 첫 한마디</span>' : ''}${esc(c.body)}<div class="w">${esc(c.nickname || '익명 세차러')} · ${ago(c.created_at)}<div style="display:flex;gap:6px;margin-top:7px;align-items:center"><select class="in report-reason" aria-label="신고 사유" style="height:36px;min-width:0;flex:1;font-size:12px;padding:0 8px"><option value="">문제 신고</option><option value="abuse">욕설·비방</option><option value="spam">광고·도배</option><option value="privacy">개인정보 노출</option><option value="other">기타</option></select><button class="btn g report-comment" type="button" style="min-height:36px;padding:0 12px;font-size:12px">신고</button></div></div></div>`).join('');
     box.querySelectorAll('.report-comment').forEach(btn => btn.onclick = async () => {
       const row = btn.closest('[data-comment-id]'), reason = row.querySelector('.report-reason').value;
       if(!reason) return toast('신고 사유를 골라 주세요', true);
@@ -493,9 +540,17 @@ $('send').onclick = async () => {
   const btn = $('send'); btn.disabled = true; btn.textContent = photoBlob ? '사진 올리는 중…' : '보내는 중…';
   try {
     if(hasReport) await PPX.reportPlace(p.id, suggest, memo, { visit: form.visit, photo: photoBlob, via: 'review' });
-    if(comment) await PPX.addComment(p.id, comment, nick);
+    // 다녀왔다고만 고르고 한마디를 쓴 경우: '정보가 맞아요'도 남김 (추첨 응모 조건)
+    if(comment && !hasReport && form.visit) {
+      try { await PPX.checkPlace(p.id); } catch(e) { if(!/이미 확인/.test(PPX.koError(e))) throw e; }
+    }
+    let ev = null;
+    if(comment) {
+      const cm = await PPX.addComment(p.id, comment, nick);
+      try { ev = await PPX.enterEvent(cm.id); } catch(e) { ev = { err: PPX.koError(e) }; }
+    }
     try { if(nick) localStorage.setItem('ppxNick', nick); } catch(e) {}
-    done(comment && !hasReport ? '한마디가 바로 올라갔어요! 💬' : '덕분에 세차장 지도가 한 칸 더 채워졌어요. 운영자가 확인한 뒤 반영할게요.');
+    done(comment && !hasReport ? '한마디가 바로 올라갔어요! 💬' : '덕분에 세차장 지도가 한 칸 더 채워졌어요. 운영자가 확인한 뒤 반영할게요.', ev || { none: true });
   } catch(e) {
     toast(PPX.koError(e), true);
   }
@@ -503,12 +558,32 @@ $('send').onclick = async () => {
 };
 try { const n = localStorage.getItem('ppxNick'); if(n) $('nick').value = n; } catch(e) {}
 
-function done(text) {
+function done(text, ev) {
   $('doneText').textContent = text;
-  $('giftDone').hidden = !!me;   // 가입 안 했으면 '가입하면 응모돼요'
+  renderEvDone(ev || { none: true });
   $('q').value = ''; $('results').innerHTML = '';
   history.replaceState(null, '', location.pathname);
   show('vDone');
+}
+
+// 고마워요 화면: 응모번호 / 응모 안 된 이유 / 가입 권유
+async function renderEvDone(ev) {
+  let h = '';
+  if(ev.code) {
+    h = `<div class="code">🎟️ ${ev.already ? '이번 주는 이미 응모하셨어요' : '기프티콘 추첨 응모 완료!'}<div class="n">${esc(ev.code)}</div>
+      <small>${ev.already ? '한 주에 1번만 응모돼요. 위 번호로 추첨해요' : '이 응모번호를 꼭 캡처해 두세요. 당첨 확인할 때 필요해요'}<br>이 기기로 이 페이지에 오면 다시 볼 수 있어요</small></div>`;
+  } else if(ev.err) {
+    h = `<p class="evnote">🎁 이번 한마디는 추첨에 응모되지 않았어요.<br>${esc(ev.err)}</p>`;
+  } else if(ev.none) {
+    h = `<p class="evnote">🎁 다음엔 한마디도 10자 이상 남겨 주세요. 매주 기프티콘 추첨에 응모돼요!</p>`;
+  }
+  $('evDone').innerHTML = h;
+  try { evSt = await PPX.eventStatus(); renderEvent(); } catch(e) {}
+  if(!me && ev.code && evSt) {
+    $('evDone').innerHTML += `<div class="gift" style="margin-top:12px"><div class="ic">🎁</div>
+      <div class="tx"><b>지금 가입하면 회원 추첨에도 들어가요</b><br>회원 추첨 ${evSt.member_count ? `현재 ${evSt.member_count}명 참여 중` : '아직 참여자가 없어요'} · ${evSt.winners_member}명 당첨<small>기회 2번! 방금 한 응모도 계정으로 옮겨져요</small></div>
+      <div class="go"><a href="../join.html?next=r/">가입하기</a><a class="l" href="../login.html?next=r/">로그인</a></div></div>`;
+  }
 }
 
 // ── 지도에 없는 세차장 ──

@@ -410,6 +410,30 @@
       return data;
     }); },
 
+    // ── 한마디 기프티콘 주간 추첨 ──
+    // 한마디를 저장한 직후 응모 (조건 검사는 DB가 함). 돌려주는 값: { code, week, already }
+    async enterEvent(commentId) {
+      const { data, error } = await db.rpc('ppx_enter_event', { cid: commentId });
+      if (error) throw error;
+      return data;
+    },
+    // 이번 주 참여 수(실제 숫자), 지난 회차 당첨 번호, 내 응모번호 (누구나)
+    async eventStatus() {
+      const { data, error } = await db.rpc('ppx_event_status');
+      if (error) throw error;
+      return data;
+    },
+    async adminEventWeek(week) {
+      const { data, error } = await db.rpc('admin_event_week', { w: week });
+      if (error) throw error;
+      return data || [];
+    },
+    async adminEventDraw(week, redraw) {
+      const { data, error } = await db.rpc('admin_event_draw', { w: week, redraw: !!redraw });
+      if (error) throw error;
+      return data || [];
+    },
+
     // 모인 정보 수 (누구나)
     async stats() {
       const { data, error } = await db.rpc('ppx_stats');
