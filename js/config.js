@@ -4,5 +4,9 @@
 // ⚠️ Secret key(sb_secret_...)나 데이터베이스 비밀번호는 절대 여기에 넣지 마세요.
 window.PPX_CONFIG = {
   url: 'https://zylyncnevdxpimyqrifp.supabase.co',
-  key: 'sb_publishable_i5ZeUzflI5otoD9GqwQpew_2x3y_RPA'
+  key: 'sb_publishable_i5ZeUzflI5otoD9GqwQpew_2x3y_RPA',
+  // 사람 확인(CAPTCHA): Cloudflare Turnstile 의 사이트 키(Site Key). 공개해도 되는 키입니다.
+  // ⚠️ 비밀 키(Secret Key)는 여기가 아니라 Supabase 대시보드에만 넣으세요.
+  // 비워 두면 사람 확인 없이 동작합니다.
+  captcha: ''
 };

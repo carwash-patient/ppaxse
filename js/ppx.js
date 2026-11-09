@@ -38,6 +38,8 @@
     if (/rate limit|too many/i.test(m)) return '잠시 후 다시 시도해 주세요';
     if (/Failed to fetch|NetworkError/i.test(m)) return '인터넷 연결을 확인해 주세요';
     if (/Anonymous sign-ins are disabled/i.test(m)) return '지금은 가입 없이 보낼 수 없어요. 로그인해 주세요';
+    if (/place_comment_reports_comment_reporter_key/i.test(m)) return '이미 신고하신 한마디예요. 확인 후 조치할게요';
+    if (/captcha/i.test(m)) return '사람 확인이 끝나지 않았어요. 다시 시도해 주세요';
     if (/place_checks_once_idx|duplicate key/i.test(m)) return '오늘 이미 확인해 주셨어요. 고마워요!';
     if (/row-level security/i.test(m)) return '보낼 수 없는 내용이에요. 새로고침 후 다시 시도해 주세요';
     return m || '문제가 생겼어요. 잠시 후 다시 시도해 주세요';
@@ -47,6 +49,49 @@
   try { localStorage.removeItem('ppaxseUsers'); } catch (e) {}
 
   let profileCache = null;
+
+  // ── 사람 확인(CAPTCHA, Cloudflare Turnstile) ──
+  // config.js 에 captcha(사이트 키)를 넣었을 때만 동작. 비어 있으면 아무것도 안 함.
+  // 대부분은 화면에 아무것도 안 뜨고, 의심스러울 때만 체크 상자가 뜸.
+  let tsLoading = null;
+  function loadTurnstile() {
+    if (window.turnstile) return Promise.resolve();
+    if (!tsLoading) tsLoading = new Promise((ok, no) => {
+      const sc = document.createElement('script');
+      sc.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      sc.async = true; sc.onload = () => ok(); sc.onerror = () => { tsLoading = null; no(new Error('captcha load failed')); };
+      document.head.appendChild(sc);
+    });
+    return tsLoading;
+  }
+  async function captchaToken() {
+    if (!cfg.captcha) return undefined;
+    await loadTurnstile();
+    return new Promise((ok, no) => {
+      const box = document.createElement('div');
+      box.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:99999';
+      document.body.appendChild(box);
+      let wid = null;
+      const done = (fn, v) => { try { window.turnstile.remove(wid); } catch (e) {} box.remove(); fn(v); };
+      wid = window.turnstile.render(box, {
+        sitekey: cfg.captcha, appearance: 'interaction-only', language: 'ko',
+        callback: t => done(ok, t),
+        'error-callback': () => done(no, new Error('captcha failed')),
+        'timeout-callback': () => done(no, new Error('captcha timeout'))
+      });
+    });
+  }
+
+  // 제한에 걸린 요청은 운영자가 볼 수 있게 따로 기록 (기록 실패는 무시)
+  const LIMIT_RE = /오늘은 더 보낼 수 없어요|초에 한 번씩|같은 내용은|하루 신고는|확인을 기다리는|방금 이 세차장|이 기기에서는 지금 보낼 수 없어요/;
+  async function guarded(kind, fn) {
+    try { return await fn(); }
+    catch (e) {
+      const m = (e && (e.message || String(e))) || '';
+      if (db && LIMIT_RE.test(m)) { try { await db.rpc('ppx_log_block', { k: kind, m: m.slice(0, 200) }); } catch (x) {} }
+      throw e;
+    }
+  }
 
   // ── 가입 없이 쓰기 ──
   // 제보·추가 요청·확인을 할 때만 기기에 보이지 않는 이름표(익명 로그인)를 만듦.
@@ -111,6 +156,7 @@
     ready,
     db,
     koError,
+    captchaToken,
     FIELDS, PAY, SVC, VISIT, groupsFor, fieldVal,
 
     // 로그인 상태 + 회원 정보(닉네임·역할 등). 로그인 안 했으면 null
@@ -132,7 +178,8 @@
     async ensureUser() {
       const { data: { session } } = await db.auth.getSession();
       if (session) return session.user.id;
-      const { data, error } = await db.auth.signInAnonymously();
+      const captchaTk = await captchaToken();
+      const { data, error } = await db.auth.signInAnonymously(captchaTk ? { options: { captchaToken: captchaTk } } : undefined);
       if (error) throw error;
       return data.user.id;
     },
@@ -152,7 +199,8 @@
 
     async signIn(email, password) {
       await prepareClaim();
-      const { error } = await db.auth.signInWithPassword({ email, password });
+      const captchaTk = await captchaToken();
+      const { error } = await db.auth.signInWithPassword({ email, password, options: captchaTk ? { captchaToken: captchaTk } : undefined });
       if (error) throw error;
       profileCache = null;
       return PPX.me();
@@ -165,9 +213,10 @@
       const back = location.href.replace(/[^/]*$/, '') + 'login.html' +
         (nx && /^(r\/(\?[\w=&%-]*)?|[\w-]+\.html(\?[\w=&%-]*)?)$/.test(nx) ? '?next=' + encodeURIComponent(nx) : '');
       await prepareClaim();
+      const captchaTk = await captchaToken();
       const { data, error } = await db.auth.signUp({
         email, password,
-        options: { data: { nickname, skill, cars }, emailRedirectTo: back }
+        options: { data: { nickname, skill, cars }, emailRedirectTo: back, captchaToken: captchaTk }
       });
       if (error) throw error;
       // 이미 가입된 이메일이면 Supabase가 빈 identities 로 응답함
@@ -235,7 +284,7 @@
     },
 
     // 세차장 추가 요청 → '대기' 상태로 저장 (서버에서 강제)
-    async requestPlace(p) {
+    async requestPlace(p) { return guarded('place', async () => {
       await PPX.ensureUser();
       const { data, error } = await db.from('places').insert({
         name: p.name, addr: p.addr || '', region: p.region || '', type: p.type,
@@ -244,7 +293,7 @@
       }).select('id,name,status').single();
       if (error) throw error;
       return data;
-    },
+    }); },
 
     async myRequests() {
       const uid = await PPX.myId();
@@ -299,11 +348,14 @@
     // ── 정보 제보 ("정보가 달라요") ──
     // suggest 예: { type:'notouch', foam:true, under:null, closed:true }  (바꾸자는 항목만)
     // extra: { visit: 'today'|'week'|'month'|'older'|'none', photo: 가격표 사진(Blob) }
-    async reportPlace(placeId, suggest, memo, extra) {
+    async reportPlace(placeId, suggest, memo, extra) { return guarded('report', async () => {
       const uid = await PPX.ensureUser();
       const ex = extra || {};
       let photo = null;
       if (ex.photo) {
+        // 사진을 올리기 전에 보낼 수 있는 제보인지 먼저 확인 (못 보낼 제보의 사진이 남지 않게)
+        const pre = await db.rpc('ppx_precheck', { what: 'report', pid: placeId });
+        if (pre.error) throw pre.error;
         photo = `${uid}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
         const up = await db.storage.from('report-photos').upload(photo, ex.photo, { contentType: 'image/jpeg', upsert: false });
         if (up.error) throw up.error;
@@ -313,7 +365,7 @@
         .select('id,status').single();
       if (error) throw error;
       return data;
-    },
+    }); },
 
     // ── 후기 페이지 (r/) ──
     // 이름·주소·지역 검색. 띄어쓰기로 나눈 낱말이 모두 들어간 곳 (예: "구월 셀프")
@@ -349,14 +401,14 @@
       if (error) throw error;
       return data;
     },
-    async addComment(placeId, body, nickname) {
+    async addComment(placeId, body, nickname) { return guarded('comment', async () => {
       await PPX.ensureUser();
       const { data, error } = await db.from('place_comments')
         .insert({ place_id: placeId, body: String(body).trim().slice(0, 200), nickname: nickname ? String(nickname).trim().slice(0, 20) : null })
         .select('id,nickname,body,created_at').single();
       if (error) throw error;
       return data;
-    },
+    }); },
 
     // 모인 정보 수 (누구나)
     async stats() {
@@ -373,11 +425,11 @@
     },
 
     // 한마디 신고 (한 익명 로그인 세션/계정당 한마디 1회, 하루 10회 제한은 DB에서 검사)
-    async reportComment(commentId, reason) {
+    async reportComment(commentId, reason) { return guarded('comment_report', async () => {
       await PPX.ensureUser();
       const { error } = await db.from('place_comment_reports').insert({ comment_id: commentId, reason });
       if (error) throw error;
-    },
+    }); },
 
     // 운영자: 접수된 한마디 신고
     async adminCommentReports(status) {
@@ -392,6 +444,18 @@
     async adminResolveCommentReport(id) {
       const { error } = await db.from('place_comment_reports').update({ status: 'resolved' }).eq('id', id);
       if (error) throw error;
+    },
+    // 운영자: 한 한마디에 쌓인 신고를 한꺼번에 처리
+    async adminResolveCommentReports(commentId) {
+      const { error } = await db.from('place_comment_reports').update({ status: 'resolved' })
+        .eq('comment_id', commentId).eq('status', 'pending');
+      if (error) throw error;
+    },
+    // 운영자: 최근 7일 이상 요청 (사람별로 묶음, 많은 순)
+    async adminAbuseSummary() {
+      const { data, error } = await db.rpc('admin_abuse_summary');
+      if (error) throw error;
+      return data || [];
     },
 
     // 운영자: 한마디 관리
@@ -423,12 +487,12 @@
     },
 
     // '정보가 맞아요' (한 세차장에 하루 한 번)
-    async checkPlace(placeId) {
+    async checkPlace(placeId) { return guarded('check', async () => {
       await PPX.ensureUser();
       const { error } = await db.from('place_checks').insert({ place_id: placeId });
       if (error) throw error;
       return true;
-    },
+    }); },
 
     // 운영자: 가격표 사진 보기 (10분짜리 임시 주소)
     async adminPhotoUrl(path) {

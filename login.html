@@ -147,7 +147,8 @@ document.getElementById('resetPw').onclick = async (e) => {
   const email = document.getElementById('loginId').value.trim();
   if(!email) return showToast('위에 가입한 이메일을 먼저 입력해 주세요');
   try {
-    const { error } = await PPX.db.auth.resetPasswordForEmail(email, { redirectTo: location.href.split('?')[0] });
+    const captchaToken = await PPX.captchaToken();
+    const { error } = await PPX.db.auth.resetPasswordForEmail(email, { redirectTo: location.href.split('?')[0], captchaToken });
     if(error) throw error;
     showToast('비밀번호 재설정 메일을 보냈어요');
   } catch(err) { showToast(PPX.koError(err)); }
