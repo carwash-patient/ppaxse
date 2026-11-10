@@ -278,12 +278,12 @@ textarea:focus,.in:focus{border-color:var(--aqua)}
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../js/config.js?v=20261110b"></script>
-<script src="../js/ppx.js?v=20261110b"></script>
+<script src="../js/config.js?v=20261110c"></script>
+<script src="../js/ppx.js?v=20261110c"></script>
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const TYPE = {self:'🚿 셀프', notouch:'💦 노터치', auto:'⛽ 자동', hand:'🧽 손세차', detail:'✨ 디테일링'};
+const TYPE = {self:'🚿 셀프', hand:'🧽 손세차', notouch:'💦 노터치', auto:'⛽ 자동', detail:'✨ 디테일링'};
 const TYPE_NAME = {self:'셀프세차', hand:'손세차', detail:'디테일링', notouch:'노터치', auto:'자동세차', wash:'종류 확인 중', etc:'정비·기타'};
 // 있는 것만 누르는 항목 (col = places 칸, 아니면 info 안)
 const FAC = [

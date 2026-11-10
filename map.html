@@ -410,8 +410,8 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
 </nav>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/config.js?v=20261110b"></script>
-<script src="js/ppx.js?v=20261110b"></script>
+<script src="js/config.js?v=20261110c"></script>
+<script src="js/ppx.js?v=20261110c"></script>
 <script>
 // 로그인 연결 파일을 못 불러와도 지도는 places.json 으로 계속 동작하도록
 if(!window.PPX) window.PPX = { ready:false, me: async () => null, koError: e => (e && e.message) || '문제가 생겼어요' };
@@ -424,7 +424,7 @@ let areaPlaces = [];          // 지금 보이는 지도 영역 안의 세차장
 const MAX_MARKERS = 200;      // 한 화면에 그릴 최대 마커 수
 const MAX_LIST = 50;          // 목록에 보여줄 최대 개수
 
-const typeLabel={self:'셀프세차',hand:'손세차',detail:'디테일링샵',notouch:'노터치',auto:'자동세차',wash:'종류 확인 중',etc:'정비·기타'};
+const typeLabel={self:'셀프세차',hand:'손세차',notouch:'노터치',auto:'자동세차',detail:'디테일링샵',wash:'종류 확인 중',etc:'정비·기타'};
 const typeIcon={self:'🚿',hand:'🧽',detail:'✨',notouch:'💦',auto:'⛽',wash:'💧',etc:'🔧'};
 const skillLabel={beginner:'🌱세린이',mid:'💨중수',pro:'✨고수',maniac:'🫧세차환자'};
 const facilityKeys=['foam','under','indoor','h24'];
@@ -1178,7 +1178,7 @@ function nearestRegion(lat, lng) {
 
 function renderAddForm() {
   const near = places.map(p => ({p, d: distKm(pickLatLng, p)})).filter(x => x.d < 0.2).sort((a,b) => a.d-b.d).slice(0,3);
-  const types = ['self','hand','detail','notouch','auto','etc'];
+  const types = ['self','hand','notouch','auto','detail','etc'];
   openAddPanel(`
     ${near.length ? `<div class="af-near">혹시 이미 지도에 있는 곳인가요? 근처에 이런 세차장이 있어요.
       ${near.map(x => `<a onclick="closeAddPanel();openDetail(${x.p.id})">${esc(x.p.name)} · ${fmtDist(x.d)}</a>`).join('')}</div>` : ''}
@@ -1308,7 +1308,7 @@ function renderReportForm() {
     </div>
     <div class="af-field">
       <div class="af-label">종류 <span class="rf-cur">지금: ${esc(typeNames(p).join(' · '))} · ${typesOf(p).every(t => t === 'wash') ? '아시는 종류를 골라 주세요' : '여러 개 고를 수 있어요'}</span></div>
-      <div class="af-types">${Object.keys(typeLabel).filter(t => t !== 'wash').map(t => `<button type="button" class="af-type ${reportForm.types.includes(t)?'on':''}" data-t="${t}" data-kind="type" aria-pressed="${reportForm.types.includes(t)}">${typeIcon[t]} ${typeLabel[t]}</button>`).join('')}</div>
+      <div class="af-types">${['self','hand','notouch','auto','detail','etc'].map(t => `<button type="button" class="af-type ${reportForm.types.includes(t)?'on':''}" data-t="${t}" data-kind="type" aria-pressed="${reportForm.types.includes(t)}">${typeIcon[t]} ${typeLabel[t]}</button>`).join('')}</div>
     </div>
     <div class="af-field">
       <label class="rf-check"><input type="checkbox" id="rfClosed" ${reportForm.closed?'checked':''}> 폐업했거나 세차장이 아니에요</label>
