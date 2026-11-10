@@ -278,8 +278,8 @@ textarea:focus,.in:focus{border-color:var(--aqua)}
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../js/config.js?v=20261110"></script>
-<script src="../js/ppx.js?v=20261110"></script>
+<script src="../js/config.js?v=20261110b"></script>
+<script src="../js/ppx.js?v=20261110b"></script>
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -328,9 +328,9 @@ const RULES = `<details><summary>추첨 규칙 보기</summary><ul>
   <li>응모 방법: 다녀온 세차장 정보(다녀온 시기·시설 등)를 하나 이상 고르고 한마디를 10자 이상 남기기</li>
   <li>한 사람(기기·계정)당 한 주에 1번 응모돼요. 여러 개 남겨도 응모는 1번이에요</li>
   <li>매주 ‘누구나 추첨’ 2명 + ‘회원 추첨’ 2명 (회원은 두 추첨 모두 참여, 한 사람이 두 번 당첨되지는 않아요)</li>
-  <li>당첨되면 응모번호와 기프티콘 받을 휴대폰 번호를 ppaxse@gmail.com으로 보내 주세요 (발표 후 7일 안에)</li>
-  <li>욕설·광고·성의 없는 글, 가 보지 않은 곳의 글은 추첨에서 빠질 수 있어요</li>
-  <li>응모할 때는 연락처를 받지 않아요. 당첨자의 휴대폰 번호는 기프티콘을 보낸 뒤 지워요</li>
+  <li>당첨되면 발표 후 7일 안에 응모번호를 ppaxse@gmail.com으로 보내 주세요. 그 메일로 카카오톡 기프티콘 선물코드를 보내드려요 (휴대폰 번호는 받지 않아요)</li>
+  <li>욕설·광고·성의 없는 글, 가 보지 않은 곳의 글은 운영자가 숨길 수 있고, <b>숨긴 한마디는 추첨에서 제외돼요</b>. 내 응모가 제외되면 아래 내 응모번호 옆에 표시돼요</li>
+  <li>응모할 때는 연락처를 받지 않아요</li>
 </ul></details>`;
 const countLine = (label, n, w) => `<div class="row"><span>${label}</span><span>${n ? `<b>${n}명</b> 참여 중` : '아직 참여자가 없어요'} · ${w}명 당첨</span></div>`;
 function renderEvent() {
@@ -347,8 +347,10 @@ function renderEvent() {
   const mine = (st.mine || []), now = mine.find(m => m.week === st.week), won = mine.find(m => m.won);
   let h = before ? `<div>첫 회차: ${md(st.week)} ~ ${md(st.week_end)} 응모 · ${md(st.draw_date)} 17시 발표</div>`
     : `<div style="margin-bottom:2px;color:#fff;font-weight:700">이번 주 참여 현황</div>` + countLine('누구나 추첨', st.all_count, st.winners_all) + countLine('회원 추첨', st.member_count, st.winners_member);
-  if(won) h += `<div class="mine">🎉 <b>${esc(won.code)}</b> 당첨됐어요! 응모번호와 받을 휴대폰 번호를 ppaxse@gmail.com으로 보내 주세요</div>`;
-  else if(now) h += `<div class="mine">이번 주 내 응모번호 <b>${esc(now.code)}</b> · 발표 ${md(st.draw_date)} 17시</div>`;
+  if(won) h += `<div class="mine">🎉 <b>${esc(won.code)}</b> 당첨됐어요! 응모번호를 ppaxse@gmail.com으로 보내 주시면 기프티콘 코드를 메일로 보내드려요</div>`;
+  else if(now) h += now.valid === false
+    ? `<div class="mine" style="opacity:.8">이번 주 내 응모번호 <b>${esc(now.code)}</b> · 한마디가 숨겨져 <b>추첨에서 제외</b>됐어요. 궁금하면 ppaxse@gmail.com으로 문의해 주세요</div>`
+    : `<div class="mine">이번 주 내 응모번호 <b>${esc(now.code)}</b> · 발표 ${md(st.draw_date)} 17시</div>`;
   if(st.last && st.last.winners) {
     const w = st.last.winners, mem = w.filter(x => x.pool === 'member').map(x => x.code), all = w.filter(x => x.pool === 'all').map(x => x.code);
     h += `<div class="last">지난 회차(${md(st.last.week)}~) 당첨 번호 · 회원 ${esc(mem.join(', ') || '-')} (${st.last.member_count}명 중) · 누구나 ${esc(all.join(', ') || '-')} (${st.last.all_count}명 중)</div>`;
