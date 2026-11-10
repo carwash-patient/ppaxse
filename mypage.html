@@ -137,8 +137,8 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/config.js?v=20261110b"></script>
-<script src="js/ppx.js?v=20261110b"></script>
+<script src="js/config.js?v=20261110c"></script>
+<script src="js/ppx.js?v=20261110c"></script>
 <script>
 const escHTML = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const skillLabel={beginner:'🌱 세린이',mid:'💨 폼건은 기본이죠',pro:'✨ 디테일링 직접 함',maniac:'🫧 3시간은 기본 아닌가?'};
@@ -216,13 +216,13 @@ async function render() {
 }
 
 // 내 차 아이콘 · 모델 바꾸기
-const AV_COLORS = ['#22d3ee','#ffffff','#9ca3af','#475569','#ef4444','#3b82f6','#fbbf24','#34d399'];
+const AV_COLORS = ['#111111','#ffffff','#9ca3af','#475569','#22d3ee','#3b82f6','#ef4444','#fbbf24','#34d399'];
 const AV_TYPES = { sedan:'세단', suv:'SUV', sports:'스포츠카', truck:'트럭', van:'밴', coupe:'쿠페', ev:'전기차', other:'기타' };
 function setupAvatarEditor(me) {
   let type = me.avatar_car || (me.cars||[])[0] || 'sedan', color = me.avatar_color || AV_COLORS[0];
   const draw = () => {
     document.getElementById('avPrev').innerHTML = PPX.carAvatar(type, color, 52);
-    document.getElementById('avColors').innerHTML = AV_COLORS.map(c => `<button type="button" aria-label="색 ${c}" aria-pressed="${c === color}" data-c="${c}" style="width:30px;height:30px;border-radius:50%;padding:0;background:${c};border:${c === color ? '3px solid #fff' : '2px solid rgba(255,255,255,.25)'}"></button>`).join('');
+    document.getElementById('avColors').innerHTML = AV_COLORS.map(c => `<button type="button" aria-label="색 ${c}" aria-pressed="${c === color}" data-c="${c}" style="width:30px;height:30px;border-radius:50%;padding:0;background:${c};border:${c === color ? '3px solid #0ea5e9' : '2px solid rgba(255,255,255,.35)'};box-shadow:${c === color ? '0 0 0 2px #fff' : 'none'}"></button>`).join('');
     document.getElementById('avTypes').innerHTML = Object.entries(AV_TYPES).map(([k, l]) => `<button type="button" data-t="${k}" aria-pressed="${k === type}" style="min-height:36px;padding:0 12px;border-radius:999px;font-size:12px;font-weight:700;color:#fff;background:${k === type ? 'rgba(14,165,233,.25)' : 'rgba(255,255,255,.04)'};border:1.5px solid ${k === type ? '#0ea5e9' : 'rgba(255,255,255,.1)'}">${l}</button>`).join('');
     document.querySelectorAll('#avColors button').forEach(b => b.onclick = () => { color = b.dataset.c; draw(); });
     document.querySelectorAll('#avTypes button').forEach(b => b.onclick = () => { type = b.dataset.t; draw(); });

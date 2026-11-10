@@ -102,6 +102,7 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
 
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:rgba(239,68,68,.9);color:#fff;padding:12px 22px;border-radius:14px;font-size:13px;font-weight:700;opacity:0;transition:.3s;z-index:999;white-space:nowrap;backdrop-filter:blur(10px)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#carMaker option{background:#0f2236;color:#fff}
 </style>
 </head>
 <body>
@@ -175,16 +176,17 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
       </div>
 
       <div class="field" style="margin-top:16px">
-        <label class="field-label">프로필 아이콘 색 (사진 대신 내 차 아이콘을 써요)</label>
+        <label class="field-label">프로필 아이콘 (사진 대신 내 차 아이콘을 써요)</label>
         <div style="display:flex;align-items:center;gap:14px">
           <div id="avatarPrev" style="flex:none"></div>
           <div id="colorRow" style="display:flex;flex-wrap:wrap;gap:8px"></div>
         </div>
+        <div id="repRow" style="display:none;margin-top:10px;font-size:12px;color:var(--muted)"></div>
       </div>
       <div class="field">
         <label class="field-label" for="carMaker">제조사 · 모델 (선택)</label>
         <div style="display:flex;gap:8px">
-          <select id="carMaker" style="flex:0 0 42%;min-height:44px;border-radius:12px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:#fff;padding:0 10px;font-size:14px">
+          <select id="carMaker" style="flex:0 0 42%;min-height:44px;border-radius:12px;border:1.5px solid rgba(255,255,255,.1);background:#0f2236;color:#fff;padding:0 10px;font-size:14px;color-scheme:dark">
             <option value="">제조사</option>
             <option>현대</option><option>기아</option><option>제네시스</option><option>KG모빌리티</option><option>르노코리아</option><option>쉐보레</option>
             <option>BMW</option><option>벤츠</option><option>아우디</option><option>폭스바겐</option><option>볼보</option><option>테슬라</option>
@@ -254,6 +256,7 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
           <div class="cartype-chip" data-s="poster">포스터·QR</div>
           <div class="cartype-chip" data-s="other">기타</div>
         </div>
+        <input type="text" id="srcNote" maxlength="30" placeholder="어디서 알게 되셨어요? (예: 보배드림, 세차장 사장님)" aria-label="알게 된 곳 직접 쓰기" style="display:none;margin-top:8px">
       </div>
 
       <div class="agree-list">
@@ -297,8 +300,8 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/config.js?v=20261110b"></script>
-<script src="js/ppx.js?v=20261110b"></script>
+<script src="js/config.js?v=20261110c"></script>
+<script src="js/ppx.js?v=20261110c"></script>
 <script>
 let curStep = 0;
 let selectedCars = [];
@@ -348,12 +351,21 @@ function togglePw(id) {
 }
 
 // 프로필 아이콘: 처음 고른 차종 그림 + 색
-const COLORS = ['#22d3ee','#ffffff','#9ca3af','#475569','#ef4444','#3b82f6','#fbbf24','#34d399'];
-const COLOR_NAMES = ['하늘','흰색','은색','진회색','빨강','파랑','노랑','초록'];
-let avatarColor = COLORS[0];
+const COLORS = ['#111111','#ffffff','#9ca3af','#475569','#22d3ee','#3b82f6','#ef4444','#fbbf24','#34d399'];
+const COLOR_NAMES = ['검정','흰색','은색','진회색','하늘','파랑','빨강','노랑','초록'];
+const CAR_NAMES = { sedan:'세단', suv:'SUV', sports:'스포츠카', truck:'트럭', van:'밴', coupe:'쿠페', ev:'전기차', other:'기타' };
+let avatarColor = COLORS[0], repCar = '';
 function renderAvatar() {
-  document.getElementById('avatarPrev').innerHTML = PPX.carAvatar ? PPX.carAvatar(selectedCars[0] || 'sedan', avatarColor, 56) : '';
-  document.getElementById('colorRow').innerHTML = COLORS.map((c, i) => `<button type="button" aria-label="${COLOR_NAMES[i]}" aria-pressed="${c === avatarColor}" data-c="${c}" style="width:32px;height:32px;border-radius:50%;background:${c};border:${c === avatarColor ? '3px solid #fff' : '2px solid rgba(255,255,255,.25)'};cursor:pointer;padding:0"></button>`).join('');
+  // 대표 차종: 고른 차종 중 하나 (여러 개면 직접 고를 수 있음)
+  if(!selectedCars.includes(repCar)) repCar = selectedCars[0] || '';
+  const rr = document.getElementById('repRow');
+  if(selectedCars.length > 1) {
+    rr.style.display = 'block';
+    rr.innerHTML = '대표 차종: ' + selectedCars.map(c => `<button type="button" data-r="${c}" aria-pressed="${c === repCar}" style="min-height:34px;margin:4px 4px 0 0;padding:0 12px;border-radius:999px;font-size:12px;font-weight:700;color:#fff;background:${c === repCar ? 'rgba(14,165,233,.25)' : 'rgba(255,255,255,.04)'};border:1.5px solid ${c === repCar ? '#0ea5e9' : 'rgba(255,255,255,.12)'}">${CAR_NAMES[c] || c}</button>`).join('');
+    rr.querySelectorAll('button').forEach(b => b.onclick = () => { repCar = b.dataset.r; renderAvatar(); });
+  } else { rr.style.display = 'none'; rr.innerHTML = ''; }
+  document.getElementById('avatarPrev').innerHTML = PPX.carAvatar ? PPX.carAvatar(repCar || 'sedan', avatarColor, 56) : '';
+  document.getElementById('colorRow').innerHTML = COLORS.map((c, i) => `<button type="button" aria-label="${COLOR_NAMES[i]}" aria-pressed="${c === avatarColor}" data-c="${c}" style="width:32px;height:32px;border-radius:50%;background:${c};border:${c === avatarColor ? '3px solid #0ea5e9' : '2px solid rgba(255,255,255,.35)'};box-shadow:${c === avatarColor ? '0 0 0 2px #fff' : 'none'};cursor:pointer;padding:0"></button>`).join('');
   document.querySelectorAll('#colorRow button').forEach(b => b.onclick = () => { avatarColor = b.dataset.c; renderAvatar(); });
 }
 renderAvatar();
@@ -363,7 +375,11 @@ document.querySelectorAll('#cartypeGrid .cartype-chip').forEach(chip => chip.add
 let signupSource = '';
 const REF_TO_SRC = { cafe: 'cafe', insta: 'insta', youtube: 'youtube', qr: 'poster', poster: 'poster' };
 { const r = PPX.myRef ? PPX.myRef() : null; if(r && REF_TO_SRC[r]) signupSource = REF_TO_SRC[r]; }
-function renderSrc() { document.querySelectorAll('#srcGrid .cartype-chip').forEach(c => c.classList.toggle('on', c.dataset.s === signupSource)); }
+function renderSrc() {
+  document.querySelectorAll('#srcGrid .cartype-chip').forEach(c => c.classList.toggle('on', c.dataset.s === signupSource));
+  const n = document.getElementById('srcNote'); n.style.display = signupSource === 'other' ? 'block' : 'none';
+  if(signupSource === 'other') n.focus();
+}
 document.querySelectorAll('#srcGrid .cartype-chip').forEach(c => c.onclick = () => { signupSource = signupSource === c.dataset.s ? '' : c.dataset.s; renderSrc(); });
 renderSrc();
 
@@ -389,10 +405,11 @@ async function doJoin() {
       nickname: document.getElementById('userNick').value.trim(),
       skill: selectedSkill || null,
       cars: selectedCars,
-      avatar_car: selectedCars[0] || 'sedan',
+      avatar_car: repCar || selectedCars[0] || 'sedan',
       avatar_color: avatarColor,
       car_model: [document.getElementById('carMaker').value, document.getElementById('carModel').value.trim()].filter(Boolean).join(' ').slice(0, 40) || null,
       signup_source: signupSource || null,
+      signup_note: signupSource === 'other' ? (document.getElementById('srcNote').value.trim().slice(0, 30) || null) : null,
       age14: true
     });
     if(res && res.needsConfirm) {

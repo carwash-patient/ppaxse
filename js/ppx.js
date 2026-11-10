@@ -75,11 +75,15 @@
     const t = CAR_PATHS[type] ? type : 'sedan';
     const c = /^#[0-9a-f]{6}$/i.test(color || '') ? color : '#22d3ee';
     const s = size || 44;
+    // 검정·진회색처럼 어두운 차는 밝은 배경에 그려서 잘 보이게
+    const n = parseInt(c.slice(1), 16), lum = (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
+    const bg = lum < 0.35 ? '#dbe7f3' : '#0b1d33', hub = lum < 0.35 ? '#94a3b8' : '#cfe8ff';
     const bolt = t === 'ev' ? '<path d="M35 22 L29 31 L33 31 L31 37 L38 28 L34 28 Z" fill="#04111e"/>' : '';
-    return `<svg width="${s}" height="${s}" viewBox="0 0 66 66" role="img" aria-label="내 차 아이콘" style="display:block;border-radius:50%;background:#0b1d33">
-      <g transform="translate(0 8)"><path d="${CAR_PATHS[t]}" fill="${c}"/>${bolt}
-      <circle cx="17" cy="38" r="6" fill="#04111e"/><circle cx="17" cy="38" r="2.5" fill="#cfe8ff"/>
-      <circle cx="49" cy="38" r="6" fill="#04111e"/><circle cx="49" cy="38" r="2.5" fill="#cfe8ff"/></g></svg>`;
+    const boltFill = lum < 0.35 ? '#fbbf24' : '#04111e';
+    return `<svg width="${s}" height="${s}" viewBox="0 0 66 66" role="img" aria-label="내 차 아이콘" style="display:block;border-radius:50%;background:${bg}">
+      <g transform="translate(0 8)"><path d="${CAR_PATHS[t]}" fill="${c}"/>${bolt.replace('#04111e', boltFill)}
+      <circle cx="17" cy="38" r="6" fill="#04111e"/><circle cx="17" cy="38" r="2.5" fill="${hub}"/>
+      <circle cx="49" cy="38" r="6" fill="#04111e"/><circle cx="49" cy="38" r="2.5" fill="${hub}"/></g></svg>`;
   }
 
   // ── 사람 확인(CAPTCHA, Cloudflare Turnstile) ──
@@ -240,7 +244,7 @@
     },
 
     // 반환값: 바로 로그인되면 회원 정보, 메일 인증이 필요하면 { needsConfirm: true }
-    async signUp({ email, password, nickname, skill, cars, avatar_car, avatar_color, car_model, signup_source, age14 }) {
+    async signUp({ email, password, nickname, skill, cars, avatar_car, avatar_color, car_model, signup_source, signup_note, age14 }) {
       // 인증 메일 링크를 누르면 로그인 화면 → 원래 보던 곳(?next=)으로
       const nx = new URLSearchParams(location.search).get('next');
       const back = location.href.replace(/[^/]*$/, '') + 'login.html' +
@@ -249,7 +253,7 @@
       const captchaTk = await captchaToken();
       const { data, error } = await db.auth.signUp({
         email, password,
-        options: { data: { nickname, skill, cars, avatar_car, avatar_color, car_model, signup_source, age14: !!age14, ref: myRef() }, emailRedirectTo: back, captchaToken: captchaTk }
+        options: { data: { nickname, skill, cars, avatar_car, avatar_color, car_model, signup_source, signup_note, age14: !!age14, ref: myRef() }, emailRedirectTo: back, captchaToken: captchaTk }
       });
       if (error) throw error;
       // 이미 가입된 이메일이면 Supabase가 빈 identities 로 응답함
