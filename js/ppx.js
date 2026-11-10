@@ -50,6 +50,38 @@
 
   let profileCache = null;
 
+  // ── 유입 경로 꼬리표 (?ref=cafe 등). 기기에 처음 들어온 경로만 기억 ──
+  function myRef() {
+    try {
+      const q = (new URLSearchParams(location.search).get('ref') || '').toLowerCase();
+      if (/^[a-z0-9_-]{1,30}$/.test(q) && !localStorage.getItem('ppxRef')) localStorage.setItem('ppxRef', q);
+      return localStorage.getItem('ppxRef') || null;
+    } catch (e) { return null; }
+  }
+  myRef();
+
+  // ── 차종 아이콘 (사진 대신 차종 그림 + 색) ──
+  const CAR_PATHS = {
+    sedan:  'M6 30 L12 21 Q14 18 18 18 L38 18 Q42 18 45 21 L52 27 L58 28 Q62 29 62 33 L62 38 L4 38 L4 33 Q4 30 6 30 Z',
+    coupe:  'M5 31 L15 20 Q17 18 21 18 L34 18 Q39 18 43 22 L50 28 L58 29 Q62 30 62 34 L62 38 L4 38 L4 34 Q4 31 5 31 Z',
+    sports: 'M4 33 L16 24 Q19 22 24 22 L36 22 Q41 22 45 25 L52 29 L60 30 Q62 31 62 34 L62 38 L4 38 Z',
+    suv:    'M5 28 L10 16 Q11 14 14 14 L42 14 Q45 14 47 17 L53 25 L59 26 Q62 27 62 31 L62 38 L4 38 L4 30 Q4 28 5 28 Z',
+    van:    'M4 14 Q4 12 7 12 L44 12 Q48 12 51 16 L58 25 Q62 27 62 31 L62 38 L4 38 Z',
+    truck:  'M4 24 L32 24 L32 13 Q32 12 34 12 L46 12 Q49 12 51 15 L56 23 L60 24 Q62 25 62 29 L62 38 L4 38 Z',
+    ev:     'M6 30 L12 21 Q14 18 18 18 L38 18 Q42 18 45 21 L52 27 L58 28 Q62 29 62 33 L62 38 L4 38 L4 33 Q4 30 6 30 Z',
+    other:  'M6 30 L12 21 Q14 18 18 18 L38 18 Q42 18 45 21 L52 27 L58 28 Q62 29 62 33 L62 38 L4 38 L4 33 Q4 30 6 30 Z'
+  };
+  function carAvatar(type, color, size) {
+    const t = CAR_PATHS[type] ? type : 'sedan';
+    const c = /^#[0-9a-f]{6}$/i.test(color || '') ? color : '#22d3ee';
+    const s = size || 44;
+    const bolt = t === 'ev' ? '<path d="M35 22 L29 31 L33 31 L31 37 L38 28 L34 28 Z" fill="#04111e"/>' : '';
+    return `<svg width="${s}" height="${s}" viewBox="0 0 66 66" role="img" aria-label="내 차 아이콘" style="display:block;border-radius:50%;background:#0b1d33">
+      <g transform="translate(0 8)"><path d="${CAR_PATHS[t]}" fill="${c}"/>${bolt}
+      <circle cx="17" cy="38" r="6" fill="#04111e"/><circle cx="17" cy="38" r="2.5" fill="#cfe8ff"/>
+      <circle cx="49" cy="38" r="6" fill="#04111e"/><circle cx="49" cy="38" r="2.5" fill="#cfe8ff"/></g></svg>`;
+  }
+
   // ── 사람 확인(CAPTCHA, Cloudflare Turnstile) ──
   // config.js 에 captcha(사이트 키)를 넣었을 때만 동작. 비어 있으면 아무것도 안 함.
   // 대부분은 화면에 아무것도 안 뜨고, 의심스러울 때만 체크 상자가 뜸.
@@ -167,7 +199,7 @@
       if (profileCache && profileCache.id === session.user.id) return profileCache;
       await finishClaim();
       const { data, error } = await db.from('profiles')
-        .select('id,nickname,skill,cars,role,home').eq('id', session.user.id).maybeSingle();
+        .select('id,nickname,skill,cars,role,home,avatar_car,avatar_color,car_model').eq('id', session.user.id).maybeSingle();
       if (error) throw error;
       profileCache = data ? { ...data, email: session.user.email } : null;
       syncLocalUser(profileCache, session.user.email);
@@ -179,7 +211,8 @@
       const { data: { session } } = await db.auth.getSession();
       if (session) return session.user.id;
       const captchaTk = await captchaToken();
-      const { data, error } = await db.auth.signInAnonymously(captchaTk ? { options: { captchaToken: captchaTk } } : undefined);
+      const ref = myRef();
+      const { data, error } = await db.auth.signInAnonymously({ options: { captchaToken: captchaTk, data: ref ? { ref } : {} } });
       if (error) throw error;
       return data.user.id;
     },
@@ -207,7 +240,7 @@
     },
 
     // 반환값: 바로 로그인되면 회원 정보, 메일 인증이 필요하면 { needsConfirm: true }
-    async signUp({ email, password, nickname, skill, cars }) {
+    async signUp({ email, password, nickname, skill, cars, avatar_car, avatar_color, car_model, signup_source, age14 }) {
       // 인증 메일 링크를 누르면 로그인 화면 → 원래 보던 곳(?next=)으로
       const nx = new URLSearchParams(location.search).get('next');
       const back = location.href.replace(/[^/]*$/, '') + 'login.html' +
@@ -216,7 +249,7 @@
       const captchaTk = await captchaToken();
       const { data, error } = await db.auth.signUp({
         email, password,
-        options: { data: { nickname, skill, cars }, emailRedirectTo: back, captchaToken: captchaTk }
+        options: { data: { nickname, skill, cars, avatar_car, avatar_color, car_model, signup_source, age14: !!age14, ref: myRef() }, emailRedirectTo: back, captchaToken: captchaTk }
       });
       if (error) throw error;
       // 이미 가입된 이메일이면 Supabase가 빈 identities 로 응답함
@@ -232,6 +265,34 @@
       if (ready) await db.auth.signOut();
       profileCache = null;
       syncLocalUser(null);
+    },
+
+    carAvatar,
+    myRef,
+    // 내 차 아이콘·모델 바꾸기
+    async updateAvatar({ avatar_car, avatar_color, car_model }) {
+      const me = await PPX.me();
+      if (!me) throw new Error('로그인이 필요해요');
+      const { error } = await db.from('profiles')
+        .update({ avatar_car: avatar_car || null, avatar_color: avatar_color || null, car_model: (car_model || '').trim().slice(0, 40) || null })
+        .eq('id', me.id);
+      if (error) throw error;
+      profileCache = null;
+    },
+    // 회원 탈퇴: 계정·프로필 즉시 삭제
+    async deleteAccount() {
+      const { error } = await db.rpc('delete_my_account');
+      if (error) throw error;
+      try { await db.auth.signOut(); } catch (e) {}
+      profileCache = null;
+      syncLocalUser(null);
+      try { ['ppxNick', 'ppaxseUser'].forEach(k => localStorage.removeItem(k)); } catch (e) {}
+    },
+    // 운영자: 채널별 새 방문자 → 응모 → 가입
+    async adminChannelStats(days) {
+      const { data, error } = await db.rpc('admin_channel_stats', { days: days || 30 });
+      if (error) throw error;
+      return data;
     },
 
     // 승인된 세차장 전부. 개수를 먼저 알아낸 뒤 1,000개씩 동시에 4묶음씩 받아 빠르게 불러옴
@@ -579,7 +640,7 @@
               (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)));
         localStorage.setItem('ppxVisitor', v);
       }
-      setTimeout(() => { db.rpc('ppx_track', { v, p: PAGE[name] || 'other' }).then(() => {}, () => {}); }, 1200);
+      setTimeout(() => { db.rpc('ppx_track', { v, p: PAGE[name] || 'other', r: myRef() }).then(() => {}, () => {}); }, 1200);
     }
   } catch (e) { /* 저장소를 못 쓰는 환경이면 세지 않음 */ }
 })();
