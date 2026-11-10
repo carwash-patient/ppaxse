@@ -324,7 +324,7 @@ let me = null, evSt = null;
 const WD = ['일','월','화','수','목','금','토'];
 const md = s => { const d = new Date(s + 'T00:00:00'); return `${d.getMonth() + 1}/${d.getDate()}(${WD[d.getDay()]})`; };
 const RULES = `<details><summary>추첨 규칙 보기</summary><ul>
-  <li>응모 기간: 매주 토요일 0시 ~ 금요일 밤 12시, 당첨 발표는 다음 주 월요일</li>
+  <li>응모 기간: 매주 토요일 0시 ~ 금요일 밤 12시, 당첨 발표는 다음 주 월요일 17시 (자동 추첨)</li>
   <li>응모 방법: 다녀온 세차장 정보(다녀온 시기·시설 등)를 하나 이상 고르고 한마디를 10자 이상 남기기</li>
   <li>한 사람(기기·계정)당 한 주에 1번 응모돼요. 여러 개 남겨도 응모는 1번이에요</li>
   <li>매주 ‘누구나 추첨’ 2명 + ‘회원 추첨’ 2명 (회원은 두 추첨 모두 참여, 한 사람이 두 번 당첨되지는 않아요)</li>
@@ -341,14 +341,14 @@ function renderEvent() {
   $('giftText').innerHTML = before
     ? `<b>${md(st.start)}부터 한마디 기프티콘 추첨!</b><br>가입 없이 한마디만 남겨도 매주 추첨해요<small>가입하면 회원 추첨까지 기회 2번</small>`
     : isMember
-      ? `<b>${esc(me.nickname || '회원')}님은 회원 추첨까지 기회 2번 🎉</b><br>한마디만 남기면 매주 기프티콘 추첨<small>이번 주 응모 ${md(st.week)}~${md(st.week_end)} · 발표 ${md(st.draw_date)}</small>`
-      : `<b>한마디만 남겨도 매주 기프티콘 추첨</b><br>가입하면 회원 추첨까지 <b>기회 2번!</b><small>이번 주 응모 ${md(st.week)}~${md(st.week_end)} · 발표 ${md(st.draw_date)}</small>`;
+      ? `<b>${esc(me.nickname || '회원')}님은 회원 추첨까지 기회 2번 🎉</b><br>한마디만 남기면 매주 기프티콘 추첨<small>이번 주 응모 ${md(st.week)}~${md(st.week_end)} · 발표 ${md(st.draw_date)} 17시</small>`
+      : `<b>한마디만 남겨도 매주 기프티콘 추첨</b><br>가입하면 회원 추첨까지 <b>기회 2번!</b><small>이번 주 응모 ${md(st.week)}~${md(st.week_end)} · 발표 ${md(st.draw_date)} 17시</small>`;
   $('giftGo').hidden = isMember;
   const mine = (st.mine || []), now = mine.find(m => m.week === st.week), won = mine.find(m => m.won);
-  let h = before ? `<div>첫 회차: ${md(st.week)} ~ ${md(st.week_end)} 응모 · ${md(st.draw_date)} 발표</div>`
+  let h = before ? `<div>첫 회차: ${md(st.week)} ~ ${md(st.week_end)} 응모 · ${md(st.draw_date)} 17시 발표</div>`
     : `<div style="margin-bottom:2px;color:#fff;font-weight:700">이번 주 참여 현황</div>` + countLine('누구나 추첨', st.all_count, st.winners_all) + countLine('회원 추첨', st.member_count, st.winners_member);
   if(won) h += `<div class="mine">🎉 <b>${esc(won.code)}</b> 당첨됐어요! 응모번호와 받을 휴대폰 번호를 ppaxse@gmail.com으로 보내 주세요</div>`;
-  else if(now) h += `<div class="mine">이번 주 내 응모번호 <b>${esc(now.code)}</b> · 발표 ${md(st.draw_date)}</div>`;
+  else if(now) h += `<div class="mine">이번 주 내 응모번호 <b>${esc(now.code)}</b> · 발표 ${md(st.draw_date)} 17시</div>`;
   if(st.last && st.last.winners) {
     const w = st.last.winners, mem = w.filter(x => x.pool === 'member').map(x => x.code), all = w.filter(x => x.pool === 'all').map(x => x.code);
     h += `<div class="last">지난 회차(${md(st.last.week)}~) 당첨 번호 · 회원 ${esc(mem.join(', ') || '-')} (${st.last.member_count}명 중) · 누구나 ${esc(all.join(', ') || '-')} (${st.last.all_count}명 중)</div>`;

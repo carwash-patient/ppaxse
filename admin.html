@@ -462,7 +462,7 @@ async function loadEvent() {
   document.getElementById('searchBox').innerHTML = `
     <div class="search" style="align-items:center">
       <button type="button" id="evPrev" aria-label="이전 회차" ${evWeek <= EV_START ? 'disabled' : ''}>◀</button>
-      <div style="flex:1;text-align:center;font-size:14px;font-weight:900">${evMd(evWeek)} ~ ${evMd(evAdd(evWeek, 6))}<div style="font-size:11px;font-weight:400;color:rgba(255,255,255,.6)">발표 ${evMd(evAdd(evWeek, 9))} · ${ended ? '응모 마감' : '응모 받는 중'}</div></div>
+      <div style="flex:1;text-align:center;font-size:14px;font-weight:900">${evMd(evWeek)} ~ ${evMd(evAdd(evWeek, 6))}<div style="font-size:11px;font-weight:400;color:rgba(255,255,255,.6)">발표 ${evMd(evAdd(evWeek, 9))} 17시 자동 추첨 · ${ended ? '응모 마감' : '응모 받는 중'}</div></div>
       <button type="button" id="evNext" aria-label="다음 회차" ${evWeek >= evWeekOf(evToday()) ? 'disabled' : ''}>▶</button>
     </div>`;
   document.getElementById('evPrev').onclick = () => { evWeek = evAdd(evWeek, -7); loadEvent(); };
@@ -484,22 +484,25 @@ function evAnnounce() {
 🎁 누구나 추첨 (${valid.length}명 참여 중 2명): ${codes('all')}
 
 당첨되신 분은 응모번호와 기프티콘 받을 휴대폰 번호를 ppaxse@gmail.com 으로 보내 주세요. (발표 후 7일 안에)
-다음 회차: ${evMd(next)} ~ ${evMd(evAdd(next, 6))} 응모, ${evMd(evAdd(next, 9))} 발표
+다음 회차: ${evMd(next)} ~ ${evMd(evAdd(next, 6))} 응모, ${evMd(evAdd(next, 9))} 17시 발표
 참여하기: https://ppaxse.com/r/`;
 }
 function renderEvent() {
   const list = document.getElementById('list');
   const valid = evList.filter(x => x.valid), mem = valid.filter(x => x.is_member);
   const ended = evAdd(evWeek, 6) < evToday();
+  const drawAt = new Date(evAdd(evWeek, 9) + 'T17:00:00+09:00'), past = Date.now() >= drawAt.getTime();
   const POOL = { member: '회원 추첨', all: '누구나 추첨' };
   list.innerHTML = `
     <div class="card sel">
       <div class="c-top"><span class="c-name">응모 ${evList.length}명 · 추첨 대상 ${valid.length}명 (회원 ${mem.length}명)</span></div>
-      <div class="c-who">회원 추첨 2명을 먼저 뽑고, 남은 사람 중에서 누구나 추첨 2명을 뽑아요. 숨긴 한마디·막은 사람은 빠져요.</div>
+      <div class="c-who">월요일 17시에 자동으로 추첨돼요. 회원 추첨 2명을 먼저 뽑고, 남은 사람 중에서 누구나 추첨 2명을 뽑아요. 성의 없는 글은 그 전에 숨겨 두면 추첨에서 빠져요.</div>
       ${evWinners.length ? `<div class="diff" style="margin-top:10px">${evWinners.map(w => `<label><span class="k">🎉 ${POOL[w.won]}</span><span class="to" style="letter-spacing:1px">${esc(w.code)}</span><span style="margin-left:auto;color:#fff">${esc(w.is_member ? (w.email || '') : '비회원 · 메일 연락 대기')}</span></label>`).join('')}</div>
         <div class="acts"><button class="ok" type="button" id="evCopy">발표 글 복사</button><button class="no" type="button" id="evRedraw">다시 뽑기</button></div>`
-      : `<div class="acts"><button class="ok" type="button" id="evDraw" ${ended && valid.length ? '' : 'disabled'}>🎲 추첨하기 (회원 2 + 누구나 2)</button></div>
-         ${ended ? (valid.length ? '' : '<div class="c-who">추첨 대상이 없어요</div>') : '<div class="c-who">금요일 밤 12시에 응모가 끝나면 추첨할 수 있어요</div>'}`}
+      : (past
+        ? `<div class="c-who" style="color:#fde68a">자동 추첨 결과가 아직 없어요. ${valid.length ? '아래 버튼으로 직접 추첨할 수 있어요.' : '추첨 대상이 없었어요.'}</div>
+           ${valid.length ? '<div class="acts"><button class="ok" type="button" id="evDraw">🎲 지금 추첨하기 (자동 추첨 예비용)</button></div>' : ''}`
+        : `<div class="c-who">⏰ ${evMd(evAdd(evWeek, 9))} 17시에 자동으로 추첨돼요</div>`)}
     </div>
     ${evList.length ? evList.map(x => `
       <div class="card" style="${x.valid ? '' : 'opacity:.5'}">
