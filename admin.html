@@ -97,8 +97,8 @@ html,body{min-height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backg
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/config.js?v=20261110b"></script>
-<script src="js/ppx.js?v=20261110b"></script>
+<script src="js/config.js?v=20261110c"></script>
+<script src="js/ppx.js?v=20261110c"></script>
 <script>
 const typeLabel={self:'셀프세차',hand:'손세차',detail:'디테일링샵',notouch:'노터치',auto:'자동세차',wash:'종류 확인 중',etc:'정비·기타'};
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -460,7 +460,7 @@ async function loadVisits() {
     box.innerHTML = (rows ? `<table style="width:100%;border-collapse:collapse;font-size:13px">
         <tr style="color:rgba(255,255,255,.6);font-size:12px"><th style="text-align:left;padding:4px">꼬리표</th><th style="text-align:right">새 방문 기기</th><th style="text-align:right">응모</th><th style="text-align:right">가입</th></tr>${rows}</table>`
         : '<div class="msg">아직 데이터가 없어요</div>')
-      + ((c.by_source || []).length ? `<div class="memo" style="margin:12px 0 4px">가입할 때 답한 경로</div>` + c.by_source.map(s => `<div style="display:flex;justify-content:space-between;font-size:13px;margin:4px 0"><span>${esc(SRC[s.source] || s.source)}</span><span>${s.members}명</span></div>`).join('') : '')
+      + ((c.by_source || []).length ? `<div class="memo" style="margin:12px 0 4px">가입할 때 답한 경로</div>` + c.by_source.map(s => `<div style="display:flex;justify-content:space-between;font-size:13px;margin:4px 0"><span>${esc(SRC[s.source] || s.source)}</span><span>${s.members}명</span></div>${(s.notes || []).length ? `<div style="font-size:12px;color:rgba(255,255,255,.55);margin:-2px 0 6px 8px">└ ${s.notes.map(esc).join(' · ')}</div>` : ''}`).join('') : '')
       + `<div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:8px;line-height:1.6">· 채널마다 링크 끝에 꼬리표를 붙여 올리세요. 예) ppaxse.com/r<b>?ref=cafe</b>, ?ref=insta, ?ref=qr<br>· 꼬리표는 영어 소문자·숫자·-·_ 로 30자까지. 한 기기는 처음 들어온 꼬리표로만 세요.</div>`;
   } catch(e) { const box = document.getElementById('chanBox'); if(box) box.innerHTML = `<div class="msg">${esc(PPX.koError(e))}</div>`; }
 }
