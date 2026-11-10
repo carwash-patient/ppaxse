@@ -7,7 +7,7 @@
 
 - 전국 세차장을 지도에서 찾고, 이용자가 세차장 정보를 제보·추가 요청하는 **세차 커뮤니티 웹서비스**입니다.
 - 전국 서비스입니다 (수도권 한정 아님).
-- 주소: https://carwash-patient.github.io/ppaxse/ (GitHub Pages, main 브랜치가 그대로 배포됨)
+- 주소: https://ppaxse.com/ (GitHub Pages, main 브랜치가 그대로 배포됨. 예전 carwash-patient.github.io/ppaxse 주소는 자동으로 넘어옴. ppaxse.co.kr은 가비아 포워딩으로 ppaxse.com에 연결)
 - 운영 연락처: ppaxse@gmail.com
 
 ## 2. 기술 구조
