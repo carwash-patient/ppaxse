@@ -97,8 +97,8 @@ html,body{min-height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backg
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/config.js?v=20261110d"></script>
-<script src="js/ppx.js?v=20261110d"></script>
+<script src="js/config.js?v=20261110e"></script>
+<script src="js/ppx.js?v=20261110e"></script>
 <script>
 const typeLabel={self:'셀프세차',hand:'손세차',detail:'디테일링샵',notouch:'노터치',auto:'자동세차',wash:'종류 확인 중',etc:'정비·기타'};
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -126,9 +126,17 @@ const whoOf = (prof, uid) => prof && prof.nickname ? esc(prof.nickname) : `가�
 const typesOf = p => (p && p.types && p.types.length) ? p.types : (p ? [p.type] : []);
 const typesText = ts => (ts || []).map(t => typeLabel[t] || t).join(' · ');
 // 대표 종류(지도 아이콘) + 함께 있는 종류(체크) 입력칸
+// 방문자 대표 종류 투표 (운영자만): 많은 순
+let TYPE_VOTES = {};
+function voteLine(id) {
+  const v = TYPE_VOTES[String(id)];
+  if(!v) return '';
+  const txt = Object.entries(v).sort((a, b) => b[1] - a[1]).map(([t, n]) => `${typeLabel[t] || t} ${n}`).join(' · ');
+  return `<div class="c-who" style="margin:-2px 0 8px">🗳️ 방문자가 고른 대표 종류: <b style="color:#fff">${esc(txt)}</b></div>`;
+}
 function typeFields(it) {
   const has = typesOf(it);
-  return `
+  return `${voteLine(it.id)}
     <div class="f"><label>대표 종류 (지도 아이콘)</label><select data-k="type">${Object.keys(typeLabel).map(t => `<option value="${t}" ${t===it.type?'selected':''}>${typeLabel[t]}</option>`).join('')}</select></div>
     <div class="f"><label>함께 있는 종류 (여러 개)</label><div class="tchips">${Object.keys(typeLabel).map(t =>
       `<label><input type="checkbox" data-type="${t}" ${has.includes(t)?'checked':''}>${typeLabel[t]}</label>`).join('')}</div></div>`;
@@ -217,6 +225,7 @@ async function refreshCounts() {
 const locOf = it => it.place && it.place.lat != null ? it.place : it;
 
 async function load() {
+  try { TYPE_VOTES = await PPX.adminTypeVotes(); } catch(e) {}
   const note = {
     pending: '📍 빨간 핀 = 요청 위치 · 파란 점 = 근처에 이미 등록된 세차장 (중복 확인용)',
     reports: '📍 빨간 핀 = 제보된 세차장 · 파란 점 = 근처 세차장',
@@ -345,6 +354,7 @@ function cardReport(it) {
     <div class="card ${it.id===selId?'sel':''}" data-id="${it.id}">
       <div class="c-top"><span class="c-name">${esc(p.name)}</span><span class="c-when">${ago(it.created_at)}</span></div>
       <div class="c-who" style="margin-bottom:10px">${esc(p.addr || p.region || '')} · 제보: <b style="color:#fff">${who}</b>${blocked ? ' <span class="blocked">(막힘)</span>' : ''}${it.visit ? `<span class="visit">${esc(VISIT[it.visit] || it.visit)}</span>` : ''}${it.via === 'review' ? '<span class="visit" style="background:rgba(168,85,247,.18);color:#d8b4fe">후기 페이지</span>' : ''}${p.status==='closed' ? ' · <span class="state closed">이미 숨김</span>' : ''}</div>
+      ${voteLine(p.id)}
       ${rows.length ? `<div class="diff">${rows.join('')}</div>` : ''}
       ${it.memo ? `<div class="memo">💬 ${esc(it.memo)}</div>` : ''}
       <div class="f"><label>세차장 이름 (바꿀 때만 고치세요 · 체인·가맹점은 '학익점'처럼 지점명까지)</label><input data-rename value="${esc(p.name)}" maxlength="60"></div>

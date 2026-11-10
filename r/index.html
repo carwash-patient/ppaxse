@@ -187,8 +187,13 @@ textarea:focus,.in:focus{border-color:var(--aqua)}
     <div class="comments" id="comments"></div>
     <div class="q">
       <h2>어떤 세차장인가요?</h2>
-      <p>여러 개 골라도 돼요 (예: 셀프 + 노터치)</p>
+      <p id="typeHint">가장 가까운 것 하나만 골라 주세요</p>
       <div class="chips" id="cTypes"></div>
+    </div>
+    <div class="q" id="qExtra" hidden>
+      <h2>같이 있는 것도 있나요? <span style="font-size:13px;color:var(--muted);font-weight:500">(선택)</span></h2>
+      <p>예: 셀프세차장인데 노터치도 있어요</p>
+      <div class="chips" id="cExtra"></div>
     </div>
     <div class="q">
       <h2>있었던 것 다 눌러 주세요 👆</h2>
@@ -278,8 +283,8 @@ textarea:focus,.in:focus{border-color:var(--aqua)}
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../js/config.js?v=20261110d"></script>
-<script src="../js/ppx.js?v=20261110d"></script>
+<script src="../js/config.js?v=20261110e"></script>
+<script src="../js/ppx.js?v=20261110e"></script>
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -322,7 +327,7 @@ const WD = ['일','월','화','수','목','금','토'];
 const md = s => { const d = new Date(s + 'T00:00:00'); return `${d.getMonth() + 1}/${d.getDate()}(${WD[d.getDay()]})`; };
 const RULES = `<details><summary>추첨 규칙 보기</summary><ul>
   <li>응모 기간: 매주 토요일 0시 ~ 금요일 밤 12시, 당첨 발표는 다음 주 월요일 17시 (자동 추첨)</li>
-  <li>응모 방법: 다녀온 세차장 정보(다녀온 시기·시설 등)를 하나 이상 고르고 한마디를 10자 이상 남기기</li>
+  <li>응모 방법: 다녀온 세차장 정보(어떤 세차장인지·다녀온 시기·시설 등)를 하나 이상 고르고 한마디를 10자 이상 남기기</li>
   <li>한 사람(기기·계정)당 한 주에 1번 응모돼요. 여러 개 남겨도 응모는 1번이에요</li>
   <li>매주 ‘누구나 추첨’ 2명 + ‘회원 추첨’ 2명 (회원은 두 추첨 모두 참여, 한 사람이 두 번 당첨되지는 않아요)</li>
   <li>당첨되면 발표 후 7일 안에 응모번호를 ppaxse@gmail.com으로 보내 주세요. 그 메일로 카카오톡 기프티콘 선물코드를 보내드려요 (휴대폰 번호는 받지 않아요)</li>
@@ -435,7 +440,7 @@ async function openPlace(p) {
   if(!p) return;
   cur = p; photoBlob = null;
   const known = typesOf(p).filter(t => TYPE[t]);
-  form = { types: [...known], fac: new Set(FAC.filter(f => facVal(p, f) === true).map(f => f.k)), visit: null };
+  form = { main: null, extras: [], known, fac: new Set(FAC.filter(f => facVal(p, f) === true).map(f => f.k)), visit: null };
   history.replaceState(null, '', location.pathname + '?p=' + p.id);
   const facKnown = FAC.filter(f => facVal(p, f) === true).map(f => `<span class="tag ok">${f.l}</span>`).join('');
   $('placeCard').innerHTML = `
@@ -487,15 +492,23 @@ async function loadComments(id) {
 function chipHtml(dict, sel, kind) {
   return Object.entries(dict).map(([k, l]) => `<button type="button" class="chip ${sel(k) ? 'on' : ''}" data-kind="${kind}" data-k="${k}" aria-pressed="${!!sel(k)}">${esc(l)}</button>`).join('');
 }
+// 시설 칩 기준 종류: 고른 대표 + 같이 있는 것, 아직 안 골랐으면 지금 등록된 종류
+const chosenTypes = () => form.main ? [form.main, ...form.extras] : form.known;
 function renderChips() {
-  $('cTypes').innerHTML = chipHtml(TYPE, k => form.types.includes(k), 'type');
-  $('facHint').textContent = form.types.length ? '세차장 종류에 맞는 것만 보여요 · 모르는 건 그냥 두세요' : '위에서 종류를 고르면 맞는 항목만 보여요 · 모르는 건 그냥 두세요';
-  $('cFac').innerHTML = facFor(form.types).map(f => `<button type="button" class="chip ${form.fac.has(f.k) ? 'on' : ''}" data-kind="fac" data-k="${f.k}" aria-pressed="${form.fac.has(f.k)}">${esc(f.l)}</button>`).join('');
+  $('typeHint').textContent = '가장 가까운 것 하나만 골라 주세요' + (form.known.length ? ` · 지금 등록된 정보: ${form.known.map(t => TYPE_NAME[t]).join(' · ')}` : '');
+  $('cTypes').innerHTML = chipHtml(TYPE, k => form.main === k, 'type');
+  $('qExtra').hidden = !form.main;
+  const rest = Object.fromEntries(Object.entries(TYPE).filter(([k]) => k !== form.main));
+  $('cExtra').innerHTML = chipHtml(rest, k => form.extras.includes(k), 'extra');
+  $('facHint').textContent = form.main ? '고른 종류에 맞는 것만 보여요 · 모르는 건 그냥 두세요'
+    : form.known.length ? '지금 등록된 종류 기준이에요 · 모르는 건 그냥 두세요' : '위에서 종류를 고르면 맞는 항목만 보여요 · 모르는 건 그냥 두세요';
+  $('cFac').innerHTML = facFor(chosenTypes()).map(f => `<button type="button" class="chip ${form.fac.has(f.k) ? 'on' : ''}" data-kind="fac" data-k="${f.k}" aria-pressed="${form.fac.has(f.k)}">${esc(f.l)}</button>`).join('');
   $('cVisit').innerHTML = chipHtml(VISIT, k => form.visit === k, 'visit');
   document.querySelectorAll('#vPlace .chip').forEach(b => b.onclick = () => {
-    const k = b.dataset.k;
-    if(b.dataset.kind === 'type') { const i = form.types.indexOf(k); i >= 0 ? form.types.splice(i, 1) : form.types.push(k); }
-    else if(b.dataset.kind === 'fac') { form.fac.has(k) ? form.fac.delete(k) : form.fac.add(k); }
+    const k = b.dataset.k, kind = b.dataset.kind;
+    if(kind === 'type') { form.main = form.main === k ? null : k; form.extras = form.extras.filter(x => x !== form.main); }
+    else if(kind === 'extra') { const i = form.extras.indexOf(k); i >= 0 ? form.extras.splice(i, 1) : form.extras.push(k); }
+    else if(kind === 'fac') { form.fac.has(k) ? form.fac.delete(k) : form.fac.add(k); }
     else form.visit = form.visit === k ? null : k;
     renderChips();
   });
@@ -525,11 +538,17 @@ $('send').onclick = async () => {
   const memo = $('memo').value.trim(), comment = $('comment').value.trim(), nick = $('nick').value.trim();
   // 바뀐 것만: 종류는 고른 것이 지금과 다를 때, 시설은 '있음'으로 새로 누른 것만
   const suggest = {}, info = {};
+  // 종류: 지금 정보에 없는 종류를 골랐을 때만 '추가' 제안 (빼는 건 지도 화면 '달라요'에서)
   const curTypes = typesOf(p).filter(t => TYPE[t]);
-  if(form.types.length && (form.types.length !== curTypes.length || form.types.some(t => !curTypes.includes(t)))) suggest.types = [...form.types];
-  facFor(form.types).forEach(f => { if(form.fac.has(f.k) && facVal(p, f) !== true) { if(f.col) suggest[f.k] = true; else info[f.k] = true; } });
+  const picked = form.main ? [form.main, ...form.extras] : [];
+  if(picked.some(t => !curTypes.includes(t))) suggest.types = curTypes.length ? [...curTypes, ...picked.filter(t => !curTypes.includes(t))] : picked;
+  facFor(chosenTypes()).forEach(f => { if(form.fac.has(f.k) && facVal(p, f) !== true) { if(f.col) suggest[f.k] = true; else info[f.k] = true; } });
   if(Object.keys(info).length) suggest.info = info;
   const hasReport = Object.keys(suggest).length || memo || photoBlob;
+  if(!hasReport && !comment && form.main) {   // 종류만 골랐으면 표만 남김
+    try { await PPX.voteType(p.id, form.main, form.extras); } catch(e) { return toast(PPX.koError(e), true); }
+    return done('알려주셔서 고마워요! 어떤 세차장인지 모으는 데 큰 도움이 돼요.');
+  }
   if(!hasReport && !comment) {
     if(form.visit) {   // 다녀왔다고만 했으면 '정보가 맞아요'로
       try { await PPX.checkPlace(p.id); } catch(e) { if(!/이미 확인/.test(PPX.koError(e))) return toast(PPX.koError(e), true); }
@@ -540,6 +559,7 @@ $('send').onclick = async () => {
   const btn = $('send'); btn.disabled = true; btn.textContent = photoBlob ? '사진 올리는 중…' : '보내는 중…';
   try {
     if(hasReport) await PPX.reportPlace(p.id, suggest, memo, { visit: form.visit, photo: photoBlob, via: 'review' });
+    if(form.main) { try { await PPX.voteType(p.id, form.main, form.extras); } catch(e) {} }   // 대표 종류 표 (실패해도 나머지는 그대로)
     // 다녀왔다고만 고르고 한마디를 쓴 경우: '정보가 맞아요'도 남김 (추첨 응모 조건)
     if(comment && !hasReport && form.visit) {
       try { await PPX.checkPlace(p.id); } catch(e) { if(!/이미 확인/.test(PPX.koError(e))) throw e; }

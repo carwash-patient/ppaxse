@@ -614,6 +614,20 @@
       return true;
     }); },
 
+    // 방문자가 고른 대표 종류(1개) + 같이 있는 종류 → 1인 1표 (30일 안에 다시 고르면 고친 것으로)
+    async voteType(placeId, main, extras) {
+      await PPX.ensureUser();
+      const { error } = await db.rpc('ppx_vote_type', { pid: placeId, m: main, ex: extras || [] });
+      if (error) throw error;
+      return true;
+    },
+    // 운영자: 세차장별 대표 종류 표 수 { "336": { auto: 3, self: 1 } }
+    async adminTypeVotes() {
+      const { data, error } = await db.rpc('admin_type_votes');
+      if (error) throw error;
+      return data || {};
+    },
+
     // 운영자: 가격표 사진 보기 (10분짜리 임시 주소)
     async adminPhotoUrl(path) {
       const { data, error } = await db.storage.from('report-photos').createSignedUrl(path, 600);
