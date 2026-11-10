@@ -283,8 +283,8 @@ textarea:focus,.in:focus{border-color:var(--aqua)}
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../js/config.js?v=20261110e"></script>
-<script src="../js/ppx.js?v=20261110e"></script>
+<script src="../js/config.js?v=20261110f"></script>
+<script src="../js/ppx.js?v=20261110f"></script>
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -476,7 +476,7 @@ async function loadComments(id) {
     box.querySelectorAll('.report-comment').forEach(btn => btn.onclick = async () => {
       const row = btn.closest('[data-comment-id]'), reason = row.querySelector('.report-reason').value;
       if(!reason) return toast('신고 사유를 골라 주세요', true);
-      if(!confirm('이 한마디를 신고할까요?')) return;
+      if(!(await PPX.ask('이 한마디를 신고할까요?', { ok: '신고하기', danger: true }))) return;
       btn.disabled = true;
       btn.textContent = '보내는 중…';
       try { await PPX.reportComment(Number(row.dataset.commentId), reason); btn.textContent = '접수됨'; row.querySelector('.report-reason').disabled = true; toast('신고를 접수했어요. 확인 후 조치할게요.'); }

@@ -137,8 +137,8 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/config.js?v=20261110e"></script>
-<script src="js/ppx.js?v=20261110e"></script>
+<script src="js/config.js?v=20261110f"></script>
+<script src="js/ppx.js?v=20261110f"></script>
 <script>
 const escHTML = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const skillLabel={beginner:'🌱 세린이',mid:'💨 폼건은 기본이죠',pro:'✨ 디테일링 직접 함',maniac:'🫧 3시간은 기본 아닌가?'};
@@ -237,10 +237,13 @@ function setupAvatarEditor(me) {
 
 // 회원 탈퇴: 계정·프로필 즉시 삭제
 async function doWithdraw() {
-  const t = prompt('탈퇴하면 계정과 프로필이 바로 삭제되고 되돌릴 수 없어요.\n남긴 제보·한마디는 누가 썼는지 모르게 남아요.\n\n정말 탈퇴하려면 아래에 "탈퇴"라고 입력해 주세요.');
-  if(t === null) return;
-  if(t.trim() !== '탈퇴') return showToast('"탈퇴"라고 정확히 입력해 주세요', true);
-  try { await PPX.deleteAccount(); alert('탈퇴가 끝났어요. 그동안 고마웠어요 🙏'); location.href = './'; }
+  const yes = await PPX.ask('탈퇴하면 계정과 프로필이 바로 삭제되고 되돌릴 수 없어요.\n남긴 제보·한마디는 누가 썼는지 모르게 남아요.\n\n정말 탈퇴하려면 아래에 "탈퇴"라고 입력해 주세요.', { ok: '탈퇴하기', danger: true, type: '탈퇴' });
+  if(!yes) return;
+  try {
+    await PPX.deleteAccount();
+    await PPX.ask('탈퇴가 끝났어요. 그동안 고마웠어요 🙏', { cancel: false });
+    location.href = './';
+  }
   catch(e) { showToast(PPX.koError(e), true); }
 }
 
@@ -275,9 +278,11 @@ async function loadLists() {
 }
 
 async function doLogout() {
-  if(!confirm('로그아웃 하시겠습니까?')) return;
+  // 다시 로그인하면 되니 확인 없이 바로 (브라우저 확인 창이 안 뜨는 곳에서도 동작)
+  const b = document.getElementById('logoutBtn'); if(b) { b.disabled = true; b.textContent = '로그아웃 중…'; }
   try { await PPX.signOut(); } catch(e) { localStorage.removeItem('ppaxseUser'); }
-  location.href = './';
+  showToast('로그아웃했어요');
+  setTimeout(() => { location.href = './'; }, 700);
 }
 
 function showToast(msg, warn=false) {

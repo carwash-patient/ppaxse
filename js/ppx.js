@@ -210,7 +210,48 @@
   // 항목 값 읽기 (칸 또는 info)
   const fieldVal = (p, f) => f.col ? (p[f.k] ?? null) : ((p.info || {})[f.k] ?? null);
 
+  // ── 화면 안 확인 창 (브라우저 confirm/prompt/alert 대신: 카카오톡·인스타 안 브라우저나 앱 화면에서도 뜸) ──
+  // await PPX.ask('이 한마디를 신고할까요?', { ok: '신고하기' }) → true/false
+  // opts: ok, cancel(false면 버튼 없음), danger(빨간 버튼), type(이 글자를 입력해야 확인 버튼이 켜짐), text(복사용 글 상자)
+  function ask(msg, opts) {
+    const o = Object.assign({ ok: '확인', cancel: '취소', danger: false, type: '', text: '' }, opts || {});
+    return new Promise(resolve => {
+      const prev = document.activeElement;
+      const wrap = document.createElement('div');
+      wrap.setAttribute('role', 'dialog'); wrap.setAttribute('aria-modal', 'true');
+      wrap.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(2,8,18,.72);display:flex;align-items:center;justify-content:center;padding:20px;font-family:inherit';
+      const box = document.createElement('div');
+      box.style.cssText = 'width:100%;max-width:360px;background:#0f2236;border:1px solid rgba(14,165,233,.35);border-radius:18px;padding:22px 20px 18px;color:#fff;box-shadow:0 20px 50px rgba(0,0,0,.5)';
+      const p = document.createElement('div');
+      p.style.cssText = 'font-size:15px;line-height:1.6;white-space:pre-line;word-break:keep-all';
+      p.textContent = msg; box.appendChild(p);
+      const field = el => { el.style.cssText = 'width:100%;margin-top:14px;padding:11px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.2);background:#081626;color:#fff;font-family:inherit;font-size:15px;box-sizing:border-box'; box.appendChild(el); return el; };
+      let input = null;
+      if (o.type) { input = field(document.createElement('input')); input.placeholder = o.type; input.autocomplete = 'off'; }
+      if (o.text) { const ta = field(document.createElement('textarea')); ta.readOnly = true; ta.rows = 6; ta.value = o.text; ta.style.fontSize = '13px'; setTimeout(() => ta.select(), 0); }
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;gap:8px;margin-top:18px';
+      const btn = (label, main) => {
+        const b = document.createElement('button'); b.type = 'button'; b.textContent = label;
+        b.style.cssText = 'flex:1;min-height:46px;border-radius:12px;font-family:inherit;font-size:15px;font-weight:800;cursor:pointer;' +
+          (main ? `border:none;color:#fff;background:${o.danger ? '#ef4444' : '#0ea5e9'}` : 'border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.8)');
+        row.appendChild(b); return b;
+      };
+      const no = o.cancel === false ? null : btn(o.cancel, false), yes = btn(o.ok, true);
+      box.appendChild(row); wrap.appendChild(box); document.body.appendChild(wrap);
+      const done = v => { document.removeEventListener('keydown', onKey, true); wrap.remove(); try { prev && prev.focus && prev.focus(); } catch (e) {} resolve(v); };
+      const check = () => { if (input) { const okNow = input.value.trim() === o.type; yes.disabled = !okNow; yes.style.opacity = okNow ? '1' : '.4'; } };
+      const onKey = e => { if (e.key === 'Escape') { e.preventDefault(); done(o.cancel === false); } else if (e.key === 'Enter' && !yes.disabled && e.target.tagName !== 'TEXTAREA') { e.preventDefault(); done(true); } };
+      document.addEventListener('keydown', onKey, true);
+      if (input) { input.oninput = check; check(); setTimeout(() => input.focus(), 0); } else setTimeout(() => yes.focus(), 0);
+      if (no) no.onclick = () => done(false);
+      yes.onclick = () => done(true);
+      wrap.onclick = e => { if (e.target === wrap && no) done(false); };
+    });
+  }
+
   const PPX = {
+    ask,
     ready,
     db,
     koError,

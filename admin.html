@@ -97,8 +97,8 @@ html,body{min-height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backg
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/config.js?v=20261110e"></script>
-<script src="js/ppx.js?v=20261110e"></script>
+<script src="js/config.js?v=20261110f"></script>
+<script src="js/ppx.js?v=20261110f"></script>
 <script>
 const typeLabel={self:'셀프세차',hand:'손세차',detail:'디테일링샵',notouch:'노터치',auto:'자동세차',wash:'종류 확인 중',etc:'정비·기타'};
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -536,7 +536,7 @@ function renderEvent() {
         <div class="c-who">${esc(x.nickname || '익명 세차러')}${x.email ? ' · ' + esc(x.email) : ''}${x.valid ? '' : ' · 추첨 제외(숨김·막힘)'}</div>
       </div>`).join('') : '<div class="msg">이 회차에 응모한 사람이 없어요</div>'}`;
   const draw = async redraw => {
-    if(redraw && !confirm('정말 다시 뽑을까요? 이미 발표했다면 다시 뽑지 마세요.')) return;
+    if(redraw && !(await PPX.ask('정말 다시 뽑을까요? 이미 발표했다면 다시 뽑지 마세요.', { ok: '다시 뽑기', danger: true }))) return;
     try { await PPX.adminEventDraw(evWeek, redraw); toast('추첨했어요 🎉'); loadEvent(); }
     catch(e) { toast(PPX.koError(e), true); }
   };
@@ -545,7 +545,7 @@ function renderEvent() {
   const cp = document.getElementById('evCopy');
   if(cp) cp.onclick = async () => {
     const t = evAnnounce();
-    try { await navigator.clipboard.writeText(t); toast('발표 글을 복사했어요'); } catch(e) { prompt('아래 내용을 복사하세요', t); }
+    try { await navigator.clipboard.writeText(t); toast('발표 글을 복사했어요'); } catch(e) { PPX.ask('아래 내용을 길게 눌러 복사하세요', { cancel: false, ok: '닫기', text: t }); }
   };
 }
 
@@ -702,13 +702,13 @@ async function act(card, id, what) {
         await PPX.adminResolveCommentReports(it.cid);
         toast('신고를 처리했어요');
       } else if(what === 'sr-block') {
-        if(!confirm('이 한마디를 쓴 사람(기기)을 막을까요? 그 사람의 한마디는 모두 숨겨져요.')) { btns.forEach(b => b.disabled = false); return; }
+        if(!(await PPX.ask('이 한마디를 쓴 사람(기기)을 막을까요? 그 사람의 한마디는 모두 숨겨져요.', { ok: '막기', danger: true }))) { btns.forEach(b => b.disabled = false); return; }
         await PPX.adminBlockCommenter(it.cid);
         await PPX.adminResolveCommentReports(it.cid);
         toast('막았어요. 그 사람의 한마디가 모두 숨겨졌어요');
       }
     } else if(it && it.kind === 'abuse') {
-      if(what === 'ab-block' && !confirm('이 사람(기기)이 앞으로 제보·요청·한마디를 못 보내게 할까요?')) { btns.forEach(b => b.disabled = false); return; }
+      if(what === 'ab-block' && !(await PPX.ask('이 사람(기기)이 앞으로 제보·요청·한마디를 못 보내게 할까요?', { ok: '막기', danger: true }))) { btns.forEach(b => b.disabled = false); return; }
       await PPX.adminBlock(it.user_id, what === 'ab-block');
       toast(what === 'ab-block' ? '막았어요' : '다시 받을 수 있게 했어요');
     } else if(what === 'approve') {
@@ -755,7 +755,7 @@ async function act(card, id, what) {
       await PPX.adminHideComment(it.cid, what === 'chide');
       toast(what === 'chide' ? '숨겼어요' : '다시 보이게 했어요');
     } else if(what === 'cblock') {
-      if(!confirm('이 한마디를 쓴 사람(기기)을 막을까요? 그 사람의 한마디는 모두 숨겨져요.')) { btns.forEach(b => b.disabled = false); return; }
+      if(!(await PPX.ask('이 한마디를 쓴 사람(기기)을 막을까요? 그 사람의 한마디는 모두 숨겨져요.', { ok: '막기', danger: true }))) { btns.forEach(b => b.disabled = false); return; }
       await PPX.adminBlockCommenter(it.cid);
       toast('막았어요. 그 사람의 한마디가 모두 숨겨졌어요');
     } else if(what === 'photo') {
@@ -765,7 +765,7 @@ async function act(card, id, what) {
       btns.forEach(b => b.disabled = false);
       return;
     } else if(what === 'block' || what === 'unblock') {
-      if(what === 'block' && !confirm('이 사람(기기)이 앞으로 제보·요청을 못 보내게 할까요?')) { btns.forEach(b => b.disabled = false); return; }
+      if(what === 'block' && !(await PPX.ask('이 사람(기기)이 앞으로 제보·요청을 못 보내게 할까요?', { ok: '막기', danger: true }))) { btns.forEach(b => b.disabled = false); return; }
       await PPX.adminBlock(it.reporter, what === 'block');
       toast(what === 'block' ? '막았어요. 이 사람의 새 제보는 들어오지 않아요' : '다시 받을 수 있게 했어요');
     } else if(what === 'save') {
