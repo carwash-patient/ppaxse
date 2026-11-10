@@ -137,8 +137,8 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/config.js?v=20261110"></script>
-<script src="js/ppx.js?v=20261110"></script>
+<script src="js/config.js?v=20261110b"></script>
+<script src="js/ppx.js?v=20261110b"></script>
 <script>
 const escHTML = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const skillLabel={beginner:'🌱 세린이',mid:'💨 폼건은 기본이죠',pro:'✨ 디테일링 직접 함',maniac:'🫧 3시간은 기본 아닌가?'};
@@ -187,18 +187,61 @@ async function render() {
   content.innerHTML = `
     <div class="profile-card">
       <div class="profile-top">
-        <div class="avatar">${escHTML((me.nickname||'빡')[0])}</div>
+        <div style="flex:none">${PPX.carAvatar(me.avatar_car || (me.cars||[])[0] || 'sedan', me.avatar_color, 56)}</div>
         <div class="profile-info">
           <div class="profile-nick">${escHTML(me.nickname || '빡세 회원')}</div>
           <div class="profile-skill">${skillLabel[me.skill]||''}</div>
           <div class="profile-join">${escHTML(me.email||'')}</div>
         </div>
       </div>
+      ${me.car_model ? `<div class="profile-skill" style="margin-top:10px">🚗 ${escHTML(me.car_model)}</div>` : ''}
       ${carChips ? `<div class="profile-cars">${carChips}</div>` : ''}
+      <details style="margin-top:12px">
+        <summary style="cursor:pointer;min-height:40px;display:flex;align-items:center;font-size:13px;color:#bae6fd">✏️ 아이콘 · 차 모델 바꾸기</summary>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+          <div style="display:flex;align-items:center;gap:12px"><div id="avPrev"></div><div id="avColors" style="display:flex;flex-wrap:wrap;gap:8px"></div></div>
+          <div id="avTypes" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+          <input id="avModel" maxlength="40" placeholder="제조사 · 모델 (예: 기아 쏘렌토)" aria-label="제조사와 모델" value="${escHTML(me.car_model || '')}" style="min-height:44px;border-radius:12px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:#fff;padding:0 12px;font-size:14px">
+          <button type="button" id="avSave" style="min-height:44px;border-radius:12px;border:0;background:#22d3ee;color:#04111e;font-weight:900;font-size:14px">저장하기</button>
+        </div>
+      </details>
     </div>
     ${me.role === 'admin' ? '<a class="admin-link" href="admin.html">🛠️ 운영자 · 세차장 관리 (요청·제보 처리)</a>' : ''}
-    ${lists}`;
+    ${lists}
+    ${me.role === 'admin' ? '' : `<div style="margin:28px 0 8px;text-align:center"><button type="button" id="withdrawBtn" style="min-height:44px;padding:0 14px;background:none;border:0;color:rgba(255,255,255,.45);font-size:12px;text-decoration:underline;cursor:pointer">회원 탈퇴</button></div>`}`;
+  setupAvatarEditor(me);
+  const wb = document.getElementById('withdrawBtn');
+  if(wb) wb.onclick = doWithdraw;
   loadLists();
+}
+
+// 내 차 아이콘 · 모델 바꾸기
+const AV_COLORS = ['#22d3ee','#ffffff','#9ca3af','#475569','#ef4444','#3b82f6','#fbbf24','#34d399'];
+const AV_TYPES = { sedan:'세단', suv:'SUV', sports:'스포츠카', truck:'트럭', van:'밴', coupe:'쿠페', ev:'전기차', other:'기타' };
+function setupAvatarEditor(me) {
+  let type = me.avatar_car || (me.cars||[])[0] || 'sedan', color = me.avatar_color || AV_COLORS[0];
+  const draw = () => {
+    document.getElementById('avPrev').innerHTML = PPX.carAvatar(type, color, 52);
+    document.getElementById('avColors').innerHTML = AV_COLORS.map(c => `<button type="button" aria-label="색 ${c}" aria-pressed="${c === color}" data-c="${c}" style="width:30px;height:30px;border-radius:50%;padding:0;background:${c};border:${c === color ? '3px solid #fff' : '2px solid rgba(255,255,255,.25)'}"></button>`).join('');
+    document.getElementById('avTypes').innerHTML = Object.entries(AV_TYPES).map(([k, l]) => `<button type="button" data-t="${k}" aria-pressed="${k === type}" style="min-height:36px;padding:0 12px;border-radius:999px;font-size:12px;font-weight:700;color:#fff;background:${k === type ? 'rgba(14,165,233,.25)' : 'rgba(255,255,255,.04)'};border:1.5px solid ${k === type ? '#0ea5e9' : 'rgba(255,255,255,.1)'}">${l}</button>`).join('');
+    document.querySelectorAll('#avColors button').forEach(b => b.onclick = () => { color = b.dataset.c; draw(); });
+    document.querySelectorAll('#avTypes button').forEach(b => b.onclick = () => { type = b.dataset.t; draw(); });
+  };
+  draw();
+  document.getElementById('avSave').onclick = async () => {
+    const btn = document.getElementById('avSave'); btn.disabled = true;
+    try { await PPX.updateAvatar({ avatar_car: type, avatar_color: color, car_model: document.getElementById('avModel').value }); showToast('저장했어요'); render(); }
+    catch(e) { showToast(PPX.koError(e), true); btn.disabled = false; }
+  };
+}
+
+// 회원 탈퇴: 계정·프로필 즉시 삭제
+async function doWithdraw() {
+  const t = prompt('탈퇴하면 계정과 프로필이 바로 삭제되고 되돌릴 수 없어요.\n남긴 제보·한마디는 누가 썼는지 모르게 남아요.\n\n정말 탈퇴하려면 아래에 "탈퇴"라고 입력해 주세요.');
+  if(t === null) return;
+  if(t.trim() !== '탈퇴') return showToast('"탈퇴"라고 정확히 입력해 주세요', true);
+  try { await PPX.deleteAccount(); alert('탈퇴가 끝났어요. 그동안 고마웠어요 🙏'); location.href = './'; }
+  catch(e) { showToast(PPX.koError(e), true); }
 }
 
 async function loadLists() {
