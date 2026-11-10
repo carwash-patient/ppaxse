@@ -153,29 +153,51 @@
     } catch (e) { return 0; }
   }
 
-  // ── 세차장 정보 항목 (지도·제보·운영자 화면이 함께 씀) ──
-  // g: 어떤 종류에 보여줄지 (all=모든 세차장, self=셀프, auto=노터치·자동, hand=손세차·디테일링)
-  // col: places 표의 칸 / 없으면 places.info 안에 저장
+  // ── 세차장 정보 항목 (지도·제보·후기·운영자 화면이 함께 씀) ──
+  // l: 이름, s: 후기 칩 이름, col: places 표의 칸 / 없으면 places.info 안에 저장
   const FIELDS = [
-    { k: 'h24',      l: '24시간 운영',   g: 'all',  col: true },
-    { k: 'toilet',   l: '화장실',        g: 'all' },
-    { k: 'lounge',   l: '대기 공간',     g: 'all' },
-    { k: 'foam',     l: '폼건 사용',     g: 'self', col: true },
-    { k: 'under',    l: '하부 세차',     g: 'self', col: true },
-    { k: 'indoor',   l: '실내 베이',     g: 'self', col: true },
-    { k: 'hotwater', l: '온수',          g: 'self' },
-    { k: 'myitem',   l: '개인 용품 사용', g: 'self', col: true },
-    { k: 'vacuum',   l: '진공청소기',    g: 'self' },
-    { k: 'airgun',   l: '에어건',        g: 'self' },
-    { k: 'mat',      l: '매트 세척기',   g: 'self' },
-    { k: 'dry',      l: '드라잉 공간',   g: 'self' },
-    { k: 'brush',    l: '브러시',        g: 'auto' },
-    { k: 'reserve',  l: '예약 필요',     g: 'hand', col: true }
+    { k: 'foam',     l: '폼건',          s: '💨 폼건',         col: true },
+    { k: 'fbrush',   l: '폼브러시',      s: '🧽 폼브러시' },
+    { k: 'wax',      l: '왁스 코팅',     s: '✨ 왁스 코팅' },
+    { k: 'steam',    l: '스팀 세차',     s: '🌫️ 스팀세차' },
+    { k: 'under',    l: '하부 세차',     s: '⬇️ 하부세차',     col: true },
+    { k: 'finisher', l: '마무리 직원',   s: '🙋 마무리 직원' },
+    { k: 'gasdisc',  l: '주유 시 할인',  s: '⛽ 주유 시 할인' },
+    { k: 'inclean',  l: '실내 청소',     s: '🧼 실내 청소' },
+    { k: 'seatout',  l: '시트 탈거',     s: '💺 시트 탈거' },
+    { k: 'indoor',   l: '실내 베이',     s: '🏠 실내 베이',    col: true },
+    { k: 'hotwater', l: '온수',          s: '♨️ 온수' },
+    { k: 'airgun',   l: '에어건',        s: '🌬️ 에어건' },
+    { k: 'vacuum',   l: '진공청소기',    s: '🧹 진공청소기' },
+    { k: 'mat',      l: '매트 세척기',   s: '🧺 매트 세척기' },
+    { k: 'dry',      l: '드라잉 공간',   s: '🧻 드라잉 공간' },
+    { k: 'myitem',   l: '개인 용품 사용', s: '🪣 개인 용품 OK', col: true },
+    { k: 'reserve',  l: '예약 필요',     s: '📅 예약제',       col: true },
+    { k: 'toilet',   l: '화장실',        s: '🚻 화장실' },
+    { k: 'h24',      l: '24시간 운영',   s: '🕐 24시간',       col: true },
+    { k: 'lounge',   l: '대기 공간',     s: '🛋️ 대기 공간' },
+    { k: 'brush',    l: '브러시',        s: '🪥 브러시' }   // 예전 항목: 운영자 화면에만
   ];
+  // 세차장 종류별로 받는 항목 (이 순서대로 보여줌)
+  const TYPE_FIELDS = {
+    self:    ['foam','fbrush','wax','under','indoor','hotwater','airgun','vacuum','mat','dry','myitem','toilet','h24','lounge'],
+    notouch: ['under','airgun','vacuum','mat','dry','myitem','toilet','h24','lounge'],
+    auto:    ['under','finisher','gasdisc','airgun','vacuum','mat','dry','toilet','h24'],
+    hand:    ['steam','under','inclean','reserve','toilet','h24','lounge'],
+    detail:  ['steam','under','seatout','reserve','toilet','lounge']
+  };
+  const TYPE_ORDER = ['self','hand','notouch','auto','detail'];
+  // 고른 종류들의 항목을 합침 (겹치면 한 번만). 종류를 모르면 전부
+  function fieldsFor(types) {
+    let t = TYPE_ORDER.filter(x => (types || []).includes(x));
+    if (!t.length) t = TYPE_ORDER;
+    const keys = [...new Set(t.flatMap(x => TYPE_FIELDS[x]))];
+    return keys.map(k => FIELDS.find(f => f.k === k));
+  }
   const PAY = { card: '카드', cash: '현금', coin: '동전 교환기', pay: '간편결제' };
   const SVC = { coat: '코팅', ppf: 'PPF', polish: '광택', interior: '실내 클리닝', tint: '썬팅' };
   const VISIT = { today: '오늘 다녀옴', week: '이번 주', month: '이번 달', older: '더 오래전', none: '직접 안 가봄' };
-  // 세차장 종류 → 보여줄 항목 묶음
+  // 세차장 종류 → 추가 입력칸 묶음 (self: 칸 수·요금, auto: 높이 제한, hand: 서비스)
   function groupsFor(types) {
     const t = types || [];
     const g = new Set(['all']);
@@ -193,7 +215,7 @@
     db,
     koError,
     captchaToken,
-    FIELDS, PAY, SVC, VISIT, groupsFor, fieldVal,
+    FIELDS, TYPE_FIELDS, fieldsFor, PAY, SVC, VISIT, groupsFor, fieldVal,
 
     // 로그인 상태 + 회원 정보(닉네임·역할 등). 로그인 안 했으면 null
     async me() {

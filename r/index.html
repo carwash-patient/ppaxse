@@ -192,7 +192,7 @@ textarea:focus,.in:focus{border-color:var(--aqua)}
     </div>
     <div class="q">
       <h2>있었던 것 다 눌러 주세요 👆</h2>
-      <p>모르는 건 그냥 두세요</p>
+      <p id="facHint">모르는 건 그냥 두세요</p>
       <div class="chips" id="cFac"></div>
     </div>
     <div class="q">
@@ -278,19 +278,16 @@ textarea:focus,.in:focus{border-color:var(--aqua)}
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../js/config.js?v=20261110c"></script>
-<script src="../js/ppx.js?v=20261110c"></script>
+<script src="../js/config.js?v=20261110d"></script>
+<script src="../js/ppx.js?v=20261110d"></script>
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const TYPE = {self:'🚿 셀프', hand:'🧽 손세차', notouch:'💦 노터치', auto:'⛽ 자동', detail:'✨ 디테일링'};
 const TYPE_NAME = {self:'셀프세차', hand:'손세차', detail:'디테일링', notouch:'노터치', auto:'자동세차', wash:'종류 확인 중', etc:'정비·기타'};
-// 있는 것만 누르는 항목 (col = places 칸, 아니면 info 안)
-const FAC = [
-  {k:'foam', l:'💨 폼건', col:true}, {k:'under', l:'⬇️ 하부세차', col:true}, {k:'hotwater', l:'♨️ 온수'},
-  {k:'indoor', l:'🏠 실내 베이', col:true}, {k:'airgun', l:'🌬️ 에어건'}, {k:'vacuum', l:'🧹 진공청소기'},
-  {k:'mat', l:'🧺 매트 세척기'}, {k:'dry', l:'🧽 드라잉 공간'}, {k:'myitem', l:'🪣 개인 용품 OK', col:true},
-  {k:'toilet', l:'🚻 화장실'}, {k:'h24', l:'🕐 24시간', col:true}];
+// 있는 것만 누르는 항목: 고른 세차장 종류에 맞는 것만 보여줌 (js/ppx.js FIELDS · TYPE_FIELDS)
+const FAC = PPX.FIELDS.filter(f => f.k !== 'brush').map(f => ({ k: f.k, l: f.s, col: f.col }));
+const facFor = types => PPX.fieldsFor(types).map(f => FAC.find(x => x.k === f.k)).filter(Boolean);
 const VISIT = {today:'오늘', week:'이번 주', month:'이번 달', older:'더 전에'};
 
 let cur = null, form = {}, photoBlob = null, myPos = null, lastResults = [], lastQuery = '';
@@ -492,7 +489,8 @@ function chipHtml(dict, sel, kind) {
 }
 function renderChips() {
   $('cTypes').innerHTML = chipHtml(TYPE, k => form.types.includes(k), 'type');
-  $('cFac').innerHTML = FAC.map(f => `<button type="button" class="chip ${form.fac.has(f.k) ? 'on' : ''}" data-kind="fac" data-k="${f.k}" aria-pressed="${form.fac.has(f.k)}">${esc(f.l)}</button>`).join('');
+  $('facHint').textContent = form.types.length ? '세차장 종류에 맞는 것만 보여요 · 모르는 건 그냥 두세요' : '위에서 종류를 고르면 맞는 항목만 보여요 · 모르는 건 그냥 두세요';
+  $('cFac').innerHTML = facFor(form.types).map(f => `<button type="button" class="chip ${form.fac.has(f.k) ? 'on' : ''}" data-kind="fac" data-k="${f.k}" aria-pressed="${form.fac.has(f.k)}">${esc(f.l)}</button>`).join('');
   $('cVisit').innerHTML = chipHtml(VISIT, k => form.visit === k, 'visit');
   document.querySelectorAll('#vPlace .chip').forEach(b => b.onclick = () => {
     const k = b.dataset.k;
@@ -529,7 +527,7 @@ $('send').onclick = async () => {
   const suggest = {}, info = {};
   const curTypes = typesOf(p).filter(t => TYPE[t]);
   if(form.types.length && (form.types.length !== curTypes.length || form.types.some(t => !curTypes.includes(t)))) suggest.types = [...form.types];
-  FAC.forEach(f => { if(form.fac.has(f.k) && facVal(p, f) !== true) { if(f.col) suggest[f.k] = true; else info[f.k] = true; } });
+  facFor(form.types).forEach(f => { if(form.fac.has(f.k) && facVal(p, f) !== true) { if(f.col) suggest[f.k] = true; else info[f.k] = true; } });
   if(Object.keys(info).length) suggest.info = info;
   const hasReport = Object.keys(suggest).length || memo || photoBlob;
   if(!hasReport && !comment) {

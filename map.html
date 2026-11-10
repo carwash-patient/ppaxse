@@ -410,8 +410,8 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
 </nav>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/config.js?v=20261110c"></script>
-<script src="js/ppx.js?v=20261110c"></script>
+<script src="js/config.js?v=20261110d"></script>
+<script src="js/ppx.js?v=20261110d"></script>
 <script>
 // 로그인 연결 파일을 못 불러와도 지도는 places.json 으로 계속 동작하도록
 if(!window.PPX) window.PPX = { ready:false, me: async () => null, koError: e => (e && e.message) || '문제가 생겼어요' };
@@ -750,9 +750,12 @@ function renderList() {
 // ══════════════════════════════════════════════════
 // 세차장 정보 항목 (js/ppx.js 를 못 불러왔을 때는 기본 4가지만)
 const FIELDS = PPX.FIELDS || [
-  {k:'foam',l:'폼건 사용',g:'self',col:true},{k:'under',l:'하부 세차',g:'self',col:true},
-  {k:'indoor',l:'실내 베이',g:'self',col:true},{k:'h24',l:'24시간 운영',g:'all',col:true}];
+  {k:'foam',l:'폼건',col:true},{k:'under',l:'하부 세차',col:true},
+  {k:'indoor',l:'실내 베이',col:true},{k:'h24',l:'24시간 운영',col:true}];
+const fieldsFor = PPX.fieldsFor || (() => FIELDS);
 const PAY = PPX.PAY || {}, SVC = PPX.SVC || {}, VISIT = PPX.VISIT || {};
+// 제보 창 서비스 칩: '실내 청소'는 위 시설 항목에 있으니 뺌 (예전에 고른 값은 그대로 유지)
+const SVC_FORM = Object.fromEntries(Object.entries(SVC).filter(([k]) => k !== 'interior'));
 const groupsFor = PPX.groupsFor || (() => new Set(['all','self','auto','hand']));
 const fieldVal = PPX.fieldVal || ((p, f) => p[f.k] ?? null);
 const CORE = ['foam','under','indoor','h24'];   // 셀프세차장에서 모르더라도 항상 보여줄 항목
@@ -802,7 +805,7 @@ function openDetail(id) {
   // 시설: 이 종류에 맞는 항목 중 아는 것 + (셀프면) 기본 4가지. 모르는 항목 수는 따로 안내
   const groups = groupsFor(typesOf(p));
   const shown = [], unknown = [];
-  FIELDS.filter(f => groups.has(f.g)).forEach(f => {
+  fieldsFor(typesOf(p)).forEach(f => {
     const v = fieldVal(p, f);
     if(v !== null || (CORE.includes(f.k) && groups.has('self'))) shown.push(f); else unknown.push(f);
   });
@@ -1291,7 +1294,7 @@ function renderReportForm() {
   const g = groupsFor(reportForm.types);
   const seg = (k) => [[null,'모름'],[true,'있음'],[false,'없음']].map(([v,l]) =>
     `<button type="button" class="${reportForm[k]===v?'on':''}" data-k="${k}" data-v="${v===null?'null':v}">${l}</button>`).join('');
-  const rows = grp => FIELDS.filter(f => f.g === grp).map(f =>
+  const rows = () => fieldsFor(reportForm.types).map(f =>
     `<div class="rf-row"><div class="rf-name">${esc(f.l)}</div><div class="rf-seg">${seg(f.k)}</div></div>`).join('');
   const chips = (key, dict) => `<div class="af-types">${Object.entries(dict).map(([k,l]) =>
     `<button type="button" class="af-type ${reportForm[key].includes(k)?'on':''}" data-multi="${key}" data-t="${k}" aria-pressed="${reportForm[key].includes(k)}">${esc(l)}</button>`).join('')}</div>`;
@@ -1315,24 +1318,23 @@ function renderReportForm() {
     </div>
     <div class="af-note" style="margin:0 0 6px">아는 것만 눌러 주세요. 모르는 건 그대로 두면 돼요.</div>
 
+    <div class="af-group">🧾 시설 · 서비스 <span class="rf-cur">고른 종류에 맞는 것만 보여요</span></div>
+    ${rows()}
+
     ${g.has('self') ? `
     <div class="af-group">🚿 셀프세차</div>
-    ${rows('self')}
     <div class="rf-row"><div class="rf-name">세차 칸 수</div><div class="rf-num">${input('bays','예: 6','inputmode="numeric" maxlength="2"')}칸</div></div>
     <div class="rf-row"><div class="rf-name">기본 요금</div><div class="rf-num">${input('pw','3000','inputmode="numeric" maxlength="6"')}원 / ${input('pm','5','inputmode="numeric" maxlength="3" style="width:64px"')}분</div></div>` : ''}
 
     ${g.has('auto') ? `
     <div class="af-group">💦 노터치 · 자동세차</div>
-    ${rows('auto')}
     <div class="rf-row"><div class="rf-name">차 높이 제한</div><div class="rf-num">${input('height','예: 2.1m','maxlength="10"')}</div></div>` : ''}
 
     ${g.has('hand') ? `
     <div class="af-group">🧽 손세차 · 디테일링</div>
-    ${rows('hand')}
-    <div class="af-field" style="margin-top:8px"><div class="af-label">하는 서비스</div>${chips('svc', SVC)}</div>` : ''}
+    <div class="af-field" style="margin-top:8px"><div class="af-label">하는 서비스</div>${chips('svc', SVC_FORM)}</div>` : ''}
 
     <div class="af-group">📋 공통</div>
-    ${rows('all')}
     <div class="af-field" style="margin-top:10px"><div class="af-label">결제 방법</div>${chips('pay', PAY)}</div>
     <div class="af-field"><div class="af-label">운영시간</div>${input('hours','예: 06:00~24:00','maxlength="60"')}</div>
     <div class="af-field"><div class="af-label">전화번호</div>${input('tel','세차장 전화번호','inputmode="tel" maxlength="30"')}</div>
@@ -1413,7 +1415,7 @@ async function submitReport() {
   const curTypes = typesOf(p);
   if(!sameSet(reportForm.types, curTypes)) suggest.types = [...reportForm.types];
   const g = groupsFor(reportForm.types);
-  FIELDS.filter(f => g.has(f.g)).forEach(f => {
+  fieldsFor(reportForm.types).forEach(f => {
     const v = reportForm[f.k];
     if(v === (fieldVal(p, f) ?? null)) return;
     if(f.col) suggest[f.k] = v; else info[f.k] = v;
