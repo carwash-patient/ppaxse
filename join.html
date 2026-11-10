@@ -130,15 +130,6 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
       <div class="step-title">기본 정보 입력</div>
       <div class="step-sub">빡세에서 사용할 정보를 입력해주세요</div>
 
-      <div class="avatar-upload">
-        <div class="avatar-circle" onclick="document.getElementById('avatarInput').click()">
-          <span id="avatarEmoji">📷</span>
-          <img id="avatarPreview" alt="프로필">
-        </div>
-        <div class="avatar-label">프로필 사진 업로드 (선택)</div>
-        <input type="file" id="avatarInput" accept="image/*">
-      </div>
-
       <div class="field">
         <label class="field-label">이메일<span>*</span></label>
         <input type="email" id="userId" placeholder="example@email.com" autocomplete="email" inputmode="email">
@@ -166,11 +157,11 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
 
     <!-- STEP 2: 차종 + 숙련도 -->
     <div class="step-panel" id="step1">
-      <div class="step-title">차종 & 세차 숙련도</div>
-      <div class="step-sub">내 차에 맞는 세차장 정보를 보여드릴 때 참고해요</div>
+      <div class="step-title">내 차 & 세차 숙련도 <small style="font-size:13px;color:var(--muted);font-weight:400">(선택)</small></div>
+      <div class="step-sub">건너뛰어도 돼요. 고른 차종은 프로필 아이콘이 돼요 🚗</div>
 
       <div class="field">
-        <label class="field-label">보유 차종<span>*</span> (다중 선택 가능)</label>
+        <label class="field-label">보유 차종 (여러 개 선택 가능)</label>
         <div class="cartype-grid" id="cartypeGrid">
           <div class="cartype-chip" data-v="sedan">🚗 세단</div>
           <div class="cartype-chip" data-v="suv">🚙 SUV</div>
@@ -183,8 +174,28 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
         </div>
       </div>
 
+      <div class="field" style="margin-top:16px">
+        <label class="field-label">프로필 아이콘 색 (사진 대신 내 차 아이콘을 써요)</label>
+        <div style="display:flex;align-items:center;gap:14px">
+          <div id="avatarPrev" style="flex:none"></div>
+          <div id="colorRow" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label" for="carMaker">제조사 · 모델 (선택)</label>
+        <div style="display:flex;gap:8px">
+          <select id="carMaker" style="flex:0 0 42%;min-height:44px;border-radius:12px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:#fff;padding:0 10px;font-size:14px">
+            <option value="">제조사</option>
+            <option>현대</option><option>기아</option><option>제네시스</option><option>KG모빌리티</option><option>르노코리아</option><option>쉐보레</option>
+            <option>BMW</option><option>벤츠</option><option>아우디</option><option>폭스바겐</option><option>볼보</option><option>테슬라</option>
+            <option>포르쉐</option><option>미니</option><option>토요타</option><option>렉서스</option><option>혼다</option><option>포드</option><option>지프</option><option>기타</option>
+          </select>
+          <input type="text" id="carModel" maxlength="30" placeholder="모델 (예: 쏘렌토 MQ4)" aria-label="모델" style="flex:1;min-width:0">
+        </div>
+      </div>
+
       <div class="field" style="margin-top:20px">
-        <label class="field-label">세차 숙련도<span>*</span> — 솔직하게 선택해주세요!</label>
+        <label class="field-label">세차 숙련도 — 솔직하게 선택해주세요!</label>
         <div class="skill-grid" id="skillGrid">
           <label class="skill-card" onclick="selectSkill(this,'beginner')">
             <input type="radio" name="skill" value="beginner">
@@ -232,6 +243,19 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
       <div class="step-title">약관 동의 및 가입 완료</div>
       <div class="step-sub">아래 약관에 동의하시면 빡세 회원이 됩니다 💧</div>
 
+      <div class="field">
+        <label class="field-label">빡세를 어떻게 알게 되셨어요? (선택)</label>
+        <div class="cartype-grid" id="srcGrid">
+          <div class="cartype-chip" data-s="cafe">네이버 카페</div>
+          <div class="cartype-chip" data-s="insta">인스타그램</div>
+          <div class="cartype-chip" data-s="youtube">유튜브</div>
+          <div class="cartype-chip" data-s="search">검색</div>
+          <div class="cartype-chip" data-s="friend">지인 추천</div>
+          <div class="cartype-chip" data-s="poster">포스터·QR</div>
+          <div class="cartype-chip" data-s="other">기타</div>
+        </div>
+      </div>
+
       <div class="agree-list">
         <label class="agree-item">
           <input type="checkbox" id="agreeAll" onchange="agreeAllToggle(this)">
@@ -248,6 +272,16 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
           <div class="agree-box">✓</div>
           <div class="agree-text"><a href="privacy.html" target="_blank" style="color:inherit;text-decoration:underline">개인정보 수집·이용</a> 동의 <b>(필수)</b></div>
         </label>
+        <label class="agree-item">
+          <input type="checkbox" class="agreeItem">
+          <div class="agree-box">✓</div>
+          <div class="agree-text">만 14세 이상입니다 <b>(필수)</b></div>
+        </label>
+      </div>
+      <div style="margin-top:10px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);font-size:12px;line-height:1.7;color:var(--muted)">
+        <b style="color:#fff">받는 정보</b> 이메일, 비밀번호(암호화), 닉네임 · 선택: 차종·숙련도·제조사/모델·아이콘 색·알게 된 경로<br>
+        <b style="color:#fff">쓰는 곳</b> 로그인·본인 확인, 문의 응대, 기프티콘 추첨<br>
+        <b style="color:#fff">보관</b> 탈퇴할 때까지 (마이페이지에서 언제든 탈퇴하면 바로 삭제)
       </div>
 
       <div class="btn-row" style="margin-top:20px">
@@ -263,8 +297,8 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/config.js?v=20261110"></script>
-<script src="js/ppx.js?v=20261110"></script>
+<script src="js/config.js?v=20261110b"></script>
+<script src="js/ppx.js?v=20261110b"></script>
 <script>
 let curStep = 0;
 let selectedCars = [];
@@ -277,10 +311,6 @@ function goStep(n) {
       if(!document.getElementById('userNick').value.trim()) return showToast('닉네임을 입력해주세요');
       if(document.getElementById('userPw').value.length < 8) return showToast('비밀번호는 8자 이상입니다');
       if(document.getElementById('userPw').value !== document.getElementById('userPw2').value) return showToast('비밀번호가 일치하지 않습니다');
-    }
-    if(curStep === 1) {
-      if(selectedCars.length === 0) return showToast('차종을 1개 이상 선택해주세요');
-      if(!selectedSkill) return showToast('세차 숙련도를 선택해주세요');
     }
   }
   document.getElementById('step'+curStep).classList.remove('active');
@@ -299,7 +329,7 @@ function selectSkill(el, val) {
   selectedSkill = val;
 }
 
-document.querySelectorAll('.cartype-chip').forEach(chip => {
+document.querySelectorAll('#cartypeGrid .cartype-chip').forEach(chip => {
   chip.onclick = () => {
     chip.classList.toggle('on');
     const v = chip.dataset.v;
@@ -317,19 +347,25 @@ function togglePw(id) {
   el.type = el.type === 'password' ? 'text' : 'password';
 }
 
-// 프로필 이미지 미리보기
-document.getElementById('avatarInput').onchange = function() {
-  const file = this.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const img = document.getElementById('avatarPreview');
-    img.src = e.target.result;
-    img.style.display = 'block';
-    document.getElementById('avatarEmoji').style.display = 'none';
-  };
-  reader.readAsDataURL(file);
-};
+// 프로필 아이콘: 처음 고른 차종 그림 + 색
+const COLORS = ['#22d3ee','#ffffff','#9ca3af','#475569','#ef4444','#3b82f6','#fbbf24','#34d399'];
+const COLOR_NAMES = ['하늘','흰색','은색','진회색','빨강','파랑','노랑','초록'];
+let avatarColor = COLORS[0];
+function renderAvatar() {
+  document.getElementById('avatarPrev').innerHTML = PPX.carAvatar ? PPX.carAvatar(selectedCars[0] || 'sedan', avatarColor, 56) : '';
+  document.getElementById('colorRow').innerHTML = COLORS.map((c, i) => `<button type="button" aria-label="${COLOR_NAMES[i]}" aria-pressed="${c === avatarColor}" data-c="${c}" style="width:32px;height:32px;border-radius:50%;background:${c};border:${c === avatarColor ? '3px solid #fff' : '2px solid rgba(255,255,255,.25)'};cursor:pointer;padding:0"></button>`).join('');
+  document.querySelectorAll('#colorRow button').forEach(b => b.onclick = () => { avatarColor = b.dataset.c; renderAvatar(); });
+}
+renderAvatar();
+document.querySelectorAll('#cartypeGrid .cartype-chip').forEach(chip => chip.addEventListener('click', () => setTimeout(renderAvatar, 0)));
+
+// 알게 된 경로 (링크 꼬리표로 들어왔으면 미리 골라 둠)
+let signupSource = '';
+const REF_TO_SRC = { cafe: 'cafe', insta: 'insta', youtube: 'youtube', qr: 'poster', poster: 'poster' };
+{ const r = PPX.myRef ? PPX.myRef() : null; if(r && REF_TO_SRC[r]) signupSource = REF_TO_SRC[r]; }
+function renderSrc() { document.querySelectorAll('#srcGrid .cartype-chip').forEach(c => c.classList.toggle('on', c.dataset.s === signupSource)); }
+document.querySelectorAll('#srcGrid .cartype-chip').forEach(c => c.onclick = () => { signupSource = signupSource === c.dataset.s ? '' : c.dataset.s; renderSrc(); });
+renderSrc();
 
 // 가입 후 돌아갈 곳 (예: join.html?next=r/ → 후기 페이지)
 const nextPage = (() => {
@@ -340,8 +376,8 @@ const nextPage = (() => {
 
 async function doJoin() {
   const required = document.querySelectorAll('.agreeItem');
-  const checked = [...required].slice(0, 2).filter(c => c.checked);
-  if(checked.length < 2) return showToast('필수 약관에 동의해주세요');
+  const checked = [...required].filter(c => c.checked);
+  if(checked.length < required.length) return showToast('필수 항목에 모두 동의해주세요');
   if(!PPX.ready) return showToast('회원가입을 준비 중이에요. 잠시만 기다려 주세요');
 
   const btn = document.querySelector('#step2 .btn-primary');
@@ -351,8 +387,13 @@ async function doJoin() {
       email: document.getElementById('userId').value.trim(),
       password: document.getElementById('userPw').value,
       nickname: document.getElementById('userNick').value.trim(),
-      skill: selectedSkill,
-      cars: selectedCars
+      skill: selectedSkill || null,
+      cars: selectedCars,
+      avatar_car: selectedCars[0] || 'sedan',
+      avatar_color: avatarColor,
+      car_model: [document.getElementById('carMaker').value, document.getElementById('carModel').value.trim()].filter(Boolean).join(' ').slice(0, 40) || null,
+      signup_source: signupSource || null,
+      age14: true
     });
     if(res && res.needsConfirm) {
       document.getElementById('step2').innerHTML = `
