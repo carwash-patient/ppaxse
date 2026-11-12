@@ -1,0 +1,21 @@
+실제 Supabase 요청 경로 — 적용 '전' 기준선 (읽기 전용, GET 14건)
+2026-11-12 19:55 KST, 공개 키로 비로그인(anon) 요청. api_baseline_readonly.js 와 같은 목록.
+
+ppx_stats            => 200
+ppx_event_status     => 200
+is_admin             => 200
+places GET(승인 1건) => 200 rows=1
+ppx_guard            => 204                        ← 비로그인이 실행됨 (적용 후 42501 기대)
+my_pending_count     => 200                        ← 실행됨
+my_pending_reports   => 200                        ← 실행됨
+ppx_event_week       => 200                        ← 실행됨
+ppx_event_start      => 200                        ← 실행됨
+ppx_event_draw_at    => 200                        ← 실행됨
+ppx_is_member        => 401 42501 permission denied
+admin_visit_stats    => 401 42501 permission denied
+admin_type_votes     => 401 42501 permission denied
+admin_event_entries  => 400 P0001 운영자만 볼 수 있어요  ← 함수 본문까지 도달 (적용 후 42501 기대)
+
+참고: 19:40의 1차 점검(18건)은 POST 요청이었고 '읽기 전용'이 아니었습니다. 내용은 보완 보고서 2장 참고.
+  그때만 확인된 것: start_claim => 200, finish_claim => 200 (비로그인 실행됨), ppx_burst_guard => 401 42501,
+                    비로그인 places 등록 => 401 42501 (거부됨. 세차장 번호 1개를 건너뛰게 했을 수 있음)

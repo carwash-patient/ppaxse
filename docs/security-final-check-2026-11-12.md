@@ -1,5 +1,10 @@
 # 빡세(PPAXSE.COM) 보안 수정 — 최종 검토 보고서 (4차 조건부 승인 후속)
 
+> **정정 (2026-11-12 20:00)**: 이 문서의 '공개 API 읽기 요청 18건', '읽기 전용' 표현은 정확하지 않았습니다.
+> 19:40의 18건은 POST 요청이었고, 그중 거부된 등록 시도 1건이 세차장 번호 1개를 건너뛰게 했을 수 있습니다.
+> 정확한 내용과 다시 만든 읽기 전용(GET) 기준선, 스크립트 분리는 `docs/security-supplement-2026-11-12.md`를 따릅니다.
+> 이 문서에 나오는 `api_path_test.js`는 `api_baseline_readonly.js`와 `api_postapply_write_test.js`로 나뉘었습니다.
+
 - 작성: 2026-11-12, Claude
 - 대상: 브랜치 `security/2026-11-12` (로컬 커밋만. GitHub·main 미반영)
 - **이번 작업에서 보안 수정 SQL(migrate / rollback / verify)은 한 글자도 바꾸지 않았습니다.**
