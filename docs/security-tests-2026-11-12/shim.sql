@@ -1,9 +1,9 @@
--- Supabase 흉내 (테스트 전용)
+-- Supabase 흉내 (테스트 전용). auth.uid()/auth.jwt() 본문은 운영 정의(2026-11-12 preflight)와 같게 맞춤
 create schema auth; create schema storage; create schema extensions; create schema cron;
 grant usage on schema public, auth, storage to anon, authenticated, service_role;
 create table auth.users (id uuid primary key default gen_random_uuid(), email text, raw_user_meta_data jsonb default '{}', is_anonymous boolean default false, created_at timestamptz default now());
-create or replace function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
-create or replace function auth.jwt() returns jsonb language sql stable as $$ select coalesce(nullif(current_setting('request.jwt.claims', true), ''), '{}')::jsonb $$;
+create or replace function auth.uid() returns uuid language sql stable as $$ select coalesce( nullif(current_setting('request.jwt.claim.sub', true), ''), (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub') )::uuid $$;
+create or replace function auth.jwt() returns jsonb language sql stable as $$ select coalesce( nullif(current_setting('request.jwt.claim', true), ''), nullif(current_setting('request.jwt.claims', true), '') )::jsonb $$;
 create or replace function auth.role() returns text language sql stable as $$ select current_user::text $$;
 grant execute on all functions in schema auth to anon, authenticated, service_role;
 create table storage.buckets (id text primary key, name text, public boolean, file_size_limit bigint, allowed_mime_types text[]);
