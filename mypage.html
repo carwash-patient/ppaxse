@@ -261,7 +261,7 @@ async function loadLists() {
         </div>
         <div class="req-state ${r.status}">${label[r.status]||r.status}</div>
       </div>`).join('')
-      : '<div class="req-empty">아직 요청한 세차장이 없어요.<br>지도에서 <b>＋ 세차장 추가</b>를 눌러 단골 세차장을 알려주세요!</div>';
+      : '<div class="req-empty">아직 요청한 세차장이 없어요.<br>지도에서 <b>＋ 세차장 제보</b>를 눌러 단골 세차장을 알려주세요!</div>';
   } catch(e) { req.innerHTML = '<div class="req-empty">목록을 불러오지 못했어요</div>'; }
   try {
     const list = await PPX.myReports();

@@ -38,7 +38,7 @@
     else window.__naverAuthFailed = true;
   };
 </script>
-<script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=ts4h2dbzz2"></script>
+<script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=ts4h2dbzz2&submodules=geocoder"></script>
 
 <style>
 :root{--deep:#04111e;--deep2:#071828;--ocean:#0369a1;--sky:#0ea5e9;--cyan:#06b6d4;--aqua:#22d3ee;--foam:#bae6fd;--line:rgba(14,165,233,.18);--muted:rgba(186,230,253,.6);--card:rgba(7,24,40,.94)}
@@ -66,7 +66,20 @@ html,body{height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backgroun
 .chip.on{border-color:var(--sky);background:rgba(14,165,233,.18);color:#fff;box-shadow:0 0 12px rgba(14,165,233,.2)}
 .chip:active{transform:scale(.95)}
 
-/* 세차장 추가 요청 */
+/* 세차장 제보(새 세차장) */
+.pick-search{display:none;position:absolute;top:14px;left:14px;right:14px;z-index:21}
+.picking .pick-search{display:block}
+.ps-row{display:flex;gap:8px}
+.ps-row input{flex:1;min-width:0;min-height:46px;padding:0 14px;border-radius:14px;border:1px solid rgba(34,211,238,.45);background:rgba(7,24,40,.97);color:#fff;font-family:inherit;font-size:15px;outline:none}
+.ps-row input::placeholder{color:rgba(224,242,254,.5)}
+.ps-row button{min-height:46px;padding:0 16px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--sky),var(--aqua));color:#fff;font-family:inherit;font-size:14px;font-weight:900;cursor:pointer}
+.ps-results{display:none;margin-top:8px;max-height:46vh;overflow-y:auto;border-radius:14px;background:rgba(7,24,40,.98);border:1px solid rgba(255,255,255,.12);box-shadow:0 10px 28px rgba(0,0,0,.5)}
+.ps-results.open{display:block}
+.ps-sec{padding:10px 14px 4px;font-size:11px;font-weight:900;color:var(--aqua)}
+.ps-item{display:block;width:100%;text-align:left;padding:11px 14px;border:none;border-top:1px solid rgba(255,255,255,.06);background:none;color:#fff;font-family:inherit;font-size:14px;line-height:1.45;cursor:pointer}
+.ps-item small{display:block;color:rgba(224,242,254,.6);font-size:12px}
+.ps-msg{padding:12px 14px;font-size:13px;line-height:1.5;color:rgba(224,242,254,.75)}
+.picking .pick-banner{top:auto;bottom:calc(150px + env(safe-area-inset-bottom))}
 .add-btn{position:absolute;top:14px;right:14px;z-index:10;display:flex;align-items:center;gap:6px;padding:10px 15px;border-radius:999px;border:1px solid rgba(34,211,238,.4);background:rgba(7,24,40,.95);color:#fff;font-family:inherit;font-size:13px;font-weight:900;box-shadow:0 6px 20px rgba(0,0,0,.45);cursor:pointer}
 .add-btn b{color:var(--aqua);font-size:16px;line-height:1}
 .pick-pin{display:none;position:absolute;left:50%;top:50%;z-index:20;pointer-events:none;transform:translate(-50%,-100%);font-size:40px;filter:drop-shadow(0 6px 8px rgba(0,0,0,.5))}
@@ -355,9 +368,13 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
       <button class="p" id="shLocate" type="button">내 위치로 보기</button>
     </div>
   </div>
-  <button class="add-btn" id="addBtn" type="button"><b>＋</b> 세차장 추가</button>
+  <button class="add-btn" id="addBtn" type="button"><b>＋</b> 세차장 제보</button>
   <div class="pick-pin" aria-hidden="true">📍</div>
-  <div class="pick-banner">지도를 움직여 <b style="color:var(--aqua)">📍 핀</b>을 세차장 위치에 맞춰주세요</div>
+  <div class="pick-search">
+    <div class="ps-row"><input id="pickQ" type="search" maxlength="60" placeholder="주소나 세차장 이름으로 찾기" enterkeyhint="search"><button id="pickGo" type="button">찾기</button></div>
+    <div class="ps-results" id="pickResults"></div>
+  </div>
+  <div class="pick-banner">찾은 뒤 지도를 살짝 움직여 <b style="color:var(--aqua)">📍 핀</b>을 입구에 맞춰주세요</div>
 </div>
 
 <div class="pick-bar">
@@ -366,9 +383,9 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
 </div>
 
 <div class="region-dim" id="addDim"></div>
-<div class="region-panel" id="addPanel" role="dialog" aria-label="세차장 추가 요청">
+<div class="region-panel" id="addPanel" role="dialog" aria-label="세차장 제보">
   <div class="rp-head">
-    <div class="rp-title">세차장 추가 요청</div>
+    <div class="rp-title">세차장 제보</div>
     <button class="rp-close" id="addClose" type="button" aria-label="닫기">×</button>
   </div>
   <div class="af-body" id="addBody"></div>
@@ -1151,7 +1168,7 @@ function toast(msg, warn, ms) {
 }
 
 function openAddPanel(html) {
-  document.querySelector('#addPanel .rp-title').textContent = '세차장 추가 요청';
+  document.querySelector('#addPanel .rp-title').textContent = '세차장 제보';
   document.getElementById('addBody').innerHTML = html;
   document.getElementById('addPanel').classList.add('open');
   document.getElementById('addDim').classList.add('open');
@@ -1166,9 +1183,71 @@ async function startAddPlace() {
   if(activeId) closeDetail();
   setSheet('hidden');
   document.body.classList.add('picking');
+  document.getElementById('pickQ').value = '';
+  closePickResults();
 }
 
-function stopPicking() { document.body.classList.remove('picking'); }
+function stopPicking() { document.body.classList.remove('picking'); closePickResults(); }
+
+// ── 제보 위치 찾기: 주소(네이버 지오코딩) + 이미 빡세에 있는 세차장 이름 ──
+function closePickResults() { const b = document.getElementById('pickResults'); b.classList.remove('open'); b.innerHTML = ''; }
+function geocodeAddr(q) {
+  return new Promise((resolve, reject) => {
+    const S = window.naver && naver.maps && naver.maps.Service;
+    if(!S || !S.geocode) return reject(new Error('nogeo'));
+    S.geocode({ query: q }, (status, resp) => {
+      if(status !== S.Status.OK) return reject(new Error('geo ' + status));
+      const list = (resp && resp.v2 && resp.v2.addresses) || [];
+      resolve(list.slice(0, 5).map(a => ({ road: a.roadAddress, jibun: a.jibunAddress, lat: +a.y, lng: +a.x })));
+    });
+  });
+}
+let pickFound = [];
+async function pickSearch() {
+  const q = document.getElementById('pickQ').value.trim();
+  if(q.length < 2) return toast('두 글자 이상 입력해 주세요', true);
+  const box = document.getElementById('pickResults');
+  box.innerHTML = '<div class="ps-msg">찾는 중…</div>'; box.classList.add('open');
+  const key = q.replace(/\s/g, '');
+  const own = places.filter(p => p.name && p.name.replace(/\s/g, '').includes(key)).slice(0, 5);
+  let addrs = [], geoFail = false;
+  try { addrs = await geocodeAddr(q); } catch(e) { geoFail = true; }
+  pickFound = addrs;
+  let html = '';
+  if(addrs.length) html += '<div class="ps-sec">주소</div>' + addrs.map((a, i) =>
+    `<button class="ps-item" type="button" data-a="${i}">📍 ${esc(a.road || a.jibun)}${a.road && a.jibun ? `<small>${esc(a.jibun)}</small>` : ''}</button>`).join('');
+  if(own.length) html += '<div class="ps-sec">이미 빡세에 있는 세차장</div>' + own.map(p =>
+    `<button class="ps-item" type="button" data-p="${p.id}">💧 ${esc(p.name)}<small>${esc(p.addr || p.region || '')}</small></button>`).join('');
+  if(!html) html = geoFail
+    ? '<div class="ps-msg">주소 검색을 잠시 쓸 수 없어요. 지도를 움직여 📍 핀을 맞춰주세요.</div>'
+    : '<div class="ps-msg">찾는 결과가 없어요. 도로명 주소(예: 테크노파크로111번길 7)로 찾아보거나, 지도를 움직여 핀을 맞춰주세요.</div>';
+  box.innerHTML = html;
+  box.querySelectorAll('[data-a]').forEach(b => b.onclick = () => pickAddress(pickFound[+b.dataset.a]));
+  box.querySelectorAll('[data-p]').forEach(b => b.onclick = () => {
+    stopPicking(); openDetail(+b.dataset.p);
+    toast('이미 빡세에 있는 세차장이에요. 정보가 다르면 여기서 알려주세요');
+  });
+}
+function pickAddress(a) {
+  if(!a || !naverMap) return;
+  naverMap.setCenter(new naver.maps.LatLng(a.lat, a.lng));
+  naverMap.setZoom(18);
+  addForm.addr = a.road || a.jibun || addForm.addr;
+  const near = places.map(p => ({p, d: distKm(a, p)})).filter(x => x.d < 0.3).sort((x, y) => x.d - y.d).slice(0, 3);
+  const box = document.getElementById('pickResults');
+  if(near.length) {
+    box.innerHTML = '<div class="ps-sec">근처에 이미 있는 세차장 · 같은 곳이면 눌러주세요</div>' + near.map(x =>
+      `<button class="ps-item" type="button" data-p="${x.p.id}">💧 ${esc(x.p.name)}<small>${fmtDist(x.d)} · ${esc(x.p.addr || '')}</small></button>`).join('')
+      + '<button class="ps-item" type="button" data-close="1">없어요, 새 세차장이에요 →</button>';
+    box.querySelectorAll('[data-p]').forEach(b => b.onclick = () => {
+      stopPicking(); openDetail(+b.dataset.p);
+      toast('이미 빡세에 있는 세차장이에요. 정보가 다르면 여기서 알려주세요');
+    });
+    box.querySelector('[data-close]').onclick = closePickResults;
+  } else closePickResults();
+}
+document.getElementById('pickGo').onclick = pickSearch;
+document.getElementById('pickQ').addEventListener('keydown', e => { if(e.key === 'Enter') { e.preventDefault(); pickSearch(); } });
 
 function nearestRegion(lat, lng) {
   // 자료가 없는 지역 안이면 그 지역으로 (주변 다른 구의 세차장이 더 가까워도)
