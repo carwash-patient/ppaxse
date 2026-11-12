@@ -73,7 +73,7 @@
 - **authenticated 20개**: 위 4개, 회원 기능 7개(`delete_my_account`, `start_claim`, `finish_claim`, `ppx_enter_event`, `ppx_log_block`, `ppx_precheck`, `ppx_vote_type`), 운영자 기능 9개(`admin_*`)
 - **없음 22개**: 트리거 11개, 도우미 4개(`ppx_guard`, `ppx_burst_guard`, `my_pending_count`, `my_pending_reports`), 내부 7개(`ppx_event_week`, `ppx_event_start`, `ppx_event_draw_at`, `ppx_event_draw_run`, `ppx_auto_draw`, `ppx_is_member`, `ppx_entry_valid`)
 - service_role과 postgres는 42개 모두 그대로입니다.
-- SECURITY DEFINER 함수는 31개에서 **34개**가 됩니다(트리거 3개 추가).
+- SECURITY DEFINER 함수는 33개에서 **36개**가 됩니다(트리거 3개 추가).
   - 추가된 3개도 소유자 postgres, search_path `pg_catalog, public, pg_temp`, 본문의 모든 참조에 스키마 명시, 동적 SQL 없음입니다.
   - 직접 실행 권한은 아무에게도 없습니다(트리거 전용).
   - 나머지 31개의 점검 결과는 3차 보고서와 같고, 본문은 바뀌지 않았습니다.
