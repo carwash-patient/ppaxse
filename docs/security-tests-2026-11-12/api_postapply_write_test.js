@@ -5,7 +5,8 @@
 //   · 익명 테스트 계정 1개 (다시 실행하면 같은 계정을 재사용)
 //   · 대기 중 세차장 제보 1건  — 이름: [보안점검 날짜-시각] 삭제해 주세요, 지역: 테스트
 //   · 대기 중 정보 제보 1건    — 메모: [보안점검 날짜-시각] 무시해 주세요
-//   정리: supabase/cleanup_sectest_2026-11-12.sql (운영자가 Run) 또는 운영자 화면에서 거절·무시
+//   정리: 이 스크립트가 돌려주는 '정리_SQL_세줄'(테스트 계정 UUID + 만들어진 레코드 ID)을
+//         ① supabase/cleanup_sectest_preview_2026-11-12.sql (읽기 전용 미리 보기) → ② cleanup_sectest_delete_2026-11-12.sql 에 넣어 운영자가 Run
 // 안전장치:
 //   · CONFIRM 이 정확히 '적용 완료' 가 아니면 아무 요청도 보내지 않음
 //   · 적용이 안 된 상태(비로그인 ppx_guard 가 실행됨)면 중단
@@ -13,17 +14,21 @@
 //   · 이전 실행의 테스트 데이터가 남아 있으면 새로 만들지 않고 알려 줌 (중복 방지)
 //   · 단계마다 결과와 '만들어진 데이터'를 기록. 중간에 멈춰도 그때까지의 기록을 돌려줌
 (async (CONFIRM) => {
-  const URL = 'https://zylyncnevdxpimyqrifp.supabase.co';
-  const KEY = 'sb_publishable_i5ZeUzflI5otoD9GqwQpew_2x3y_RPA';
+  const T = (typeof globalThis !== 'undefined' && globalThis.PPX_TEST_TARGET) || {};   // 테스트 환경에서만 주소를 바꿔 끼움
+  const URL = T.url || 'https://zylyncnevdxpimyqrifp.supabase.co';
+  const KEY = T.key || 'sb_publishable_i5ZeUzflI5otoD9GqwQpew_2x3y_RPA';
   const STORE = 'ppxSecTest20261112';
   const TAG = '[보안점검 ';
   const d = new Date(), p2 = n => String(n).padStart(2, '0');
   const RUN = TAG + d.getFullYear() + p2(d.getMonth() + 1) + p2(d.getDate()) + '-' + p2(d.getHours()) + p2(d.getMinutes()) + ']';
   const fake = '00000000-0000-4000-8000-000000000001';
   const log = [], created = [];
+  const ids = { test_user: null, place_ids: [], report_ids: [] };   // 정리 SQL에 넣을 값 (꼬리표가 아니라 ID로 정리)
   const step = (name, expect, got, pass, note) => log.push({ 단계: log.length + 1, 시험: name, 기대: expect, 결과: got, 판정: pass ? 'PASS' : 'FAIL', 비고: note || '' });
   const finish = why => { const r = { 실행표: RUN, 중단사유: why || '', 기록: log, 만들어진_데이터: created,
-      정리: created.length ? 'supabase/cleanup_sectest_2026-11-12.sql 을 운영자가 Run (또는 운영자 화면에서 거절·무시)' : '정리할 것 없음' };
+      정리_매개변수: ids,
+      정리_SQL_세줄: ids.test_user ? "  '" + ids.test_user + "'::uuid as test_user,\n  array[" + ids.place_ids.join(', ') + "]::bigint[] as place_ids,\n  array[" + ids.report_ids.join(', ') + "]::bigint[] as report_ids" : '',
+      정리: ids.test_user ? '① cleanup_sectest_preview_2026-11-12.sql (읽기 전용) → ② cleanup_sectest_delete_2026-11-12.sql 에 위 세 줄을 넣어 운영자가 Run' : '정리할 것 없음(계정을 만들기 전에 끝남)' };
     console.table(log); console.log(r); return r; };
   const req = async (method, path, body, token, extra = {}) => {
     const r = await fetch(URL + path, { method, headers: { apikey: KEY, Authorization: 'Bearer ' + (token || KEY), 'Content-Type': 'application/json', ...extra },
@@ -55,6 +60,7 @@
       try { localStorage.setItem(STORE, JSON.stringify({ refresh_token: s.data.refresh_token, id: me })); } catch (e) {}
       created.push({ 종류: '익명 테스트 계정', id: me });
     }
+    ids.test_user = me;
     const claims = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
     step('테스트 계정 JWT', 'role=authenticated, is_anonymous=true', 'role=' + claims.role + ', is_anonymous=' + claims.is_anonymous,
          claims.role === 'authenticated' && claims.is_anonymous === true, (reused ? '기존 테스트 계정 재사용 ' : '새 계정 ') + me);
@@ -75,6 +81,8 @@
     const oldP = await req('GET', '/rest/v1/places?select=id,name,status&submitted_by=eq.' + me + '&name=like.' + encodeURIComponent(TAG + '*'), undefined, token);
     const oldR = await req('GET', '/rest/v1/place_reports?select=id,memo,status&reporter=eq.' + me + '&memo=like.' + encodeURIComponent(TAG + '*'), undefined, token);
     const hasP = Array.isArray(oldP.data) && oldP.data.length > 0, hasR = Array.isArray(oldR.data) && oldR.data.length > 0;
+    if (hasP) ids.place_ids.push(...oldP.data.map(x => x.id));      // 이전 실행에서 남은 것도 정리 대상에 포함
+    if (hasR) ids.report_ids.push(...oldR.data.map(x => x.id));
 
     // 4) 조작한 세차장 제보
     if (hasP) step('세차장 제보', '(건너뜀)', '이전 테스트 제보가 남아 있음: id ' + oldP.data.map(x => x.id).join(','), true, '정리 후 다시 실행하면 이 단계를 수행');
@@ -82,14 +90,17 @@
       const body = { name: RUN + ' 삭제해 주세요', type: 'self', region: '테스트', lat: 37.3857, lng: 126.6444,
                      status: 'approved', source: 'public_data', submitted_by: fake, check_count: 99 };   // 일부러 조작
       const r = await req('POST', '/rest/v1/places', body, token, rep); const x = (Array.isArray(r.data) ? r.data[0] : null) || {};
-      if (x.id) created.push({ 종류: '세차장 제보(places)', id: x.id, 상태: x.status });
+      if (x.id) { created.push({ 종류: '세차장 제보(places)', id: x.id, 상태: x.status }); ids.place_ids.push(x.id); }
       step('조작한 세차장 제보 → 대기·본인으로 고정', '201 / pending / user / 본인 / 0',
            r.text + ' / ' + [x.status, x.source, x.submitted_by === me ? '본인' : x.submitted_by, x.check_count].join(' / '),
            r.status === 201 && x.status === 'pending' && x.source === 'user' && x.submitted_by === me && x.check_count === 0,
            x.status && x.status !== 'pending' ? '★ 대기가 아닌 상태로 저장됨 — 즉시 정리하고 롤백 검토' : '');
-      const r2 = await req('POST', '/rest/v1/places', body, token, rep); const y = (Array.isArray(r2.data) ? r2.data[0] : null) || {};
-      if (y.id) created.push({ 종류: '세차장 제보(places) — 제한이 안 걸려 생김', id: y.id, 상태: y.status });
-      step('제한: 30초 안에 두 번째 세차장 제보', 'P0001 거절', r2.text + ' ' + (r2.msg || ''), r2.code === 'P0001');
+      if (!x.id) step('제한: 30초 안에 두 번째 세차장 제보', '(건너뜀)', '첫 제보가 저장되지 않아 시험하지 않음', false, '불필요한 데이터를 만들지 않기 위해 건너뜀');
+      else {
+        const r2 = await req('POST', '/rest/v1/places', body, token, rep); const y = (Array.isArray(r2.data) ? r2.data[0] : null) || {};
+        if (y.id) { created.push({ 종류: '세차장 제보(places) — 제한이 안 걸려 생김', id: y.id, 상태: y.status }); ids.place_ids.push(y.id); }
+        step('제한: 30초 안에 두 번째 세차장 제보', 'P0001 거절', r2.text + ' ' + (r2.msg || ''), r2.code === 'P0001');
+      }
     }
 
     // 5) 조작한 정보 제보 (승인된 세차장 1곳에 대기 제보가 1건 생김)
@@ -101,13 +112,16 @@
       else {
         const body = { place_id: tgt.id, memo: RUN + ' 무시해 주세요', status: 'applied', reporter: fake };   // 일부러 조작
         const r = await req('POST', '/rest/v1/place_reports', body, token, rep); const x = (Array.isArray(r.data) ? r.data[0] : null) || {};
-        if (x.id) created.push({ 종류: '정보 제보(place_reports)', id: x.id, 상태: x.status, 대상_세차장: tgt.id + ' ' + tgt.name });
+        if (x.id) { created.push({ 종류: '정보 제보(place_reports)', id: x.id, 상태: x.status, 대상_세차장: tgt.id + ' ' + tgt.name }); ids.report_ids.push(x.id); }
         step('조작한 정보 제보 → 대기·본인으로 고정', '201 / pending / 본인', r.text + ' / ' + [x.status, x.reporter === me ? '본인' : x.reporter].join(' / '),
              r.status === 201 && x.status === 'pending' && x.reporter === me,
              x.status && x.status !== 'pending' ? '★ 대기가 아닌 상태로 저장됨 — 즉시 정리하고 롤백 검토' : '');
-        const r2 = await req('POST', '/rest/v1/place_reports', body, token, rep); const y = (Array.isArray(r2.data) ? r2.data[0] : null) || {};
-        if (y.id) created.push({ 종류: '정보 제보(place_reports) — 제한이 안 걸려 생김', id: y.id, 상태: y.status });
-        step('제한: 15초 안에 두 번째 정보 제보', 'P0001 거절', r2.text + ' ' + (r2.msg || ''), r2.code === 'P0001');
+        if (!x.id) step('제한: 15초 안에 두 번째 정보 제보', '(건너뜀)', '첫 제보가 저장되지 않아 시험하지 않음', false, '불필요한 데이터를 만들지 않기 위해 건너뜀');
+        else {
+          const r2 = await req('POST', '/rest/v1/place_reports', body, token, rep); const y = (Array.isArray(r2.data) ? r2.data[0] : null) || {};
+          if (y.id) { created.push({ 종류: '정보 제보(place_reports) — 제한이 안 걸려 생김', id: y.id, 상태: y.status }); ids.report_ids.push(y.id); }
+          step('제한: 15초 안에 두 번째 정보 제보', 'P0001 거절', r2.text + ' ' + (r2.msg || ''), r2.code === 'P0001');
+        }
       }
     }
 

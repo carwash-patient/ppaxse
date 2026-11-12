@@ -1,5 +1,8 @@
 # 빡세(PPAXSE.COM) 보안 수정 — 보완 보고서 (기능 영향·점검 스크립트 재검증)
 
+> **갱신 (2026-11-12 21:00)**: 3장의 정리 SQL `cleanup_sectest_2026-11-12.sql`(꼬리표 문자열 기준)은 폐기했습니다.
+> ID 기준으로 다시 만든 정리 절차와 추가 검증 결과는 `docs/security-supplement2-2026-11-12.md`를 따릅니다.
+
 - 작성: 2026-11-12 20:00, Claude
 - 대상: 브랜치 `security/2026-11-12` (로컬 커밋만. GitHub·main 미반영)
 - **보안 수정 SQL(`migrate` / `rollback` / `verify_rollback`)은 바꾸지 않았습니다.** 조사 결과 바꿔야 할 곳도 나오지 않았습니다.
