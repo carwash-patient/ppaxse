@@ -58,7 +58,7 @@
 - 같은 내용을 `supabase/schema.sql`에도 반영합니다.
 - 파일 맨 위에 무엇을 바꾸는지 한국어 주석을 씁니다.
 - SQL은 운영자가 Supabase 대시보드 → SQL Editor에 직접 붙여넣어 실행합니다. **실행이 필요하면 반드시 따로 알려 주세요.**
-- **새 함수는 기본으로 아무도 실행할 수 없습니다** (2026-11-12부터). 함수를 만들면 같은 파일에서 `revoke all ... from public, anon` 후 필요한 역할에만 `grant execute ... to authenticated`(비로그인도 필요하면 `anon`)를 직접 써 주세요. 운영자용 함수는 첫 줄에서 `public.is_admin()` 검사를 하고, `set search_path = pg_catalog, public`을 붙입니다.
+- **새 함수는 기본으로 아무도 실행할 수 없습니다** (2026-11-12부터). 함수를 만들면 같은 파일에서 `revoke all ... from public, anon` 후 필요한 역할에만 `grant execute ... to authenticated`(비로그인도 필요하면 `anon`)를 직접 써 주세요. 운영자용 함수는 첫 줄에서 `public.is_admin()` 검사를 하고, `set search_path = pg_catalog, public, pg_temp`를 붙입니다.
 
 ## 6. 작업 방식
 

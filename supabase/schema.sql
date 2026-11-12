@@ -1859,70 +1859,30 @@ end $$;
 revoke all on function public.ppx_enter_event(bigint) from public, anon;
 grant execute on function public.ppx_enter_event(bigint) to authenticated;
 
--- ── (2026-11-12) 보안 점검 반영: 함수 실행 권한(목록 방식)·기본 권한·search_path·세차장 등록 정책 ──
--- ── 1) 함수 실행 권한 ─────────────────────────────────────────────
+-- ── (2026-11-12) 보안 점검 반영: 함수 실행 권한·기본 권한·search_path·세차장 등록 정책 ──
+--  운영 DB에는 migrate_2026-11-12.sql(사전·사후 검사 포함)로 적용. 아래는 새로 만들 때 같은 결과를 내는 요약본.
 do $$
 declare
   f record;
-  n int := 0;
-  -- 비로그인(anon)도 필요한 것
-  anon_list text[] := array[
-    'is_admin',          -- 지도·한마디·확인 기록 '조회' 정책 안에서 쓰임 (비로그인 지도 보기에 필요)
-    'ppx_stats',         -- 홈 화면 세차장 수 등
-    'ppx_event_status',  -- 이벤트 현황 표시
-    'ppx_track'          -- 방문 기록
-  ];
-  -- 로그인(authenticated, 익명 로그인 포함)이 필요한 것
-  auth_list text[] := array[
-    'is_admin', 'ppx_stats', 'ppx_event_status', 'ppx_track',
-    -- 화면에서 직접 부르는 회원 기능
-    'delete_my_account', 'start_claim', 'finish_claim', 'ppx_enter_event',
-    'ppx_log_block', 'ppx_precheck', 'ppx_vote_type',
-    -- 운영자 화면 (함수 첫 줄에서 is_admin() 아니면 거절)
-    'admin_abuse_summary', 'admin_block', 'admin_block_commenter', 'admin_channel_stats',
-    'admin_event_draw', 'admin_event_entries', 'admin_event_week', 'admin_type_votes', 'admin_visit_stats',
-    -- 트리거(호출자 권한으로 도는 것)가 안에서 부르는 도우미
-    'ppx_guard', 'ppx_burst_guard', 'my_pending_count', 'my_pending_reports'
-  ];
-  -- 나머지(트리거 함수, 내부 전용 함수)는 아무도 직접 실행 못 함
+  anon_list text[] := array['is_admin', 'ppx_stats', 'ppx_event_status', 'ppx_track'];
+  auth_list text[] := array['is_admin', 'ppx_stats', 'ppx_event_status', 'ppx_track',
+    'delete_my_account', 'start_claim', 'finish_claim', 'ppx_enter_event', 'ppx_log_block', 'ppx_precheck', 'ppx_vote_type',
+    'admin_abuse_summary', 'admin_block', 'admin_block_commenter', 'admin_channel_stats', 'admin_event_draw',
+    'admin_event_entries', 'admin_event_week', 'admin_type_votes', 'admin_visit_stats',
+    'ppx_guard', 'ppx_burst_guard', 'my_pending_count', 'my_pending_reports'];
 begin
-  for f in
-    select p.proname, p.oid::regprocedure::text as sig
-    from pg_proc p join pg_namespace n on n.oid = p.pronamespace
-    where n.nspname = 'public' and p.prokind = 'f'
-      and not exists (select 1 from pg_depend d where d.objid = p.oid and d.deptype = 'e')
-  loop
-    n := n + 1;
-    execute format('revoke all on function %s from public, anon, authenticated', f.sig);
-    if f.proname = any(auth_list) then
-      execute format('grant execute on function %s to authenticated', f.sig);
-    end if;
-    if f.proname = any(anon_list) then
-      execute format('grant execute on function %s to anon', f.sig);
-    end if;
+  for f in select p.oid, p.proname from pg_proc p
+           where p.pronamespace = 'public'::regnamespace and p.prokind = 'f'
+             and not exists (select 1 from pg_depend d where d.objid = p.oid and d.deptype = 'e') loop
+    execute format('revoke all on function %s from public, anon, authenticated', f.oid::regprocedure);
+    if f.proname = any(auth_list) then execute format('grant execute on function %s to authenticated', f.oid::regprocedure); end if;
+    if f.proname = any(anon_list) then execute format('grant execute on function %s to anon', f.oid::regprocedure); end if;
+    execute format('alter function %s set search_path = pg_catalog, public, pg_temp', f.oid::regprocedure);
   end loop;
-  if n <> 42 then
-    raise exception '함수 개수가 조사 때(42개)와 달라요(지금 %개). 아무것도 바꾸지 않고 멈춥니다.', n;
-  end if;
 end $$;
-
--- ── 2) 앞으로 만드는 함수의 기본 권한 (postgres가 만드는 함수 기준) ──
 alter default privileges for role postgres in schema public revoke execute on functions from anon, authenticated;
 alter default privileges for role postgres revoke execute on functions from public;
 
--- ── 3) search_path 고정 (조사 때 설정이 없던 9개, 모두 일반 함수·트리거, 확장 함수 호출 없음) ──
-alter function public.place_checks_before_insert()  set search_path = pg_catalog, public;
-alter function public.place_reports_before_insert() set search_path = pg_catalog, public;
-alter function public.place_reports_before_update() set search_path = pg_catalog, public;
-alter function public.places_before_insert()        set search_path = pg_catalog, public;
-alter function public.places_before_update()        set search_path = pg_catalog, public;
-alter function public.places_fix_types()            set search_path = pg_catalog, public;
-alter function public.ppx_event_draw_at(date)       set search_path = pg_catalog, public;
-alter function public.ppx_event_start()             set search_path = pg_catalog, public;
-alter function public.ppx_event_week(timestamptz)   set search_path = pg_catalog, public;
-
--- ── 4) 세차장 등록 정책 ──
---  BEFORE INSERT 트리거가 일반 사용자 값을 pending/본인으로 먼저 고정하고, 그 다음 이 검사가 돌아감
 drop policy if exists "places: 추가 요청" on public.places;
 create policy "places: 추가 요청" on public.places
   for insert to authenticated
@@ -1930,4 +1890,3 @@ create policy "places: 추가 요청" on public.places
     (status = 'pending' and submitted_by = (select auth.uid()))
     or (select public.is_admin())
   );
-
