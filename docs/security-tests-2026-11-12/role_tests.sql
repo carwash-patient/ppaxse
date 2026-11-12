@@ -65,7 +65,7 @@ begin
     'public.ppx_guard(''place'')', 'public.ppx_burst_guard(''place'')', 'public.my_pending_count()', 'public.my_pending_reports()',
     'public.ppx_event_week(now())', 'public.ppx_event_start()', 'public.ppx_event_draw_at(current_date)',
     'public.ppx_event_draw_run(current_date)', 'public.ppx_auto_draw(now())', 'public.ppx_is_member(gen_random_uuid())'] loop
-    perform pg_temp.chk('A', '거부: ' || split_part(f, '(', 1), 'DENY', 'anon', null, false, 'select (' || f || ')::text');
+    perform pg_temp.chk('A', '거부: ' || split_part(f, '(', 1), 'NOPERM', 'anon', null, false, 'select (' || f || ')::text');
   end loop;
   perform pg_temp.chk('A', '거부: places 직접 등록', 'DENY', 'anon', null, false,
     $q$insert into public.places (name, type, status, region, lat, lng) values ('x', 'self', 'approved', 'x', 1, 1) returning id::text$q$);
@@ -89,8 +89,12 @@ begin
   perform pg_temp.chk('N', '거부: 응모자 이메일 목록', 'DENY', 'authenticated', ano, true, 'select count(*)::text from public.admin_event_entries(now() - interval ''1 day'', now())');
   perform pg_temp.chk('N', '거부: 승인된 세차장 수정', 'DENY0', 'authenticated', ano, true,
     $q$with u as (update public.places set name = '해킹' where id = 900001 returning 1) select count(*)::text from u$q$);
-  perform pg_temp.chk('N', '거부: 내부 함수 직접 실행', 'DENY', 'authenticated', ano, true, 'select public.ppx_event_draw_run(current_date)::text');
-  perform pg_temp.chk('N', '거부: 트리거 함수 직접 실행', 'DENY', 'authenticated', ano, true, 'select public.handle_new_user()::text');
+  perform pg_temp.chk('N', '거부: 내부 함수 직접 실행', 'NOPERM', 'authenticated', ano, true, 'select public.ppx_event_draw_run(current_date)::text');
+  perform pg_temp.chk('N', '거부: 도우미 ppx_guard 직접 실행', 'NOPERM', 'authenticated', ano, true, $q$select public.ppx_guard('place')::text$q$);
+  perform pg_temp.chk('N', '거부: 도우미 ppx_burst_guard 직접 실행', 'NOPERM', 'authenticated', ano, true, $q$select public.ppx_burst_guard('place')::text$q$);
+  perform pg_temp.chk('N', '거부: 도우미 my_pending_count 직접 실행', 'NOPERM', 'authenticated', ano, true, 'select public.my_pending_count()::text');
+  perform pg_temp.chk('N', '거부: 도우미 my_pending_reports 직접 실행', 'NOPERM', 'authenticated', ano, true, 'select public.my_pending_reports()::text');
+  perform pg_temp.chk('N', '거부: 트리거 함수 직접 실행', 'NOPERM', 'authenticated', ano, true, 'select public.handle_new_user()::text');
   perform pg_temp.chk('N', '거부: 내 역할을 admin으로', 'DENY', 'authenticated', ano, true,
     $q$update public.profiles set role = 'admin' where id = '00000000-0000-0000-0000-00000000000c' returning 'x'$q$);
   perform pg_temp.chk('N', '거부: 프로필 직접 생성', 'DENY', 'authenticated', ano, true,
@@ -140,6 +144,34 @@ begin
   perform pg_temp.chk('M', '탈퇴 후 같은 토큰: 운영자 RPC', 'DENY', 'authenticated', mem, false, 'select public.admin_type_votes()::text');
 end $$;
 
+-- 트리거 안의 횟수 제한·차단이 소유자 권한에서도 그대로 작동하는지
+do $$
+declare
+  ano uuid := '00000000-0000-0000-0000-00000000000c';
+  oth uuid := '00000000-0000-0000-0000-00000000000d';
+begin
+  perform pg_temp.chk('N', '제한: 30초 안에 두 번째 세차장 제보', 'DENY', 'authenticated', ano, true,
+    $q$insert into public.places (name, type, region, lat, lng) values ('제보3', 'self', '테스트', 37.61, 127.11) returning status$q$);
+  perform pg_temp.chk('N', '제한: 15초 안에 두 번째 정보 제보', 'DENY', 'authenticated', ano, true,
+    $q$insert into public.place_reports (place_id, memo) values (900001, '두번째') returning status$q$);
+  update public.profiles set blocked = true where id = oth;
+  perform pg_temp.chk('B', '제한: 차단된 사용자 세차장 제보', 'DENY', 'authenticated', oth, false,
+    $q$insert into public.places (name, type, region, lat, lng) values ('차단제보', 'self', '테스트', 37.62, 127.12) returning status$q$);
+  perform pg_temp.chk('B', '제한: 차단된 사용자 다녀왔어요', 'DENY', 'authenticated', oth, false,
+    $q$insert into public.place_checks (place_id) values (900001) returning 'x'$q$);
+  update public.profiles set blocked = false where id = oth;
+end $$;
+-- 관리 도구(postgres·service_role) 경로는 값을 그대로 둠 (공공데이터 넣기 등)
+with x as (insert into public.places (name, type, status, source, region, lat, lng)
+           values ('공공데이터', 'self', 'approved', 'public_data', '테스트', 37.63, 127.13) returning status, source)
+insert into t (누구, 시험, 기대, 결과)
+select 'SQL편집기', 'postgres가 승인 상태로 직접 등록', 'OK approved',
+       'OK ' || status || case when source = 'public_data' then '' else ' 바뀜' end from x;
+insert into t (누구, 시험, 기대, 결과)
+select 'service_role', '승인 상태로 직접 등록', 'OK approved',
+       pg_temp.run('service_role', null, false,
+         $q$insert into public.places (name, type, status, source, region, lat, lng) values ('서비스', 'self', 'approved', 'admin', '테스트', 37.64, 127.14) returning status$q$);
+
 -- 크론(postgres)으로 자동 추첨이 도는지
 insert into t (누구, 시험, 기대, 결과)
 select 'cron', 'ppx_auto_draw (postgres)', 'OK', 'OK ' || coalesce(public.ppx_auto_draw(now())::text, 'null');
@@ -148,6 +180,7 @@ select no, 누구, 시험, 기대,
   case
     when 기대 like 'OK%' and 결과 like 'OK%' and (기대 = 'OK' or 결과 like 기대 || '%') then 'PASS'
     when 기대 = 'DENY' and 결과 like 'ERR%' then 'PASS'
+    when 기대 = 'NOPERM' and 결과 like 'ERR 42501 permission denied for function%' then 'PASS'
     when 기대 = 'DENY0' and (결과 = 'OK 0' or 결과 like 'ERR%') then 'PASS'
     else 'FAIL' end as 판정,
   left(결과, 90) as 결과

@@ -1,0 +1,82 @@
+  1 | A            | 지도 조회(승인된 세차장)                  | OK          | PASS | OK 1
+  2 | A            | ppx_stats                                 | OK          | PASS | OK {"places" : 1, "reports" : 0, "comments" : 0, "checks" : 0}
+  3 | A            | ppx_event_status                          | OK          | PASS | OK {"start" : "2026-11-
+  4 | A            | ppx_track                                 | OK          | PASS | OK 
+  5 | A            | is_admin                                  | OK          | PASS | OK false
+  6 | A            | 거부: public.admin_block                  | NOPERM      | FAIL | ERR P0001 운영자만 할 수 있어요
+  7 | A            | 거부: public.admin_block_commenter        | NOPERM      | FAIL | ERR P0001 운영자만 할 수 있어요
+  8 | A            | 거부: public.admin_event_entries          | NOPERM      | FAIL | ERR P0001 운영자만 볼 수 있어요
+  9 | A            | 거부: public.admin_abuse_summary          | NOPERM      | PASS | ERR 42501 permission denied for function admin_abuse_summary
+ 10 | A            | 거부: public.admin_channel_stats          | NOPERM      | PASS | ERR 42501 permission denied for function admin_channel_stats
+ 11 | A            | 거부: public.admin_event_draw             | NOPERM      | PASS | ERR 42501 permission denied for function admin_event_draw
+ 12 | A            | 거부: public.admin_event_week             | NOPERM      | PASS | ERR 42501 permission denied for function admin_event_week
+ 13 | A            | 거부: public.admin_type_votes             | NOPERM      | PASS | ERR 42501 permission denied for function admin_type_votes
+ 14 | A            | 거부: public.admin_visit_stats            | NOPERM      | PASS | ERR 42501 permission denied for function admin_visit_stats
+ 15 | A            | 거부: public.start_claim                  | NOPERM      | FAIL | OK 
+ 16 | A            | 거부: public.finish_claim                 | NOPERM      | FAIL | OK 0
+ 17 | A            | 거부: public.delete_my_account            | NOPERM      | PASS | ERR 42501 permission denied for function delete_my_account
+ 18 | A            | 거부: public.ppx_enter_event              | NOPERM      | PASS | ERR 42501 permission denied for function ppx_enter_event
+ 19 | A            | 거부: public.ppx_log_block                | NOPERM      | PASS | ERR 42501 permission denied for function ppx_log_block
+ 20 | A            | 거부: public.ppx_precheck                 | NOPERM      | PASS | ERR 42501 permission denied for function ppx_precheck
+ 21 | A            | 거부: public.ppx_vote_type                | NOPERM      | PASS | ERR 42501 permission denied for function ppx_vote_type
+ 22 | A            | 거부: public.ppx_guard                    | NOPERM      | FAIL | OK 
+ 23 | A            | 거부: public.ppx_burst_guard              | NOPERM      | PASS | ERR 42501 permission denied for function ppx_burst_guard
+ 24 | A            | 거부: public.my_pending_count             | NOPERM      | FAIL | OK 0
+ 25 | A            | 거부: public.my_pending_reports           | NOPERM      | FAIL | OK 0
+ 26 | A            | 거부: public.ppx_event_week               | NOPERM      | FAIL | OK 2026-11-07
+ 27 | A            | 거부: public.ppx_event_start              | NOPERM      | FAIL | OK 2026-11-14
+ 28 | A            | 거부: public.ppx_event_draw_at            | NOPERM      | FAIL | OK 2026-11-21 17:00:00+09
+ 29 | A            | 거부: public.ppx_event_draw_run           | NOPERM      | PASS | ERR 42501 permission denied for function ppx_event_draw_run
+ 30 | A            | 거부: public.ppx_auto_draw                | NOPERM      | PASS | ERR 42501 permission denied for function ppx_auto_draw
+ 31 | A            | 거부: public.ppx_is_member                | NOPERM      | PASS | ERR 42501 permission denied for function ppx_is_member
+ 32 | A            | 거부: places 직접 등록                    | DENY        | PASS | ERR 42501 permission denied for function ppx_burst_guard
+ 33 | N            | 세차장 제보 → pending·본인                | OK pending  | PASS | OK pending
+ 34 | N            | 정보 제보                                 | OK          | PASS | OK pending
+ 35 | N            | 다녀왔어요(확인)                          | OK          | PASS | OK true
+ 36 | N            | 한마디 작성                               | OK          | PASS | OK ok
+ 37 | N            | 종류 투표                                 | OK          | PASS | OK 
+ 38 | N            | start_claim                               | OK          | PASS | OK true
+ 39 | N            | 거부: 운영자 차단 RPC                     | DENY        | PASS | ERR P0001 운영자만 할 수 있어요
+ 40 | N            | 거부: 응모자 이메일 목록                  | DENY        | PASS | ERR P0001 운영자만 볼 수 있어요
+ 41 | N            | 거부: 승인된 세차장 수정                  | DENY0       | PASS | OK 0
+ 42 | N            | 거부: 내부 함수 직접 실행                 | NOPERM      | PASS | ERR 42501 permission denied for function ppx_event_draw_run
+ 43 | N            | 거부: 도우미 ppx_guard 직접 실행          | NOPERM      | FAIL | OK 
+ 44 | N            | 거부: 도우미 ppx_burst_guard 직접 실행    | NOPERM      | FAIL | ERR P0001 추가 요청은 30초에 한 번씩 보낼 수 있어요. 잠시 기다려 주세요.
+ 45 | N            | 거부: 도우미 my_pending_count 직접 실행   | NOPERM      | FAIL | OK 1
+ 46 | N            | 거부: 도우미 my_pending_reports 직접 실행 | NOPERM      | FAIL | OK 1
+ 47 | N            | 거부: 트리거 함수 직접 실행               | NOPERM      | FAIL | ERR 0A000 trigger functions can only be called as triggers
+ 48 | N            | 거부: 내 역할을 admin으로                 | DENY        | PASS | ERR 42501 permission denied for table profiles
+ 49 | N            | 거부: 프로필 직접 생성                    | DENY        | PASS | ERR 42501 new row violates row-level security policy for table "profiles"
+ 50 | N            | 거부: 남의 제보 보기                      | DENY0       | PASS | OK 0
+ 51 | M            | 세차장 제보                               | OK pending  | PASS | OK pending
+ 52 | M            | 거부: 운영자 통계                         | DENY        | PASS | ERR P0001 운영자만 할 수 있어요
+ 53 | M            | 거부: 남의 프로필 보기                    | DENY0       | PASS | OK 0
+ 54 | M            | 거부: 남의 대기 세차장 보기               | DENY0       | PASS | OK 0
+ 55 | M            | 내 닉네임 수정                            | OK          | PASS | OK 회원닉
+ 56 | M            | 거부: 내 차단 풀기                        | DENY        | PASS | ERR 42501 permission denied for table profiles
+ 57 | M            | 제보 전 검사                              | OK          | PASS | OK 
+ 58 | M            | ppx_log_block                             | OK          | PASS | OK 
+ 59 | M            | finish_claim                              | OK          | PASS | OK 0
+ 60 | X            | 운영자 직접 등록(승인 상태)               | OK approved | PASS | OK approved
+ 61 | X            | 대기 세차장 승인                          | OK          | PASS | OK 1
+ 62 | X            | 사용자 차단                               | OK          | PASS | OK 
+ 63 | X            | 사용자 차단 해제                          | OK          | PASS | OK 
+ 64 | X            | 도배 요약                                 | OK          | PASS | OK 1
+ 65 | X            | 채널 통계                                 | OK          | PASS | OK {"by_ref" 
+ 66 | X            | 방문 통계                                 | OK          | PASS | OK {"today" :
+ 67 | X            | 응모자 목록                               | OK          | PASS | OK 0
+ 68 | X            | 이번 주 응모                              | OK          | PASS | OK 0
+ 69 | X            | 종류 투표 보기                            | OK          | PASS | OK {"900001":
+ 70 | X            | 한마디 숨기기                             | OK          | PASS | OK 1
+ 71 | X            | 제보 처리                                 | OK          | PASS | OK 1
+ 72 | X            | 전체 프로필 보기                          | OK          | PASS | OK 4
+ 73 | M            | 회원 탈퇴                                 | OK          | PASS | OK 
+ 74 | M            | 탈퇴 후 같은 토큰: 제보 시도              | DENY        | PASS | ERR 23503 insert or update on table "places" violates foreign key constraint "places_submi
+ 75 | M            | 탈퇴 후 같은 토큰: 운영자 RPC             | DENY        | PASS | ERR P0001 운영자만 볼 수 있어요
+ 76 | N            | 제한: 30초 안에 두 번째 세차장 제보       | DENY        | PASS | ERR P0001 추가 요청은 30초에 한 번씩 보낼 수 있어요. 잠시 기다려 주세요.
+ 77 | N            | 제한: 15초 안에 두 번째 정보 제보         | DENY        | PASS | ERR P0001 제보는 15초에 한 번씩 보낼 수 있어요. 잠시 기다려 주세요.
+ 78 | B            | 제한: 차단된 사용자 세차장 제보           | DENY        | PASS | ERR P0001 이 기기에서는 지금 보낼 수 없어요. 문제가 있다면 운영자에게 알려주세요.
+ 79 | B            | 제한: 차단된 사용자 다녀왔어요            | DENY        | PASS | ERR P0001 이 기기에서는 지금 보낼 수 없어요. 문제가 있다면 운영자에게 알려주세요.
+ 80 | SQL편집기    | postgres가 승인 상태로 직접 등록          | OK approved | PASS | OK approved
+ 81 | service_role | 승인 상태로 직접 등록                     | OK approved | PASS | OK approved
+ 82 | cron         | ppx_auto_draw (postgres)                  | OK          | PASS | OK null

@@ -1,0 +1,23 @@
+== PostgreSQL 17.11 ==
+[1] 변경 전 = 운영 조사 스냅샷        요약 | 전체 | PASS | 73개 PASS, 0개 FAIL
+[2] 변경 전 역할 테스트              PASS 66 / FAIL 16
+[3] 적용 1회차                       성공
+[4] 적용 2회차(재실행)               성공
+[5] 적용 후 스냅샷 비교(달라야 정상) 요약 | 전체 | FAIL | 29개 PASS, 45개 FAIL
+[6] 적용 후 역할 테스트(새 DB)       PASS 82 / FAIL 0
+[7] 되돌리기 1회차                   성공
+[8] 되돌린 뒤 스냅샷 비교            요약 | 전체 | PASS | 73개 PASS, 0개 FAIL
+[9] 되돌리기 2회차                   성공 / 요약 | 전체 | PASS | 73개 PASS, 0개 FAIL
+[10] 적용→되돌리기 2번 한 새 DB 역할 테스트 PASS 66 / FAIL 16
+     → 변경 전 [2]와 82개 항목 판정이 모두 같음
+[A] 조사 때 없던 함수               실패: ERROR:  [사전검사] 함수 목록이 조사 때와 달라요: 없어야 할 함수: zz_extra()
+    → DB 그대로?                    요약 | 전체 | PASS | 73개 PASS, 0개 FAIL
+[B] 트리거 꺼짐                      실패: ERROR:  [사전검사] 트리거가 없거나 꺼져 있어요: public.places:places_before_insert()
+[C] 예상 밖 GRANT OPTION             실패: ERROR:  [사전검사] 함수 권한이 조사 때와 달라요: ppx_stats() = PUBLIC=EXECUTE/postgres,anon=EXECUTE/postgres,authenticated=EXECUTE/postgres,postgres=EXECUTE/postgres,service_role=EXECUTE*/postgres
+[D] 조사 때 없던 정책               실패: ERROR:  [사전검사] 정책이 조사 때와 달라요: 없어야 할 정책: places:zz
+[E] 적용 도중 예상 밖 권한           실패: ERROR:  [사후검사] 함수 ACL이 예상과 달라요: ppx_event_week(timestamp with time zone) = anon=EXECUTE/postgres,postgres=EXECUTE/postgres,service_role=EXECUTE/postgres
+    → 전부 취소돼 DB 그대로?        요약 | 전체 | PASS | 73개 PASS, 0개 FAIL
+[F] 적용 후 다른 역할 권한이 생긴 채 되돌리기 실패: ERROR:  [되돌리기 확인 실패] 원래와 다른 함수: ppx_stats()  → 전체 취소됨
+[G] 함수 이름이 바뀐 채 되돌리기     실패: ERROR:  [되돌리기 중단] 함수 목록이 조사 때와 달라요: 조사 때 없던 함수: ppx_stats_old(), ppx_stats() (없어짐)  → 수동 대응 필요(검토 문서 5장)
+[H] 다른 역할 권한이 남은 상태 비교  요약 | 전체 | FAIL | 72개 PASS, 1개 FAIL
+함수 | ppx_stats() | FAIL | ACL 다름: 지금 PUBLIC=EXECUTE/postgres,anon=EXECUTE/postgres,authenticated=EXECUTE/postgres,postgres=EXECUTE/postgres,service_

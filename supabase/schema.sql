@@ -1859,8 +1859,64 @@ end $$;
 revoke all on function public.ppx_enter_event(bigint) from public, anon;
 grant execute on function public.ppx_enter_event(bigint) to authenticated;
 
--- ── (2026-11-12) 보안 점검 반영: 함수 실행 권한·기본 권한·search_path·세차장 등록 정책 ──
+-- ── (2026-11-12) 보안 점검 반영: 함수 실행 권한·트리거 3개 소유자 권한·기본 권한·search_path·세차장 등록 정책 ──
 --  운영 DB에는 migrate_2026-11-12.sql(사전·사후 검사 포함)로 적용. 아래는 새로 만들 때 같은 결과를 내는 요약본.
+--  등록 전 검사 트리거 3개는 소유자 권한으로 돌고, '앱 요청인지'는 JWT role로 판별(관리 도구·SQL 편집기 입력은 그대로 둠)
+create or replace function public.places_before_insert()
+returns trigger language plpgsql security definer set search_path = pg_catalog, public, pg_temp as $fn$
+begin
+  if coalesce(auth.jwt() ->> 'role', '') not in ('anon', 'authenticated') or public.is_admin() then
+    return new;
+  end if;
+  new.status        := 'pending';
+  new.source        := 'user';
+  new.submitted_by  := auth.uid();
+  new.source_ref    := null;
+  new.owner_id      := null;
+  new.reviewed_by   := null;
+  new.reviewed_at   := null;
+  new.reject_reason := null;
+  new.checked_at    := null;
+  new.check_count   := 0;
+  new.comment_count := 0;
+  perform public.ppx_guard('place');
+  perform public.ppx_burst_guard('place');
+  if public.my_pending_count() >= 5 then
+    raise exception '확인을 기다리는 요청이 5개 있어요. 처리된 뒤에 다시 요청해 주세요.';
+  end if;
+  return new;
+end $fn$;
+create or replace function public.place_reports_before_insert()
+returns trigger language plpgsql security definer set search_path = pg_catalog, public, pg_temp as $fn$
+begin
+  if coalesce(auth.jwt() ->> 'role', '') not in ('anon', 'authenticated') then
+    return new;
+  end if;
+  new.reporter    := auth.uid();
+  new.status      := 'pending';
+  new.reviewed_by := null;
+  new.reviewed_at := null;
+  if new.photo is not null and new.photo not like auth.uid()::text || '/%' then
+    raise exception '사진 정보가 올바르지 않아요';
+  end if;
+  perform public.ppx_guard('report');
+  perform public.ppx_burst_guard('report', new.place_id);
+  if public.my_pending_reports() >= 10 then
+    raise exception '확인을 기다리는 제보가 10개 있어요. 처리된 뒤에 다시 보내 주세요.';
+  end if;
+  return new;
+end $fn$;
+create or replace function public.place_checks_before_insert()
+returns trigger language plpgsql security definer set search_path = pg_catalog, public, pg_temp as $fn$
+begin
+  if coalesce(auth.jwt() ->> 'role', '') not in ('anon', 'authenticated') then return new; end if;
+  new.user_id := auth.uid();
+  new.created_on := current_date;
+  new.created_at := now();
+  perform public.ppx_guard('check');
+  return new;
+end $fn$;
+
 do $$
 declare
   f record;
@@ -1868,8 +1924,7 @@ declare
   auth_list text[] := array['is_admin', 'ppx_stats', 'ppx_event_status', 'ppx_track',
     'delete_my_account', 'start_claim', 'finish_claim', 'ppx_enter_event', 'ppx_log_block', 'ppx_precheck', 'ppx_vote_type',
     'admin_abuse_summary', 'admin_block', 'admin_block_commenter', 'admin_channel_stats', 'admin_event_draw',
-    'admin_event_entries', 'admin_event_week', 'admin_type_votes', 'admin_visit_stats',
-    'ppx_guard', 'ppx_burst_guard', 'my_pending_count', 'my_pending_reports'];
+    'admin_event_entries', 'admin_event_week', 'admin_type_votes', 'admin_visit_stats'];
 begin
   for f in select p.oid, p.proname from pg_proc p
            where p.pronamespace = 'public'::regnamespace and p.prokind = 'f'

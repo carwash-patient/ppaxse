@@ -15,7 +15,10 @@ create table cron.job (jobid bigserial primary key, jobname text unique, schedul
 create or replace function cron.schedule(n text, s text, c text) returns bigint language sql as $$ insert into cron.job (jobname, schedule, command) values (n, s, c) on conflict (jobname) do update set schedule = excluded.schedule, command = excluded.command returning jobid $$;
 create or replace function cron.unschedule(n text) returns boolean language sql as $$ delete from cron.job where jobname = n returning true $$;
 create or replace function cron.unschedule(i bigint) returns boolean language sql as $$ delete from cron.job where jobid = i returning true $$;
--- Supabase 기본 권한 (실제 DB 조사와 같게)
-alter default privileges for role postgres in schema public grant all on tables to anon, authenticated, service_role;
-alter default privileges for role postgres in schema public grant all on sequences to anon, authenticated, service_role;
+-- Supabase 기본 권한 (운영 조사와 같은 postgres 기본 권한 6행)
+alter default privileges for role postgres in schema public grant all on tables to postgres, anon, authenticated, service_role;
 alter default privileges for role postgres in schema public grant execute on functions to postgres, anon, authenticated, service_role;
+alter default privileges for role postgres in schema public grant all on sequences to postgres, anon, authenticated, service_role;
+alter default privileges for role postgres in schema storage grant all on tables to postgres, anon, authenticated, service_role;
+alter default privileges for role postgres in schema storage grant execute on functions to postgres, anon, authenticated, service_role;
+alter default privileges for role postgres in schema storage grant all on sequences to postgres, anon, authenticated, service_role;

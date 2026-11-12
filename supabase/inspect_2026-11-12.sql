@@ -41,6 +41,23 @@ select jsonb_pretty(jsonb_build_object(
     ) order by c.relname)
     from pg_class c where c.relnamespace = 'public'::regnamespace and c.relkind in ('r', 'p')
   ),
+  'table_acl', (
+    select jsonb_object_agg(c.relnamespace::regnamespace::text || '.' || c.relname, coalesce(c.relacl::text, 'NULL'))
+    from pg_class c where c.relnamespace in ('public'::regnamespace, 'storage'::regnamespace) and c.relkind in ('r', 'p', 'v', 'm')
+  ),
+  'storage_tables', (
+    select jsonb_agg(jsonb_build_object('table', c.relname, 'rls', c.relrowsecurity, 'force_rls', c.relforcerowsecurity) order by c.relname)
+    from pg_class c where c.relnamespace = 'storage'::regnamespace and c.relkind = 'r'
+  ),
+  'column_grants', (
+    select coalesce(jsonb_object_agg(c.relname || '.' || a.attname, a.attacl::text), '{}'::jsonb)
+    from pg_attribute a join pg_class c on c.oid = a.attrelid
+    where c.relnamespace = 'public'::regnamespace and a.attnum > 0 and not a.attisdropped and a.attacl is not null
+  ),
+  'storage_buckets', (
+    select jsonb_agg(jsonb_build_object('id', id, 'public', public, 'size_limit', file_size_limit, 'mime', allowed_mime_types))
+    from storage.buckets
+  ),
   'profiles_update_columns', (
     select jsonb_agg(a.attname order by a.attnum) from pg_attribute a
     where a.attrelid = 'public.profiles'::regclass and a.attnum > 0 and not a.attisdropped
@@ -49,7 +66,8 @@ select jsonb_pretty(jsonb_build_object(
   'schema_privs', jsonb_build_object(
     'public_create_anon', has_schema_privilege('anon', 'public', 'create'),
     'public_create_authenticated', has_schema_privilege('authenticated', 'public', 'create'),
-    'db_temp_authenticated', has_database_privilege('authenticated', current_database(), 'temp')
+    'db_temp_authenticated', has_database_privilege('authenticated', current_database(), 'temp'),
+    'public_schema_acl', (select nspacl::text from pg_namespace where nspname = 'public')
   ),
   'functions', (
     select jsonb_agg(jsonb_build_object(
