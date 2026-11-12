@@ -6,7 +6,8 @@
 db=$1; port=${2:-5545}; host=/tmp/pg$([ "$port" = 5544 ] && echo t || echo 17)
 S=${S:-/home/claude/ppaxse/supabase}
 P="psql -h $host -p $port -U postgres -v ON_ERROR_STOP=1 -q"
-$P -c "drop database if exists $db" -c "create database $db" >/dev/null 2>&1
+if [ -n "$ICU" ]; then CR="create database $db template template0 locale_provider icu icu_locale 'en-US' locale 'C.UTF-8'"; else CR="create database $db"; fi
+$P -c "drop database if exists $db" -c "$CR" >/dev/null 2>&1
 $P -d $db -f shim.sql >/dev/null && $P -d $db -f schema_main.sql 2>&1 | grep -E "ERROR"
 # 운영과 같은 ACL·search_path로 맞춤: 마이그레이션 → 되돌리기 (되돌리기가 조사 당시 값을 그대로 씀)
 $P -d $db -c "$(cat $S/migrate_2026-11-12.sql)" >/dev/null 2>/tmp/mk_err || cat /tmp/mk_err

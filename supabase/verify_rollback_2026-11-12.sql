@@ -109,12 +109,12 @@ res(구분, 대상, 결과, 내용) as (
          case when x.p = '' then 'ACL ' || x.acl_now else x.p end
   from fn_expect e join cur_fn c on c.sig = e.sig
   cross join lateral (select (select case when c.proacl is null then 'NULL(기본값)' else coalesce((
-      select string_agg(x, ',' order by x) from (
+      select string_agg(x, ',' order by x collate "C") from (
         select case when a.grantee = 0 then 'PUBLIC' else pg_get_userbyid(a.grantee) end
                || '=' || a.privilege_type || case when a.is_grantable then '*' else '' end
                || '/' || pg_get_userbyid(a.grantor) as x
         from aclexplode(c.proacl) a) z), '(빈 ACL)') end) as acl_now,
-                             (select string_agg(x, ',' order by x) from unnest(array['postgres=EXECUTE/postgres', 'service_role=EXECUTE/postgres']
+                             (select string_agg(x, ',' order by x collate "C") from unnest(array['postgres=EXECUTE/postgres', 'service_role=EXECUTE/postgres']
       || case when e.was_public then array['PUBLIC=EXECUTE/postgres'] else '{}'::text[] end
       || case when e.was_anon  then array['anon=EXECUTE/postgres'] else '{}'::text[] end
       || case when e.was_auth  then array['authenticated=EXECUTE/postgres'] else '{}'::text[] end) x) as acl_exp) a
@@ -136,7 +136,7 @@ res(구분, 대상, 결과, 내용) as (
          case when b.acl is not distinct from n.acl then n.acl
               else '지금 ' || coalesce(n.acl, '(행 없음)') || ' / 원래 ' || coalesce(b.acl, '(행 없음)') end
   from (select t, s, (select case when a is null then 'NULL(기본값)' else coalesce((
-      select string_agg(x, ',' order by x) from (
+      select string_agg(x, ',' order by x collate "C") from (
         select case when a.grantee = 0 then 'PUBLIC' else pg_get_userbyid(a.grantee) end
                || '=' || a.privilege_type || case when a.is_grantable then '*' else '' end
                || '/' || pg_get_userbyid(a.grantor) as x
@@ -144,7 +144,7 @@ res(구분, 대상, 결과, 내용) as (
   full join (select d.defaclobjtype::text as t,
                     case when d.defaclnamespace = 0 then '-' else d.defaclnamespace::regnamespace::text end as s,
                     (select case when d.defaclacl is null then 'NULL(기본값)' else coalesce((
-      select string_agg(x, ',' order by x) from (
+      select string_agg(x, ',' order by x collate "C") from (
         select case when a.grantee = 0 then 'PUBLIC' else pg_get_userbyid(a.grantee) end
                || '=' || a.privilege_type || case when a.is_grantable then '*' else '' end
                || '/' || pg_get_userbyid(a.grantor) as x

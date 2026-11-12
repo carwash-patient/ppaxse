@@ -11,7 +11,7 @@ set local search_path = pg_catalog, public;
 
 create or replace function pg_temp.ppx_acl(acl aclitem[]) returns text language sql stable as $f$
   select case when acl is null then 'NULL(기본값)' else coalesce((
-    select string_agg(x, ',' order by x) from (
+    select string_agg(x, ',' order by x collate "C") from (
       select case when a.grantee = 0 then 'PUBLIC' else pg_get_userbyid(a.grantee) end
              || '=' || a.privilege_type || case when a.is_grantable then '*' else '' end
              || '/' || pg_get_userbyid(a.grantor) as x
@@ -19,19 +19,19 @@ create or replace function pg_temp.ppx_acl(acl aclitem[]) returns text language 
 $f$;
 -- 기대 ACL: postgres·service_role + (PUBLIC/anon/authenticated 중 해당) — 모두 EXECUTE, 부여자 postgres, GRANT OPTION 없음
 create or replace function pg_temp.ppx_acl_expect(pub boolean, an boolean, au boolean) returns text language sql immutable as $f$
-  select string_agg(x, ',' order by x) from unnest(array['postgres=EXECUTE/postgres', 'service_role=EXECUTE/postgres']
+  select string_agg(x, ',' order by x collate "C") from unnest(array['postgres=EXECUTE/postgres', 'service_role=EXECUTE/postgres']
     || case when pub then array['PUBLIC=EXECUTE/postgres'] else '{}'::text[] end
     || case when an  then array['anon=EXECUTE/postgres'] else '{}'::text[] end
     || case when au  then array['authenticated=EXECUTE/postgres'] else '{}'::text[] end) x
 $f$;
 create or replace function pg_temp.ppx_defacl(r regrole) returns text language sql stable as $f$
-  select coalesce(string_agg(x, ' | ' order by x), '(없음)') from (
+  select coalesce(string_agg(x, ' | ' order by x collate "C"), '(없음)') from (
     select d.defaclobjtype::text || '/' || case when d.defaclnamespace = 0 then '-' else d.defaclnamespace::regnamespace::text end
            || ' ' || pg_temp.ppx_acl(d.defaclacl) as x
   from pg_default_acl d where d.defaclrole = r) z
 $f$;
 create or replace function pg_temp.ppx_defacl_f() returns text language sql stable as $f$
-  select coalesce(string_agg(x, ' | ' order by x), '(없음)') from (
+  select coalesce(string_agg(x, ' | ' order by x collate "C"), '(없음)') from (
     select d.defaclobjtype::text || '/' || case when d.defaclnamespace = 0 then '-' else d.defaclnamespace::regnamespace::text end
            || ' ' || pg_temp.ppx_acl(d.defaclacl) as x
   from pg_default_acl d where d.defaclrole = 'postgres'::regrole and d.defaclobjtype = 'f') z

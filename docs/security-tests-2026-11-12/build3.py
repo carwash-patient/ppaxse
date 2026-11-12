@@ -89,7 +89,7 @@ CUR_FN = """cur_fn as (
 # ACL을 (받는 역할, 준 역할, 권한, GRANT OPTION) 문자열 집합으로 풀어 정렬 — NULL ACL은 그대로 'NULL'
 ACL_NORM = """create or replace function pg_temp.ppx_acl(acl aclitem[]) returns text language sql stable as $f$
   select case when acl is null then 'NULL(기본값)' else coalesce((
-    select string_agg(x, ',' order by x) from (
+    select string_agg(x, ',' order by x collate "C") from (
       select case when a.grantee = 0 then 'PUBLIC' else pg_get_userbyid(a.grantee) end
              || '=' || a.privilege_type || case when a.is_grantable then '*' else '' end
              || '/' || pg_get_userbyid(a.grantor) as x
@@ -97,19 +97,19 @@ ACL_NORM = """create or replace function pg_temp.ppx_acl(acl aclitem[]) returns 
 $f$;
 -- 기대 ACL: postgres·service_role + (PUBLIC/anon/authenticated 중 해당) — 모두 EXECUTE, 부여자 postgres, GRANT OPTION 없음
 create or replace function pg_temp.ppx_acl_expect(pub boolean, an boolean, au boolean) returns text language sql immutable as $f$
-  select string_agg(x, ',' order by x) from unnest(array['postgres=EXECUTE/postgres', 'service_role=EXECUTE/postgres']
+  select string_agg(x, ',' order by x collate "C") from unnest(array['postgres=EXECUTE/postgres', 'service_role=EXECUTE/postgres']
     || case when pub then array['PUBLIC=EXECUTE/postgres'] else '{}'::text[] end
     || case when an  then array['anon=EXECUTE/postgres'] else '{}'::text[] end
     || case when au  then array['authenticated=EXECUTE/postgres'] else '{}'::text[] end) x
 $f$;
 create or replace function pg_temp.ppx_defacl(r regrole) returns text language sql stable as $f$
-  select coalesce(string_agg(x, ' | ' order by x), '(없음)') from (
+  select coalesce(string_agg(x, ' | ' order by x collate "C"), '(없음)') from (
     select d.defaclobjtype::text || '/' || case when d.defaclnamespace = 0 then '-' else d.defaclnamespace::regnamespace::text end
            || ' ' || pg_temp.ppx_acl(d.defaclacl) as x
   from pg_default_acl d where d.defaclrole = r) z
 $f$;
 create or replace function pg_temp.ppx_defacl_f() returns text language sql stable as $f$
-  select coalesce(string_agg(x, ' | ' order by x), '(없음)') from (
+  select coalesce(string_agg(x, ' | ' order by x collate "C"), '(없음)') from (
     select d.defaclobjtype::text || '/' || case when d.defaclnamespace = 0 then '-' else d.defaclnamespace::regnamespace::text end
            || ' ' || pg_temp.ppx_acl(d.defaclacl) as x
   from pg_default_acl d where d.defaclrole = 'postgres'::regrole and d.defaclobjtype = 'f') z
@@ -233,8 +233,8 @@ begin
 
   -- (6) postgres의 '함수' 기본 권한 행이 '변경 전' 또는 '이미 적용' 상태와 정확히 같은가
   if pg_temp.ppx_defacl_f() not in (
-       (select string_agg(pg_temp.ppx_defacl_expect(t, s, a), ' | ' order by pg_temp.ppx_defacl_expect(t, s, a)) from _defacl_before where t = 'f'),
-       (select string_agg(pg_temp.ppx_defacl_expect(t, s, a), ' | ' order by pg_temp.ppx_defacl_expect(t, s, a)) from _defacl_after where t = 'f')) then
+       (select string_agg(pg_temp.ppx_defacl_expect(t, s, a), ' | ' order by pg_temp.ppx_defacl_expect(t, s, a) collate "C") from _defacl_before where t = 'f'),
+       (select string_agg(pg_temp.ppx_defacl_expect(t, s, a), ' | ' order by pg_temp.ppx_defacl_expect(t, s, a) collate "C") from _defacl_after where t = 'f')) then
     raise exception '[사전검사] 함수 기본 권한이 조사 때와 달라요: %', pg_temp.ppx_defacl_f();
   end if;
 
@@ -305,7 +305,7 @@ begin
   if bad is not null then raise exception '[사후검사] 소유자·DEFINER·본문·search_path가 예상과 달라요: %', bad; end if;
 
   -- (4) 기본 권한: postgres 함수 행은 예상대로, 나머지 모든 역할·종류의 행은 시작 때와 완전히 같음
-  if pg_temp.ppx_defacl_f() <> (select string_agg(pg_temp.ppx_defacl_expect(t, s, a), ' | ' order by pg_temp.ppx_defacl_expect(t, s, a)) from _defacl_after where t = 'f') then
+  if pg_temp.ppx_defacl_f() <> (select string_agg(pg_temp.ppx_defacl_expect(t, s, a), ' | ' order by pg_temp.ppx_defacl_expect(t, s, a) collate "C") from _defacl_after where t = 'f') then
     raise exception '[사후검사] 함수 기본 권한이 예상과 달라요: %', pg_temp.ppx_defacl_f();
   end if;
   if exists ((select * from _defacl_keep
@@ -440,13 +440,13 @@ open(OUT + 'rollback_2026-11-12.sql', 'w').write(RB)
 # ── 되돌리기 확인 (SELECT 하나) ───────────────────────────────
 def acl_text_sql(expr):
     return f"""(select case when {expr} is null then 'NULL(기본값)' else coalesce((
-      select string_agg(x, ',' order by x) from (
+      select string_agg(x, ',' order by x collate "C") from (
         select case when a.grantee = 0 then 'PUBLIC' else pg_get_userbyid(a.grantee) end
                || '=' || a.privilege_type || case when a.is_grantable then '*' else '' end
                || '/' || pg_get_userbyid(a.grantor) as x
         from aclexplode({expr}) a) z), '(빈 ACL)') end)"""
 def acl_expect_sql(pub, an, au):
-    return f"""(select string_agg(x, ',' order by x) from unnest(array['postgres=EXECUTE/postgres', 'service_role=EXECUTE/postgres']
+    return f"""(select string_agg(x, ',' order by x collate "C") from unnest(array['postgres=EXECUTE/postgres', 'service_role=EXECUTE/postgres']
       || case when {pub} then array['PUBLIC=EXECUTE/postgres'] else '{{}}'::text[] end
       || case when {an}  then array['anon=EXECUTE/postgres'] else '{{}}'::text[] end
       || case when {au}  then array['authenticated=EXECUTE/postgres'] else '{{}}'::text[] end) x)"""
