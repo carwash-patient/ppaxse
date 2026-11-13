@@ -1945,3 +1945,109 @@ create policy "places: 추가 요청" on public.places
     (status = 'pending' and submitted_by = (select auth.uid()))
     or (select public.is_admin())
   );
+
+
+-- ════════════════════════════════════════════════════════════════
+-- 2026-11-13 한마디 닉네임: 무작위 이름 + 운영자처럼 보이는 이름 막기 (migrate_2026-11-13.sql)
+-- ════════════════════════════════════════════════════════════════
+-- ── 1) 무작위 이름 (앞말 30 × 뒷말 30 = 900가지) ──
+-- 같은 seed(이용자 아이디)에는 늘 같은 이름이 나옴
+create or replace function public.ppx_auto_nick(seed text)
+returns text
+language sql
+immutable
+set search_path = pg_catalog, public, pg_temp
+as $$
+  with a(w) as (select array[
+    '폼건 든','고압수 쏘는','버블 가득한','거품 좋아하는','두 버킷 쓰는',
+    '휠 닦는','타이어 닦는','매트 빠는','실내 털어내는','타월 접는',
+    '물기 닦는','드라잉 중인','물자국 싫어하는','철분제거 중인','클레이 문지르는',
+    '왁스 바르는','코팅 올리는','유리막 입힌','광 내는','반짝이는',
+    '광택에 진심인','디테일에 집착하는','무광 지키는','셀프세차 장인','세차장 단골',
+    '새벽 세차하는','주말마다 세차하는','비 와도 세차하는','동전 챙긴','세차 끝낸']),
+  b(w) as (select array[
+    '수달','해달','비버','물개','돌고래','펭귄',
+    '오리','참새','부엉이','고양이','강아지','여우',
+    '북극여우','너구리','다람쥐','청설모','토끼','고슴도치',
+    '햄스터','두더지','미어캣','카피바라','알파카','코알라',
+    '판다','레서판다','백곰','사슴','거북이','하마']),
+  h(n) as (select ((hashtextextended(coalesce(seed, ''), 20261113) % 900) + 900) % 900)
+  select a.w[(h.n / 30)::int + 1] || ' ' || b.w[(h.n % 30)::int + 1] from a, b, h
+$$;
+revoke all on function public.ppx_auto_nick(text) from public, anon, authenticated;
+
+-- ── 2) 운영자처럼 보이는 이름인지 ──
+-- 전각 글자를 보통 글자로 바꾸고, 소문자로, 한글·영문·숫자 말고는 모두 지운 뒤 검사
+-- 예: '빡 세', '빡.세', 'ＡＤＭＩＮ', '관 리 자' 모두 걸림
+create or replace function public.ppx_nick_reserved(n text)
+returns boolean
+language sql
+immutable
+set search_path = pg_catalog, public, pg_temp
+as $$
+  select regexp_replace(lower(normalize(coalesce(n, ''), NFKC)), '[^0-9a-z가-힣]', '', 'g')
+         ~ '(빡세|빡쎄|빡새|빡쌔|ppaxse|ppakse|운영자|운영진|운영팀|관리자|관리인|어드민|admin|공식)'
+$$;
+revoke all on function public.ppx_nick_reserved(text) from public, anon, authenticated;
+
+-- ── 3) 한마디 저장 전 검사 (11-09d 규칙 + 닉네임 규칙) ──
+create or replace function public.place_comments_before_insert()
+returns trigger
+language plpgsql
+security definer
+set search_path = pg_catalog, public, pg_temp
+as $$
+declare
+  v_uid uuid := auth.uid();
+  v_request_role text := auth.jwt() ->> 'role';
+begin
+  if coalesce(v_request_role, '') not in ('anon', 'authenticated') then
+    return new;
+  end if;
+  if v_uid is null then
+    raise exception '한마디를 남기려면 먼저 이용자 확인이 필요해요.';
+  end if;
+
+  new.user_id := v_uid;
+  new.hidden := false;
+  new.created_at := now();
+  new.body := btrim(new.body);
+  new.nickname := nullif(btrim(coalesce(new.nickname, '')), '');
+
+  -- 닉네임: 비우면 무작위 이름, 운영자처럼 보이는 이름은 운영자만
+  if new.nickname is null then
+    new.nickname := public.ppx_auto_nick(v_uid::text);
+  elsif public.ppx_nick_reserved(new.nickname) and not public.is_admin() then
+    raise exception '이 닉네임은 쓸 수 없어요. 🎲를 눌러 다른 이름을 골라 주세요.';
+  end if;
+
+  perform pg_advisory_xact_lock(hashtextextended(v_uid::text, 0));
+  perform public.ppx_guard('comment');
+
+  if exists (
+    select 1 from public.place_comments c
+    where c.user_id = v_uid
+      and c.created_at > now() - interval '30 seconds'
+  ) then
+    raise exception '한마디는 30초에 한 번씩 남길 수 있어요. 잠시 기다려 주세요.';
+  end if;
+
+  if exists (
+    select 1 from public.place_comments c
+    where c.user_id = v_uid
+      and c.place_id = new.place_id
+      and c.created_at > now() - interval '30 days'
+  ) and not public.is_admin() then
+    raise exception '이 세차장에는 이미 한마디를 남기셨어요. 같은 곳은 한 달에 한 번 남길 수 있어요.';
+  end if;
+  return new;
+end;
+$$;
+revoke all on function public.place_comments_before_insert()
+  from public, anon, authenticated;
+
+-- ── 4) 지금까지 닉네임 없이 남긴 한마디에 이름 채우기 ──
+-- 같은 사람이 남긴 글은 같은 이름. 작성자 정보가 없는 글은 글 번호로 이름을 정함
+update public.place_comments
+set nickname = public.ppx_auto_nick(coalesce(user_id::text, 'c' || id::text))
+where nickname is null or btrim(nickname) = '';
