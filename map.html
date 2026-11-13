@@ -304,6 +304,15 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
 .af-group{font-size:11px;font-weight:900;color:var(--aqua);letter-spacing:1px;margin:16px 0 4px}
 .af-note a{color:var(--aqua)}
 
+/* 한마디 남기기 카드 · 네이버 리뷰 버튼 (2026-11-13) */
+.talk-cta{display:block;text-decoration:none;padding:16px;border-radius:16px;background:linear-gradient(135deg,rgba(52,211,153,.12),rgba(14,165,233,.08));border:1px solid rgba(52,211,153,.3);text-align:center;margin:4px 0 8px}
+.talk-cta .h{font-size:14px;font-weight:900;color:#fff;margin-bottom:4px}
+.talk-cta .p{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:12px}
+.talk-cta .b{display:flex;align-items:center;justify-content:center;gap:6px;min-height:46px;border-radius:13px;background:linear-gradient(135deg,var(--sky),var(--aqua));font-size:13.5px;font-weight:900;color:#fff;box-shadow:0 8px 24px rgba(14,165,233,.25)}
+.naver-btn{width:100%;min-height:48px;border-radius:14px;border:1px solid rgba(3,199,90,.45);background:rgba(3,199,90,.1);color:#fff;font-size:13px;font-weight:900;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px}
+.naver-btn .n{width:20px;height:20px;border-radius:5px;background:#03c75a;color:#fff;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.naver-btn .s{font-weight:400;color:var(--muted);font-size:12px}
+
 /* BOTTOM NAV */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:600;display:flex;background:rgba(4,17,30,.97);border-top:1px solid var(--line);backdrop-filter:blur(20px);padding-bottom:env(safe-area-inset-bottom)}
 .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;text-decoration:none;color:rgba(255,255,255,.35);transition:.15s;gap:3px}
@@ -869,7 +878,9 @@ function openDetail(id) {
     <div class="dp-section">
       <div class="dp-section-title">한마디 💬</div>
       <div id="dpComments"><div class="dp-more" style="margin:0">불러오는 중…</div></div>
-      <a class="report-btn" style="text-decoration:none" href="r/?p=${p.id}">💬 한마디 남기기 <span>가입 없이</span></a>
+    </div>
+    <div class="dp-section"><div class="dp-section-title">다른 곳 리뷰</div>
+      <a class="naver-btn" href="https://map.naver.com/p/search/${encodeURIComponent(p.name + ' ' + p.region)}" target="_blank" rel="noopener noreferrer"><span class="n">N</span>네이버에서 리뷰 보기 <span class="s">네이버 지도로 이동</span></a>
     </div>`;
   loadComments(p.id);
 
@@ -888,10 +899,18 @@ function closeDetail() {
 }
 
 // 한마디 (다른 사람들이 남긴 짧은 글)
+// '한마디 남기기' 카드. 한마디가 없을 때는 첫 한마디를, 있을 때도 같은 크기로 눈에 띄게
+function talkCta(id, has) {
+  return `<a class="talk-cta" href="r/?p=${id}">
+    <div class="h">${has ? '✍️ 다녀오셨나요?' : '🏁 아직 한마디가 없어요'}</div>
+    <div class="p">${has ? '가입 없이 10초면 끝나요.<br>🎁 남기면 매주 기프티콘 추첨에 응모돼요' : '다녀오셨다면 첫 한마디를 남겨 주세요.<br>가입 없이 10초 · 🎁 매주 기프티콘 추첨'}</div>
+    <div class="b">💬 ${has ? '한마디 남기기' : '첫 한마디 남기기'}</div></a>`;
+}
+
 async function loadComments(id) {
   const box = document.getElementById('dpComments');
   if(!box) return;
-  if(!PPX.ready || !PPX.comments) { box.innerHTML = '<div class="dp-more" style="margin:0">아직 한마디가 없어요.</div>'; return; }
+  if(!PPX.ready || !PPX.comments) { box.innerHTML = talkCta(id, false); return; }
   try {
     const list = await PPX.comments(id, 20);
     if(activeId !== id) return;
@@ -905,9 +924,9 @@ async function loadComments(id) {
         </select>
         <button class="cm-send" type="button" style="height:36px;padding:0 12px;border-radius:8px;border:0;background:#ff5a36;color:#fff;font-size:13px;font-weight:700">보내기</button>
       </div></div>`).join('')
-      : '<div class="dp-more" style="margin:0 0 8px">아직 한마디가 없어요. 다녀오셨다면 <b>🏁 첫 한마디</b>를 남겨 주세요!</div>')
+      : '')
       + (list.length > 3 ? `<button class="cm-more" type="button" style="width:100%;min-height:44px;margin:4px 0 8px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:#cfe8ff;font-size:13px">한마디 ${list.length - 3}개 더 보기${allShown ? '' : '+'}</button>` : '')
-      + `<a href="r/?p=${id}" style="display:block;margin:2px 0 8px;font-size:12px;color:#fde68a;text-decoration:none">🎁 한마디 이벤트 진행 중 · 매주 기프티콘 추첨 (자세히 →)</a>`;
+      + talkCta(id, list.length > 0);
     const more = box.querySelector('.cm-more');
     if(more) more.onclick = () => { box.querySelectorAll('[data-more]').forEach(el => el.hidden = false); more.remove(); };
     box.querySelectorAll('.review-item[data-cid]').forEach(row => {
