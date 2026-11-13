@@ -110,6 +110,7 @@ textarea:focus,.in:focus{border-color:var(--aqua)}
 .in{height:48px}
 .row2{display:flex;gap:8px;margin-top:8px}
 .row2 .in{flex:1}
+.row2 .dice{flex:0 0 52px;min-height:48px;padding:0;font-size:22px;border-radius:14px}
 .photo{display:flex;align-items:center;gap:10px;padding:14px;border-radius:14px;border:1.5px dashed rgba(14,165,233,.4);color:var(--muted);font-size:14px;cursor:pointer}
 .photo input{display:none}
 .photo b{color:#fff}
@@ -217,7 +218,8 @@ textarea:focus,.in:focus{border-color:var(--aqua)}
       <h2>한마디 남기기 💬 <small style="color:var(--muted);font-weight:400">(선택)</small></h2>
       <p>다른 분들께 바로 보여요. <b style="color:#fde68a">10자 이상</b> 남기고 위에서 하나라도 골라 주시면 기프티콘 추첨에 응모돼요 🎁</p>
       <textarea id="comment" maxlength="200" placeholder="예) 수압 최고 💦 주말 오후엔 대기 조금 있어요"></textarea>
-      <div class="row2"><input class="in" id="nick" maxlength="20" placeholder="닉네임 (선택, 없으면 '익명 세차러')"></div>
+      <div class="row2"><input class="in" id="nick" maxlength="20" placeholder="닉네임" aria-label="닉네임"><button class="btn g dice" id="nickDice" type="button" aria-label="다른 이름 뽑기">🎲</button></div>
+      <p style="margin:6px 0 0">🎲를 누르면 다른 이름이 나와요. 직접 고쳐 써도 돼요.</p>
     </div>
     <button class="btn p w" id="send" type="button">보내기 💧</button>
     <p class="note">가입하지 않아도 보낼 수 있어요. 정보는 운영자가 확인한 뒤 지도에 반영돼요.<br><a href="../privacy.html" target="_blank">개인정보처리방침 · 이용약관</a></p>
@@ -367,6 +369,7 @@ async function loadEvent() {
 (async () => {
   if(!PPX.ready) return;
   try { me = await PPX.me(); } catch(e) {}
+  if(me && me.nickname && nickAuto && !nickReserved(me.nickname)) $('nick').value = me.nickname;
   loadEvent();
 })();
 
@@ -536,6 +539,7 @@ $('photo').onchange = async e => {
 $('send').onclick = async () => {
   const p = cur; if(!p) return;
   const memo = $('memo').value.trim(), comment = $('comment').value.trim(), nick = $('nick').value.trim();
+  if(comment && nickReserved(nick)) return toast('이 닉네임은 쓸 수 없어요. 🎲를 눌러 다른 이름을 골라 주세요.', true);
   // 바뀐 것만: 종류는 고른 것이 지금과 다를 때, 시설은 '있음'으로 새로 누른 것만
   const suggest = {}, info = {};
   // 종류: 지금 정보에 없는 종류를 골랐을 때만 '추가' 제안 (빼는 건 지도 화면 '달라요'에서)
@@ -576,7 +580,36 @@ $('send').onclick = async () => {
   }
   btn.disabled = false; btn.textContent = '보내기 💧';
 };
-try { const n = localStorage.getItem('ppxNick'); if(n) $('nick').value = n; } catch(e) {}
+// ── 닉네임: 처음엔 무작위 이름(이 기기에서는 계속 같은 이름), 🎲로 다시 뽑기 ──
+// 운영자처럼 보이는 이름 막기는 DB(place_comments_before_insert)가 최종으로 검사함. 여기서는 미리 안내만
+const NICK_A = ['폼건 든','고압수 쏘는','버블 가득한','거품 좋아하는','두 버킷 쓰는','휠 닦는','타이어 닦는','매트 빠는','실내 털어내는','타월 접는',
+  '물기 닦는','드라잉 중인','물자국 싫어하는','철분제거 중인','클레이 문지르는','왁스 바르는','코팅 올리는','유리막 입힌','광 내는','반짝이는',
+  '광택에 진심인','디테일에 집착하는','무광 지키는','셀프세차 장인','세차장 단골','새벽 세차하는','주말마다 세차하는','비 와도 세차하는','동전 챙긴','세차 끝낸'];
+const NICK_B = ['수달','해달','비버','물개','돌고래','펭귄','오리','참새','부엉이','고양이','강아지','여우','북극여우','너구리','다람쥐',
+  '청설모','토끼','고슴도치','햄스터','두더지','미어캣','카피바라','알파카','코알라','판다','레서판다','백곰','사슴','거북이','하마'];
+const pickOne = a => a[Math.floor(Math.random() * a.length)];
+function randomNick(not) {
+  let n; do { n = pickOne(NICK_A) + ' ' + pickOne(NICK_B); } while(n === not);
+  return n;
+}
+function nickReserved(n) {
+  const k = String(n || '').normalize('NFKC').toLowerCase().replace(/[^0-9a-z가-힣]/g, '');
+  return /(빡세|빡쎄|빡새|빡쌔|ppaxse|ppakse|운영자|운영진|운영팀|관리자|관리인|어드민|admin|공식)/.test(k);
+}
+let nickAuto = false;   // 아직 사람이 고르지 않은 자동 이름이면 true (회원이면 회원 닉네임으로 바꿔 줌)
+(() => {
+  let saved = null, auto = null;
+  try { saved = localStorage.getItem('ppxNick'); auto = localStorage.getItem('ppxNickAuto'); } catch(e) {}
+  if(saved) { $('nick').value = saved; return; }
+  if(!auto) { auto = randomNick(); try { localStorage.setItem('ppxNickAuto', auto); } catch(e) {} }
+  $('nick').value = auto; nickAuto = true;
+})();
+$('nickDice').onclick = () => {
+  const n = randomNick($('nick').value.trim());
+  $('nick').value = n; nickAuto = false;
+  try { localStorage.setItem('ppxNick', n); } catch(e) {}
+};
+$('nick').addEventListener('input', () => { nickAuto = false; });
 
 function done(text, ev) {
   $('doneText').textContent = text;
