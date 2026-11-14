@@ -206,6 +206,13 @@ textarea:focus,.in:focus{border-color:var(--aqua)}
       <div class="chips" id="cVisit"></div>
     </div>
     <div class="q">
+      <h2>한마디 남기기 💬 <small style="color:var(--muted);font-weight:400">(선택)</small></h2>
+      <p>다른 분들께 바로 보여요. <b style="color:#fde68a">10자 이상</b> 남기고 위에서 하나라도 골라 주시면 기프티콘 추첨에 응모돼요 🎁</p>
+      <textarea id="comment" maxlength="200" placeholder="예) 수압 최고 💦 주말 오후엔 대기 조금 있어요"></textarea>
+      <div class="row2"><input class="in" id="nick" maxlength="20" placeholder="닉네임" aria-label="닉네임"><button class="btn g dice" id="nickDice" type="button" aria-label="다른 이름 뽑기">🎲</button></div>
+      <p style="margin:6px 0 0">🎲를 누르면 다른 이름이 나와요. 직접 고쳐 써도 돼요.</p>
+    </div>
+    <div class="q">
       <h2>가격이나 팁 <small style="color:var(--muted);font-weight:400">(선택)</small></h2>
       <textarea id="memo" maxlength="500" placeholder="예) 기본 3분 2,000원 / 폼건 1,000원 / 카드 충전하면 10% 더 줘요"></textarea>
     </div>
@@ -213,13 +220,6 @@ textarea:focus,.in:focus{border-color:var(--aqua)}
       <h2>가격표 사진 <small style="color:var(--muted);font-weight:400">(선택)</small></h2>
       <label class="photo"><input type="file" id="photo" accept="image/*">📷 <span id="photoName">가격표·안내판을 찍어 주시면 제일 정확해요</span></label>
       <p style="margin-top:6px">번호판·얼굴은 안 나오게 부탁해요. 사진은 운영자만 봐요.</p>
-    </div>
-    <div class="q">
-      <h2>한마디 남기기 💬 <small style="color:var(--muted);font-weight:400">(선택)</small></h2>
-      <p>다른 분들께 바로 보여요. <b style="color:#fde68a">10자 이상</b> 남기고 위에서 하나라도 골라 주시면 기프티콘 추첨에 응모돼요 🎁</p>
-      <textarea id="comment" maxlength="200" placeholder="예) 수압 최고 💦 주말 오후엔 대기 조금 있어요"></textarea>
-      <div class="row2"><input class="in" id="nick" maxlength="20" placeholder="닉네임" aria-label="닉네임"><button class="btn g dice" id="nickDice" type="button" aria-label="다른 이름 뽑기">🎲</button></div>
-      <p style="margin:6px 0 0">🎲를 누르면 다른 이름이 나와요. 직접 고쳐 써도 돼요.</p>
     </div>
     <button class="btn p w" id="send" type="button">보내기 💧</button>
     <p class="note">가입하지 않아도 보낼 수 있어요. 정보는 운영자가 확인한 뒤 지도에 반영돼요.<br><a href="../privacy.html" target="_blank">개인정보처리방침 · 이용약관</a></p>
