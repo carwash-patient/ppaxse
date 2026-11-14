@@ -500,14 +500,16 @@ async function loadEvent() {
 }
 function evAnnounce() {
   const valid = evList.filter(x => x.valid), mem = valid.filter(x => x.is_member);
-  const codes = pool => evWinners.filter(x => x.won === pool).map(x => x.code).join(', ') || '-';
+  const mask = c => String(c).slice(0, 5) + '**';   // 발표 글에는 뒤 두 자리를 가림 (전체 번호는 당첨자만 앎)
+  const codes = pool => evWinners.filter(x => x.won === pool).map(x => mask(x.code)).join(', ') || '-';
   const next = evAdd(evWeek, 7);
   return `[빡세 한마디 기프티콘 추첨 결과] ${evMd(evWeek)} ~ ${evMd(evAdd(evWeek, 6))}
 
 🎁 회원 추첨 (${mem.length}명 참여 중 2명): ${codes('member')}
 🎁 누구나 추첨 (${valid.length}명 참여 중 2명): ${codes('all')}
 
-당첨되신 분은 발표 후 7일 안에 응모번호를 ppaxse@gmail.com 으로 보내 주세요. 그 메일로 카카오톡 기프티콘 선물코드를 보내드려요.
+당첨번호는 뒤 두 자리를 가려서 공개해요. 응모한 기기(또는 계정)로 https://ppaxse.com/r/ 에 들어가면 내 번호의 당첨 여부와 전체 번호를 볼 수 있어요.
+당첨되신 분은 발표 후 7일 안에 전체 응모번호와 한마디를 남긴 세차장 이름을 ppaxse@gmail.com 으로 보내 주세요. 그 메일로 카카오톡 기프티콘 선물코드를 보내드려요.
 다음 회차: ${evMd(next)} ~ ${evMd(evAdd(next, 6))} 응모, ${evMd(evAdd(next, 9))} 17시 발표
 참여하기: https://ppaxse.com/r/`;
 }
@@ -532,7 +534,7 @@ function renderEvent() {
       <div class="card" style="${x.valid ? '' : 'opacity:.5'}">
         <div class="c-top"><span class="c-name" style="letter-spacing:1px">${x.won ? '🎉 ' : ''}${esc(x.code)}</span><span class="c-when">응모권 ${x.valid_tickets ?? 1}${x.tickets && x.tickets !== x.valid_tickets ? '/' + x.tickets : ''}장 · ${x.is_member ? '회원' : '비회원'}${x.won ? ' · ' + POOL[x.won] + ' 당첨' : ''}</span></div>
         <div class="memo">📍 ${esc(x.places || x.place_name || '(세차장 정보 없음)')}</div>
-        <div class="memo" style="${x.valid ? '' : 'text-decoration:line-through'}">💬 ${esc(x.body || '(삭제된 한마디)')}</div>
+        <div class="memo" style="white-space:pre-line">💬 ${esc(x.comments || x.body || '(삭제된 한마디)')}</div>
         <div class="c-who">${esc(x.nickname || '익명 세차러')}${x.email ? ' · ' + esc(x.email) : ''}${x.valid ? '' : ' · 추첨 제외(숨김·막힘)'}</div>
       </div>`).join('') : '<div class="msg">이 회차에 응모한 사람이 없어요</div>'}`;
   const draw = async redraw => {
