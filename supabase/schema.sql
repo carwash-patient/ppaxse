@@ -2421,3 +2421,19 @@ end $$;
 revoke all on function public.admin_event_week(date) from public, anon, authenticated;
 grant execute on function public.admin_event_week(date) to authenticated;
 
+-- ── 운영자: 이상 요청에 걸린 사람이 남긴 한마디 보기 (2026-11-14c) ──
+create or replace function public.admin_user_comments(uid uuid)
+returns table (id bigint, place_name text, body text, hidden boolean, created_at timestamptz)
+language plpgsql stable security definer set search_path = pg_catalog, public, pg_temp as $$
+begin
+  if not public.is_admin() then raise exception '운영자만 볼 수 있어요'; end if;
+  return query
+    select c.id, p.name, c.body, c.hidden, c.created_at
+    from public.place_comments c
+    left join public.places p on p.id = c.place_id
+    where c.user_id = uid and c.created_at > now() - interval '7 days'
+    order by c.created_at desc
+    limit 20;
+end $$;
+revoke all on function public.admin_user_comments(uuid) from public, anon, authenticated;
+grant execute on function public.admin_user_comments(uuid) to authenticated;
