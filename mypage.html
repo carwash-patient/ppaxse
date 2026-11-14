@@ -138,7 +138,7 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js?v=20261110f"></script>
-<script src="js/ppx.js?v=20261110f"></script>
+<script src="js/ppx.js?v=20261114a"></script>
 <script>
 const escHTML = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const skillLabel={beginner:'🌱 세린이',mid:'💨 폼건은 기본이죠',pro:'✨ 디테일링 직접 함',maniac:'🫧 3시간은 기본 아닌가?'};
@@ -207,12 +207,43 @@ async function render() {
       </details>
     </div>
     ${me.role === 'admin' ? '<a class="admin-link" href="admin.html">🛠️ 운영자 · 세차장 관리 (요청·제보 처리)</a>' : ''}
+    <div id="mkCard" style="background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:16px"></div>
     ${lists}
     ${me.role === 'admin' ? '' : `<div style="margin:28px 0 8px;text-align:center"><button type="button" id="withdrawBtn" style="min-height:44px;padding:0 14px;background:none;border:0;color:rgba(255,255,255,.45);font-size:12px;text-decoration:underline;cursor:pointer">회원 탈퇴</button></div>`}`;
   setupAvatarEditor(me);
+  drawMarketing(me.marketing_email_at, me.marketing_email_off_at);
   const wb = document.getElementById('withdrawBtn');
   if(wb) wb.onclick = doWithdraw;
   loadLists();
+}
+
+// 혜택·이벤트 소식 이메일 수신 동의 (선택)
+function koDate(t) { return new Date(t).toLocaleDateString('ko-KR', { year:'numeric', month:'long', day:'numeric' }); }
+function drawMarketing(at, offAt) {
+  const on = !!at;
+  const box = document.getElementById('mkCard');
+  box.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:800;font-size:15px">📬 혜택·이벤트 소식 받기</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;line-height:1.6">빡세의 혜택·이벤트 등 광고성 정보를 가입한 이메일로 보내 드려요. (선택)</div>
+      </div>
+      <button type="button" id="mkToggle" role="switch" aria-checked="${on}" aria-label="혜택·이벤트 소식 이메일 받기"
+        style="flex-shrink:0;width:56px;height:32px;border-radius:999px;border:0;padding:3px;cursor:pointer;background:${on ? '#22d3ee' : 'rgba(255,255,255,.18)'};transition:.2s;display:flex;justify-content:${on ? 'flex-end' : 'flex-start'}">
+        <span style="width:26px;height:26px;border-radius:50%;background:#fff;display:block"></span>
+      </button>
+    </div>
+    <div style="font-size:12px;margin-top:10px;color:${on ? '#22d3ee' : 'rgba(255,255,255,.55)'}">
+      ${on ? `✅ ${koDate(at)}에 동의했어요` : (offAt ? `받지 않는 중이에요 · ${koDate(offAt)}에 동의를 철회했어요` : '받지 않는 중이에요')}
+    </div>`;
+  document.getElementById('mkToggle').onclick = async (ev) => {
+    const btn = ev.currentTarget; btn.disabled = true;
+    try {
+      const r = await PPX.setMarketing(!on);
+      drawMarketing(r.at, r.off_at);
+      showToast(r.on ? `빡세 혜택·이벤트 메일 수신에 동의했어요 (${koDate(r.at)})` : `빡세 혜택·이벤트 메일 수신 동의를 철회했어요 (${koDate(r.off_at)})`);
+    } catch(e) { showToast(PPX.koError(e), true); btn.disabled = false; }
+  };
 }
 
 // 내 차 아이콘 · 모델 바꾸기

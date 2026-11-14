@@ -266,7 +266,7 @@
       if (profileCache && profileCache.id === session.user.id) return profileCache;
       await finishClaim();
       const { data, error } = await db.from('profiles')
-        .select('id,nickname,skill,cars,role,home,avatar_car,avatar_color,car_model').eq('id', session.user.id).maybeSingle();
+        .select('id,nickname,skill,cars,role,home,avatar_car,avatar_color,car_model,marketing_email_at,marketing_email_off_at').eq('id', session.user.id).maybeSingle();
       if (error) throw error;
       profileCache = data ? { ...data, email: session.user.email } : null;
       syncLocalUser(profileCache, session.user.email);
@@ -307,7 +307,7 @@
     },
 
     // 반환값: 바로 로그인되면 회원 정보, 메일 인증이 필요하면 { needsConfirm: true }
-    async signUp({ email, password, nickname, skill, cars, avatar_car, avatar_color, car_model, signup_source, signup_note, age14 }) {
+    async signUp({ email, password, nickname, skill, cars, avatar_car, avatar_color, car_model, signup_source, signup_note, age14, marketing_email }) {
       // 인증 메일 링크를 누르면 로그인 화면 → 원래 보던 곳(?next=)으로
       const nx = new URLSearchParams(location.search).get('next');
       const back = location.href.replace(/[^/]*$/, '') + 'login.html' +
@@ -316,7 +316,7 @@
       const captchaTk = await captchaToken();
       const { data, error } = await db.auth.signUp({
         email, password,
-        options: { data: { nickname, skill, cars, avatar_car, avatar_color, car_model, signup_source, signup_note, age14: !!age14, ref: myRef() }, emailRedirectTo: back, captchaToken: captchaTk }
+        options: { data: { nickname, skill, cars, avatar_car, avatar_color, car_model, signup_source, signup_note, age14: !!age14, marketing_email: !!marketing_email, ref: myRef() }, emailRedirectTo: back, captchaToken: captchaTk }
       });
       if (error) throw error;
       // 이미 가입된 이메일이면 Supabase가 빈 identities 로 응답함
@@ -345,6 +345,13 @@
         .eq('id', me.id);
       if (error) throw error;
       profileCache = null;
+    },
+    // 혜택·이벤트 소식 이메일 수신 동의 켜기/끄기. 반환: { on, at, off_at }
+    async setMarketing(on) {
+      const { data, error } = await db.rpc('ppx_set_marketing', { on_off: !!on });
+      if (error) throw error;
+      profileCache = null;
+      return data;
     },
     // 회원 탈퇴: 계정·프로필 즉시 삭제
     async deleteAccount() {

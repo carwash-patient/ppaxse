@@ -280,10 +280,16 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
           <div class="agree-box">✓</div>
           <div class="agree-text">만 14세 이상입니다 <b>(필수)</b></div>
         </label>
+        <label class="agree-item">
+          <input type="checkbox" class="agreeOpt" id="agreeMarketing">
+          <div class="agree-box">✓</div>
+          <div class="agree-text">빡세의 혜택·이벤트 등 <u>광고성 정보</u>를 <u>이메일</u>로 받겠습니다 <span style="color:var(--muted)">(선택)</span>
+            <div style="font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5">동의하지 않아도 가입할 수 있어요. 마이페이지에서 언제든 끌 수 있어요.</div></div>
+        </label>
       </div>
       <div style="margin-top:10px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);font-size:12px;line-height:1.7;color:var(--muted)">
         <b style="color:#fff">받는 정보</b> 이메일, 비밀번호(암호화), 닉네임 · 선택: 차종·숙련도·제조사/모델·아이콘 색·알게 된 경로<br>
-        <b style="color:#fff">쓰는 곳</b> 로그인·본인 확인, 문의 응대, 기프티콘 추첨<br>
+        <b style="color:#fff">쓰는 곳</b> 로그인·본인 확인, 문의 응대, 기프티콘 추첨 · 동의한 분께만 혜택·이벤트 소식 메일<br>
         <b style="color:#fff">보관</b> 탈퇴할 때까지 (마이페이지에서 언제든 탈퇴하면 바로 삭제)
       </div>
 
@@ -301,7 +307,7 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js?v=20261110f"></script>
-<script src="js/ppx.js?v=20261110f"></script>
+<script src="js/ppx.js?v=20261114a"></script>
 <script>
 let curStep = 0;
 let selectedCars = [];
@@ -342,8 +348,12 @@ document.querySelectorAll('#cartypeGrid .cartype-chip').forEach(chip => {
 });
 
 function agreeAllToggle(cb) {
-  document.querySelectorAll('.agreeItem').forEach(c => { c.checked = cb.checked; });
+  document.querySelectorAll('.agreeItem, .agreeOpt').forEach(c => { c.checked = cb.checked; });
 }
+// 하나라도 풀면 '전체 동의'도 풀림, 다 체크하면 켜짐
+document.querySelectorAll('.agreeItem, .agreeOpt').forEach(c => c.addEventListener('change', () => {
+  document.getElementById('agreeAll').checked = [...document.querySelectorAll('.agreeItem, .agreeOpt')].every(x => x.checked);
+}));
 
 function togglePw(id) {
   const el = document.getElementById(id);
@@ -410,7 +420,8 @@ async function doJoin() {
       car_model: [document.getElementById('carMaker').value, document.getElementById('carModel').value.trim()].filter(Boolean).join(' ').slice(0, 40) || null,
       signup_source: signupSource || null,
       signup_note: signupSource === 'other' ? (document.getElementById('srcNote').value.trim().slice(0, 30) || null) : null,
-      age14: true
+      age14: true,
+      marketing_email: document.getElementById('agreeMarketing').checked
     });
     if(res && res.needsConfirm) {
       document.getElementById('step2').innerHTML = `
