@@ -507,7 +507,7 @@ function evAnnounce() {
 🎁 회원 추첨 (${mem.length}명 참여 중 2명): ${codes('member')}
 🎁 누구나 추첨 (${valid.length}명 참여 중 2명): ${codes('all')}
 
-당첨되신 분은 응모번호와 기프티콘 받을 휴대폰 번호를 ppaxse@gmail.com 으로 보내 주세요. (발표 후 7일 안에)
+당첨되신 분은 발표 후 7일 안에 응모번호를 ppaxse@gmail.com 으로 보내 주세요. 그 메일로 카카오톡 기프티콘 선물코드를 보내드려요.
 다음 회차: ${evMd(next)} ~ ${evMd(evAdd(next, 6))} 응모, ${evMd(evAdd(next, 9))} 17시 발표
 참여하기: https://ppaxse.com/r/`;
 }
@@ -520,7 +520,7 @@ function renderEvent() {
   list.innerHTML = `
     <div class="card sel">
       <div class="c-top"><span class="c-name">응모 ${evList.length}명 · 추첨 대상 ${valid.length}명 (회원 ${mem.length}명)</span></div>
-      <div class="c-who">월요일 17시에 자동으로 추첨돼요. 회원 추첨 2명을 먼저 뽑고, 남은 사람 중에서 누구나 추첨 2명을 뽑아요. 성의 없는 글은 그 전에 숨겨 두면 추첨에서 빠져요.</div>
+      <div class="c-who">월요일 17시에 자동으로 추첨돼요. 회원 추첨 2명을 먼저 뽑고, 남은 사람 중에서 누구나 추첨 2명을 뽑아요. 응모권(하루 1장, 주 최대 3장)이 많을수록 당첨 확률이 높아요. 성의 없는 글은 그 전에 숨겨 두면 추첨에서 빠져요.</div>
       ${evWinners.length ? `<div class="diff" style="margin-top:10px">${evWinners.map(w => `<label><span class="k">🎉 ${POOL[w.won]}</span><span class="to" style="letter-spacing:1px">${esc(w.code)}</span><span style="margin-left:auto;color:#fff">${esc(w.is_member ? (w.email || '') : '비회원 · 메일 연락 대기')}</span></label>`).join('')}</div>
         <div class="acts"><button class="ok" type="button" id="evCopy">발표 글 복사</button><button class="no" type="button" id="evRedraw">다시 뽑기</button></div>`
       : (past
@@ -530,8 +530,8 @@ function renderEvent() {
     </div>
     ${evList.length ? evList.map(x => `
       <div class="card" style="${x.valid ? '' : 'opacity:.5'}">
-        <div class="c-top"><span class="c-name" style="letter-spacing:1px">${x.won ? '🎉 ' : ''}${esc(x.code)}</span><span class="c-when">${x.is_member ? '회원' : '비회원'}${x.won ? ' · ' + POOL[x.won] + ' 당첨' : ''}</span></div>
-        <div class="memo">📍 ${esc(x.place_name || '(세차장 정보 없음)')}</div>
+        <div class="c-top"><span class="c-name" style="letter-spacing:1px">${x.won ? '🎉 ' : ''}${esc(x.code)}</span><span class="c-when">응모권 ${x.valid_tickets ?? 1}${x.tickets && x.tickets !== x.valid_tickets ? '/' + x.tickets : ''}장 · ${x.is_member ? '회원' : '비회원'}${x.won ? ' · ' + POOL[x.won] + ' 당첨' : ''}</span></div>
+        <div class="memo">📍 ${esc(x.places || x.place_name || '(세차장 정보 없음)')}</div>
         <div class="memo" style="${x.valid ? '' : 'text-decoration:line-through'}">💬 ${esc(x.body || '(삭제된 한마디)')}</div>
         <div class="c-who">${esc(x.nickname || '익명 세차러')}${x.email ? ' · ' + esc(x.email) : ''}${x.valid ? '' : ' · 추첨 제외(숨김·막힘)'}</div>
       </div>`).join('') : '<div class="msg">이 회차에 응모한 사람이 없어요</div>'}`;

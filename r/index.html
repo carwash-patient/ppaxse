@@ -330,12 +330,15 @@ const md = s => { const d = new Date(s + 'T00:00:00'); return `${d.getMonth() + 
 const RULES = `<details><summary>추첨 규칙 보기</summary><ul>
   <li>응모 기간: 매주 토요일 0시 ~ 금요일 밤 12시, 당첨 발표는 다음 주 월요일 17시 (자동 추첨)</li>
   <li>응모 방법: 다녀온 세차장 정보(어떤 세차장인지·다녀온 시기·시설 등)를 하나 이상 고르고 한마디를 10자 이상 남기기</li>
-  <li>한 사람(기기·계정)당 한 주에 1번 응모돼요. 여러 개 남겨도 응모는 1번이에요</li>
+  <li>하루에 1번씩, 한 주에 최대 3번까지 응모돼요. 같은 세차장은 한 주에 1번만 인정돼요</li>
+  <li>응모번호는 한 주에 1개예요. 응모할 때마다 그 번호의 응모권이 1장씩 늘고, 응모권이 많을수록 당첨 확률이 높아져요</li>
   <li>매주 ‘누구나 추첨’ 2명 + ‘회원 추첨’ 2명 (회원은 두 추첨 모두 참여, 한 사람이 두 번 당첨되지는 않아요)</li>
   <li>당첨되면 발표 후 7일 안에 응모번호를 ppaxse@gmail.com으로 보내 주세요. 그 메일로 카카오톡 기프티콘 선물코드를 보내드려요 (휴대폰 번호는 받지 않아요)</li>
-  <li>욕설·광고·성의 없는 글, 가 보지 않은 곳의 글은 운영자가 숨길 수 있고, <b>숨긴 한마디는 추첨에서 제외돼요</b>. 내 응모가 제외되면 아래 내 응모번호 옆에 표시돼요</li>
+  <li>욕설·광고·성의 없는 글, 가 보지 않은 곳의 글은 운영자가 숨길 수 있고, <b>숨긴 한마디로 받은 응모권은 추첨에서 빠져요</b>. 빠지면 아래 내 응모번호 옆에 표시돼요</li>
   <li>응모할 때는 연락처를 받지 않아요</li>
 </ul></details>`;
+const tix = (m, st) => { const mx = st.max_tickets || 3, n = m.tickets || 1, v = m.valid_tickets == null ? n : m.valid_tickets;
+  return `<b>${n}/${mx}장</b>` + (v < n ? ` (숨긴 한마디 ${n - v}장은 추첨에서 빠져요)` : ''); };
 const countLine = (label, n, w) => `<div class="row"><span>${label}</span><span>${n ? `<b>${n}명</b> 참여 중` : '아직 참여자가 없어요'} · ${w}명 당첨</span></div>`;
 function renderEvent() {
   const st = evSt; if(!st) return;
@@ -354,7 +357,7 @@ function renderEvent() {
   if(won) h += `<div class="mine">🎉 <b>${esc(won.code)}</b> 당첨됐어요! 응모번호를 ppaxse@gmail.com으로 보내 주시면 기프티콘 코드를 메일로 보내드려요</div>`;
   else if(now) h += now.valid === false
     ? `<div class="mine" style="opacity:.8">이번 주 내 응모번호 <b>${esc(now.code)}</b> · 한마디가 숨겨져 <b>추첨에서 제외</b>됐어요. 궁금하면 ppaxse@gmail.com으로 문의해 주세요</div>`
-    : `<div class="mine">이번 주 내 응모번호 <b>${esc(now.code)}</b> · 발표 ${md(st.draw_date)} 17시</div>`;
+    : `<div class="mine">이번 주 내 응모번호 <b>${esc(now.code)}</b> · 응모권 ${tix(now, st)}<br><small>${now.tickets >= (st.max_tickets || 3) ? '이번 주 응모를 다 채웠어요' : now.today ? '오늘은 응모했어요. 내일 다른 세차장에 한마디를 남기면 1장 더!' : '오늘 다른 세차장에 한마디를 남기면 1장 더!'} · 발표 ${md(st.draw_date)} 17시</small></div>`;
   if(st.last && st.last.winners) {
     const w = st.last.winners, mem = w.filter(x => x.pool === 'member').map(x => x.code), all = w.filter(x => x.pool === 'all').map(x => x.code);
     h += `<div class="last">지난 회차(${md(st.last.week)}~) 당첨 번호 · 회원 ${esc(mem.join(', ') || '-')} (${st.last.member_count}명 중) · 누구나 ${esc(all.join(', ') || '-')} (${st.last.all_count}명 중)</div>`;
@@ -623,8 +626,12 @@ function done(text, ev) {
 async function renderEvDone(ev) {
   let h = '';
   if(ev.code) {
-    h = `<div class="code">🎟️ ${ev.already ? '이번 주는 이미 응모하셨어요' : '기프티콘 추첨 응모 완료!'}<div class="n">${esc(ev.code)}</div>
-      <small>${ev.already ? '한 주에 1번만 응모돼요. 위 번호로 추첨해요' : '이 응모번호를 꼭 캡처해 두세요. 당첨 확인할 때 필요해요'}<br>이 기기로 이 페이지에 오면 다시 볼 수 있어요</small></div>`;
+    const mx = ev.max || 3, n = ev.tickets || 1;
+    const why = { today: '오늘은 이미 응모하셨어요. 내일 다른 세차장에 남기면 1장 더 받아요',
+                  place: '이 세차장으로는 이번 주에 이미 응모하셨어요. 다른 세차장에 남기면 1장 더 받아요',
+                  max: `이번 주 응모권 ${mx}장을 다 받으셨어요. 다음 주에 또 응모해 주세요` }[ev.reason] || '';
+    h = `<div class="code">🎟️ ${ev.already ? '한마디는 잘 올라갔어요' : n > 1 ? `응모권 1장 추가! (이번 주 ${n}/${mx}장)` : '기프티콘 추첨 응모 완료!'}<div class="n">${esc(ev.code)}</div>
+      <small>${ev.already ? why + `<br>이번 주 응모권 ${n}/${mx}장 · 위 번호로 추첨해요` : `이 응모번호를 꼭 캡처해 두세요. 당첨 확인할 때 필요해요<br>${n < mx ? `하루 1번씩, 다른 세차장이면 이번 주 ${mx - n}번 더 응모할 수 있어요` : '이번 주 응모권을 다 채웠어요'}`}<br>이 기기로 이 페이지에 오면 다시 볼 수 있어요</small></div>`;
   } else if(ev.err) {
     h = `<p class="evnote">🎁 이번 한마디는 추첨에 응모되지 않았어요.<br>${esc(ev.err)}</p>`;
   } else if(ev.none) {
