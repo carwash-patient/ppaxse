@@ -873,6 +873,7 @@ function openDetail(id) {
         <button class="report-btn check-btn" id="checkBtn" type="button" onclick="checkPlace(${p.id})">👍 정보가 맞아요</button>
         <button class="report-btn" type="button" onclick="startReport(${p.id})">✏️ 달라요 · 더 알려주기</button>
       </div>
+      ${window.ppxAdmin ? `<a class="report-btn" style="text-decoration:none;margin-top:8px" href="admin.html?edit=${p.id}">🛠️ 운영자: 위치·정보 고치기</a>` : ''}
       <div class="dp-src">세차장 기본 정보: 행정안전부 전국세차장표준데이터(공공데이터포털) · 이용자 제보</div>
     </div>
     <div class="dp-section">
@@ -1608,6 +1609,7 @@ window.addEventListener('load', () => {
   try {
     if(!PPX.ready || !PPX.carAvatar) return;
     const me = await PPX.me(); if(!me) return;
+    if(me.role === 'admin') window.ppxAdmin = true;   // 세차장 상세에 '운영자: 고치기' 버튼 (실제 권한은 서버에서 검사)
     document.querySelectorAll('a.my-btn').forEach(b => { b.innerHTML = PPX.carAvatar(me.avatar_car || (me.cars||[])[0] || 'sedan', me.avatar_color, 30); b.setAttribute('aria-label', '내 정보'); b.style.padding = '0'; });
   } catch(e) {}
 })();

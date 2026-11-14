@@ -13,7 +13,7 @@
 <title>운영자 · 세차장 승인 · 빡세</title>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;700;900&display=swap" rel="stylesheet">
 <script>window.navermap_authFailure = function(){ window.__naverAuthFailed = true; };</script>
-<script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=ts4h2dbzz2"></script>
+<script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=ts4h2dbzz2&submodules=geocoder"></script>
 <style>
 :root{--deep:#04111e;--deep2:#071828;--ocean:#0369a1;--sky:#0ea5e9;--cyan:#06b6d4;--aqua:#22d3ee;--foam:#bae6fd;--line:rgba(14,165,233,.18);--muted:rgba(186,230,253,.6);--card:rgba(7,24,40,.94)}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -80,6 +80,14 @@ html,body{min-height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backg
 .tchips label:has(input:checked){border-color:var(--sky);background:rgba(14,165,233,.2)}
 .photo-box{margin-bottom:10px}
 .photo-box img{max-width:100%;border-radius:12px;border:1px solid rgba(255,255,255,.1);display:block}
+.loc-box{margin:4px 0 12px;padding:12px;border-radius:12px;background:rgba(14,165,233,.08);border:1px solid rgba(14,165,233,.3);font-size:12.5px;line-height:1.55}
+.loc-box .lb-st{font-weight:800;color:#fff;margin-bottom:8px}
+.loc-box .lb-st.moved{color:#fde68a}
+.loc-box .lb-btns{display:flex;flex-wrap:wrap;gap:6px}
+.loc-box .lb-res{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.loc-box .lb-res button{text-align:left;padding:9px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#fff;font-family:inherit;font-size:12.5px;cursor:pointer}
+.loc-box .lb-res small{display:block;color:#94a3b8;font-size:11px}
+.loc-box .lb-hint{color:#94a3b8;font-size:11.5px;margin-top:6px}
 .photo-box button,.mini{padding:9px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#fff;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer}
 .visit{display:inline-block;font-size:11px;font-weight:900;padding:3px 8px;border-radius:999px;background:rgba(16,185,129,.14);color:#34d399;margin-left:6px}
 .blocked{color:#f87171;font-weight:900}
@@ -105,6 +113,10 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 let tab = 'pending', items = [], approved = [], selId = null;
 let map = null, reqMarker = null, nearMarkers = [];
 let searchTerm = '';
+// 핀 위치 고치기: 지금 고치는 세차장의 새 좌표 (원래 좌표와 다르면 저장할 때 같이 저장)
+let locEdit = null, editId = null;
+const LOC_TABS = ['edit', 'pending'];
+try { const q = new URLSearchParams(location.search).get('edit'); if(q && /^\d+$/.test(q)) { editId = +q; tab = 'edit'; } } catch(e) {}
 const FIELDS = PPX.FIELDS || [], PAY = PPX.PAY || {}, SVC = PPX.SVC || {}, VISIT = PPX.VISIT || {};
 const fieldVal = PPX.fieldVal || ((p, f) => p[f.k] ?? null);
 const facText = v => v === true ? '있음' : v === false ? '없음' : '모름';
@@ -170,9 +182,9 @@ async function init() {
 
   document.getElementById('app').innerHTML = `
     <div class="tabs">
-      <button class="tab on" data-t="pending" type="button">추가 요청<b id="pendingN"></b></button>
+      <button class="tab ${tab==='pending'?'on':''}" data-t="pending" type="button">추가 요청<b id="pendingN"></b></button>
       <button class="tab" data-t="reports" type="button">정보 제보<b id="reportsN"></b></button>
-      <button class="tab" data-t="edit" type="button">세차장 고치기</button>
+      <button class="tab ${tab==='edit'?'on':''}" data-t="edit" type="button">세차장 고치기</button>
       <button class="tab" data-t="comments" type="button">한마디<b id="commentsN"></b></button>
       <button class="tab" data-t="commentReports" type="button">한마디 신고<b id="commentReportsN"></b></button>
       <button class="tab" data-t="abuse" type="button">이상 요청<b id="abuseN"></b></button>
@@ -191,6 +203,11 @@ async function init() {
   });
   if(window.naver && naver.maps && !window.__naverAuthFailed) {
     map = new naver.maps.Map('map', { center: new naver.maps.LatLng(37.5, 126.9), zoom: 15, zoomControl: true, mapDataControl: false });
+    // 고치기·추가 요청 탭: 지도를 누르면 빨간 핀이 그 자리로 옮겨감
+    naver.maps.Event.addListener(map, 'click', e => {
+      if(!locEdit || !LOC_TABS.includes(tab)) return;
+      moveLoc(e.coord.lat(), e.coord.lng(), 'tap');
+    });
   } else {
     document.getElementById('map').innerHTML = '<div class="msg" style="padding:40px 10px">지도를 불러올 수 없어요</div>';
   }
@@ -254,6 +271,12 @@ async function load() {
   try {
     if(tab === 'pending') items = await PPX.adminList('pending');
     else if(tab === 'reports') items = await PPX.adminReports('pending');
+    else if(tab === 'edit' && editId) {
+      const { data, error } = await PPX.db.from('places').select('id,name,addr,region,type,types,lat,lng,tel,hours,price,price_note,h24,foam,under,indoor,myitem,reserve,info,checked_at,check_count,comment_count,status').eq('id', editId).maybeSingle();
+      if(error) throw error;
+      items = data ? [data] : [];
+      editId = null;
+    }
     else if(tab === 'edit') items = searchTerm ? await PPX.adminSearch(searchTerm) : [];
     else if(tab === 'comments') {
       cmSeenBefore = cmSeen();
@@ -296,8 +319,105 @@ async function load() {
   if(tab === 'pending') document.getElementById('pendingN').textContent = items.length ? ' ' + items.length : '';
   if(tab === 'reports') document.getElementById('reportsN').textContent = items.length ? ' ' + items.length : '';
   selId = items[0] ? items[0].id : null;
+  resetLoc();
   render();
   showOnMap();
+}
+
+// ── 핀 위치 고치기 ──
+function resetLoc() {
+  locEdit = null;
+  if(!LOC_TABS.includes(tab)) return;
+  const it = items.find(x => x.id === selId);
+  if(it && it.lat != null) locEdit = { id: it.id, lat: it.lat, lng: it.lng, orig: { lat: it.lat, lng: it.lng }, near: null };
+}
+const locMoved = () => locEdit && distM(locEdit, locEdit.orig) > 1;
+function moveLoc(lat, lng, how) {
+  if(!locEdit) return;
+  if(!(lat >= 33 && lat <= 39 && lng >= 124 && lng <= 132)) return toast('국내 위치만 고를 수 있어요', true);
+  locEdit.lat = lat; locEdit.lng = lng; locEdit.near = null;
+  if(reqMarker) reqMarker.setPosition(new naver.maps.LatLng(lat, lng));
+  if(how === 'addr' && map) map.setCenter(new naver.maps.LatLng(lat, lng));
+  updLocBox();
+  if(how !== 'addr') reverseAddr(lat, lng);
+}
+function locBox(it) {
+  if(!LOC_TABS.includes(tab) || it.id !== selId) return '';
+  return `<div class="loc-box" id="locBox"></div>`;
+}
+function updLocBox() {
+  const box = document.getElementById('locBox');
+  if(!box) return;
+  if(!locEdit) { box.innerHTML = '<div class="lb-st">📍 위치 정보가 없어요</div>'; return; }
+  const d = Math.round(distM(locEdit, locEdit.orig));
+  box.innerHTML = `
+    <div class="lb-st ${locMoved() ? 'moved' : ''}">${locMoved() ? `📍 핀을 옮겼어요 (원래 자리에서 ${d >= 1000 ? (d/1000).toFixed(1) + 'km' : d + 'm'}) · 저장하면 지도에 반영돼요` : '📍 핀 위치: 지금 등록된 그대로'}</div>
+    <div class="lb-btns">
+      <button class="mini" type="button" data-loc="addr">🔍 주소칸 주소로 핀 옮기기</button>
+      <button class="mini" type="button" data-loc="map">🗺️ 지도에서 직접 찍기</button>
+      ${locMoved() ? '<button class="mini" type="button" data-loc="undo">↩︎ 원래 자리로</button>' : ''}
+    </div>
+    <div class="lb-res" id="locRes">${locEdit.near ? `<button type="button" data-loc="fill">이 자리 주소: <b>${esc(locEdit.near)}</b><small>눌러서 주소칸에 넣기</small></button>` : ''}</div>
+    <div class="lb-hint">네이버 지도에서 본 주소(예: 연동로 240)를 주소칸에 고쳐 쓰고 '주소로 핀 옮기기'를 누르세요. 위 지도를 누르거나 빨간 핀을 끌어서 옮겨도 돼요.</div>`;
+  box.querySelectorAll('[data-loc]').forEach(b => b.onclick = () => locAct(b.dataset.loc, b));
+}
+function geocodeAddr(q) {
+  return new Promise((resolve, reject) => {
+    const S = window.naver && naver.maps && naver.maps.Service;
+    if(!S || !S.geocode) return reject(new Error('nogeo'));
+    S.geocode({ query: q }, (status, resp) => {
+      if(status !== S.Status.OK) return reject(new Error('geo ' + status));
+      const list = (resp && resp.v2 && resp.v2.addresses) || [];
+      resolve(list.slice(0, 5).map(a => ({ road: a.roadAddress, jibun: a.jibunAddress, lat: +a.y, lng: +a.x })));
+    });
+  });
+}
+function reverseAddr(lat, lng) {
+  const S = window.naver && naver.maps && naver.maps.Service;
+  if(!S || !S.reverseGeocode) return;
+  const at = locEdit;
+  S.reverseGeocode({ coords: new naver.maps.LatLng(lat, lng), orders: 'roadaddr,addr' }, (status, resp) => {
+    if(status !== S.Status.OK || locEdit !== at || at.lat !== lat || at.lng !== lng) return;
+    const a = resp && resp.v2 && resp.v2.address;
+    const t = a && (a.roadAddress || a.jibunAddress);
+    if(t) { at.near = t; updLocBox(); }
+  });
+}
+async function locAct(what, btn) {
+  const card = btn.closest('.card');
+  const addrIn = card && card.querySelector('[data-k="addr"]');
+  if(what === 'undo') return moveLoc(locEdit.orig.lat, locEdit.orig.lng, 'addr');
+  if(what === 'map') {
+    document.getElementById('map').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return toast('지도를 누르거나 빨간 핀을 끌어서 옮기세요');
+  }
+  if(what === 'fill') { if(addrIn && locEdit.near) { addrIn.value = locEdit.near; toast('주소칸에 넣었어요. 저장을 눌러야 반영돼요'); } return; }
+  if(what === 'addr') {
+    const q = addrIn ? addrIn.value.trim() : '';
+    if(q.length < 2) return toast('주소칸에 주소를 먼저 써 주세요', true);
+    const res = document.getElementById('locRes');
+    res.innerHTML = '<div class="lb-hint">찾는 중…</div>';
+    let list = [];
+    try { list = await geocodeAddr(q); } catch(e) { res.innerHTML = '<div class="lb-hint">주소 검색을 잠시 쓸 수 없어요. 지도에서 직접 찍어 주세요.</div>'; return; }
+    if(!list.length) { res.innerHTML = '<div class="lb-hint">찾는 주소가 없어요. 도로명 주소(예: 서울 구로구 연동로 240)로 다시 써 보세요.</div>'; return; }
+    if(list.length === 1) { pickGeo(list[0], addrIn); return; }
+    res.innerHTML = list.map((a, i) => `<button type="button" data-g="${i}">📍 ${esc(a.road || a.jibun)}${a.road && a.jibun ? `<small>${esc(a.jibun)}</small>` : ''}</button>`).join('');
+    res.querySelectorAll('[data-g]').forEach(b => b.onclick = () => pickGeo(list[+b.dataset.g], addrIn));
+  }
+}
+function pickGeo(a, addrIn) {
+  moveLoc(a.lat, a.lng, 'addr');
+  if(addrIn && a.road) addrIn.value = a.road;
+  locEdit.near = null; updLocBox();
+  toast('핀을 옮겼어요. 저장을 눌러야 반영돼요');
+}
+
+// 정보 제보·지도에서 바로 '세차장 고치기'로
+function goEdit(id) {
+  editId = id; tab = 'edit'; searchTerm = '';
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x.dataset.t === 'edit'));
+  load();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function nearbyOf(loc, selfId) {
@@ -323,6 +443,7 @@ function cardPending(it) {
       ${typeFields(it)}
       <div class="f"><label>지역</label><input data-k="region" value="${esc(it.region)}" placeholder="예: 인천 남동구" maxlength="30"></div>
       <div class="f"><label>주소</label><input data-k="addr" value="${esc(it.addr)}" maxlength="200"></div>
+      ${locBox(it)}
       <div class="f"><label>전화번호</label><input data-k="tel" value="${esc(it.tel||'')}" maxlength="30"></div>
       <div class="acts">
         <button class="no" type="button" data-act="reject">반려</button>
@@ -358,6 +479,7 @@ function cardReport(it) {
       ${rows.length ? `<div class="diff">${rows.join('')}</div>` : ''}
       ${it.memo ? `<div class="memo">💬 ${esc(it.memo)}</div>` : ''}
       <div class="f"><label>세차장 이름 (바꿀 때만 고치세요 · 체인·가맹점은 '학익점'처럼 지점명까지)</label><input data-rename value="${esc(p.name)}" maxlength="60"></div>
+      <div style="margin:-4px 0 10px"><button class="mini" type="button" data-act="goedit">📍 위치·주소가 틀렸으면: 이 세차장 고치기</button></div>
       ${it.photo ? `<div class="photo-box" data-photo="${esc(it.photo)}"><button type="button" data-act="photo">📷 가격표 사진 보기</button></div>` : ''}
       <div class="acts">
         <button class="no" type="button" data-act="dismiss">무시</button>
@@ -563,6 +685,7 @@ function cardEdit(it) {
       ${typeFields(it)}
       <div class="f"><label>지역</label><input data-k="region" value="${esc(it.region)}" maxlength="30"></div>
       <div class="f"><label>주소</label><input data-k="addr" value="${esc(it.addr)}" maxlength="200"></div>
+      ${locBox(it)}
       <div class="f-row">
         <div class="f"><label>전화번호</label><input data-k="tel" value="${esc(it.tel||'')}" maxlength="30"></div>
         <div class="f"><label>운영시간</label><input data-k="hours" value="${esc(it.hours||'')}" placeholder="예: 06:00~23:00" maxlength="60"></div>
@@ -628,12 +751,14 @@ function render() {
       if(e.target.closest('input,select,button,label')) return;
       if(selId === id) return;
       selId = id;
-      if(tab === 'edit') render();
+      resetLoc();
+      if(tab === 'edit' || tab === 'pending') render();
       else list.querySelectorAll('.card').forEach(c => c.classList.toggle('sel', c===card));
       showOnMap();
     });
     card.querySelectorAll('button[data-act]').forEach(b => b.onclick = () => act(card, id, b.dataset.act));
   });
+  updLocBox();
 }
 
 function showOnMap() {
@@ -643,10 +768,12 @@ function showOnMap() {
   const it = items.find(x => x.id === selId);
   const loc = it && locOf(it);
   if(!loc || loc.lat == null) return;
-  const ll = new naver.maps.LatLng(loc.lat, loc.lng);
+  const editing = locEdit && locEdit.id === selId && LOC_TABS.includes(tab);
+  const ll = editing ? new naver.maps.LatLng(locEdit.lat, locEdit.lng) : new naver.maps.LatLng(loc.lat, loc.lng);
   map.setCenter(ll); map.setZoom(17);
-  reqMarker = new naver.maps.Marker({ position: ll, map, zIndex: 100,
+  reqMarker = new naver.maps.Marker({ position: ll, map, zIndex: 100, draggable: !!editing,
     icon: { content: '<div style="font-size:34px;transform:translate(-50%,-100%);filter:drop-shadow(0 4px 6px rgba(0,0,0,.5))">📍</div>', anchor: new naver.maps.Point(0,0) } });
+  if(editing) naver.maps.Event.addListener(reqMarker, 'dragend', () => { const p = reqMarker.getPosition(); moveLoc(p.lat(), p.lng(), 'drag'); });
   nearbyOf(loc, loc.id).forEach(({p}) => nearMarkers.push(new naver.maps.Marker({ position: new naver.maps.LatLng(p.lat, p.lng), map,
     icon: { content: `<div style="transform:translate(-50%,-50%);display:flex;align-items:center;gap:4px;white-space:nowrap"><span style="width:14px;height:14px;border-radius:50%;background:#0ea5e9;border:2px solid #fff;display:inline-block"></span><span style="font-size:11px;font-weight:700;color:#fff;background:rgba(4,17,30,.9);padding:2px 6px;border-radius:6px">${esc(p.name)}</span></div>`, anchor: new naver.maps.Point(0,0) } })));
 }
@@ -683,6 +810,7 @@ function readFields(card) {
     });
     fields.info = info;
   }
+  if(locMoved() && locEdit.id === selId) { fields.lat = +locEdit.lat.toFixed(6); fields.lng = +locEdit.lng.toFixed(6); }
   if(card.querySelector('[data-type]')) {
     const checked = [...card.querySelectorAll('[data-type]:checked')].map(el => el.dataset.type);
     fields.types = [fields.type, ...checked.filter(t => t !== fields.type)];   // 대표 종류가 맨 앞
@@ -692,6 +820,14 @@ function readFields(card) {
 
 async function act(card, id, what) {
   if(what === 'reject') { card.querySelector('.reject-box').classList.add('open'); card.querySelector('.reject-box input').focus(); return; }
+  if(what === 'goedit') { const r = items.find(x => x.id === id); if(r && r.place) goEdit(r.place.id); return; }
+  if(what === 'save') {
+    const it0 = items.find(x => x.id === id), addrIn = card.querySelector('[data-k="addr"]');
+    if(it0 && addrIn && addrIn.value.trim() !== (it0.addr || '') && !locMoved()) {
+      const go = await PPX.ask('주소를 바꿨는데 지도 핀은 그대로예요. 핀도 새 주소로 옮길까요?', { ok: '핀도 옮기기', cancel: '주소만 저장' });
+      if(go) { const b = card.querySelector('[data-loc="addr"]'); if(b) locAct('addr', b); return; }
+    }
+  }
   const btns = card.querySelectorAll('button'); btns.forEach(b => b.disabled = true);
   try {
     const it = items.find(x => x.id === id);
@@ -775,6 +911,7 @@ async function act(card, id, what) {
       if(!fields.name) { toast('이름을 입력해 주세요', true); btns.forEach(b => b.disabled = false); return; }
       const saved = await PPX.adminUpdate(id, fields);
       Object.assign(it, saved);
+      resetLoc();
       toast(saved.status === 'closed' ? '저장했어요. 지도에서 숨겨졌어요' : '저장했어요. 지도에 바로 적용돼요 ✅');
       btns.forEach(b => b.disabled = false);
       try { approved = await PPX.approvedPlaces(); } catch(e) {}
