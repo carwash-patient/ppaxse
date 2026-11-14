@@ -2052,7 +2052,7 @@ update public.place_comments
 set nickname = public.ppx_auto_nick(coalesce(user_id::text, 'c' || id::text))
 where nickname is null or btrim(nickname) = '';
 
--- ════ 2026-11-14 (migrate_2026-11-14.sql) ════
+-- ════ 2026-11-14 (migrate_2026-11-14e.sql) ════
 -- 2026-11-14 한마디 기프티콘 추첨: 하루 1번, 한 주 최대 3번 응모
 -- migrate_2026-11-13.sql 다음에 실행. 여러 번 실행해도 안전합니다.
 -- 운영자가 Supabase SQL Editor에서 '전체'를 한 번에 Run 합니다.
@@ -2516,3 +2516,10 @@ end $$;
 revoke all on function public.ppx_set_marketing(boolean) from public, anon, authenticated;
 grant execute on function public.ppx_set_marketing(boolean) to authenticated;
 
+
+-- ── 2026-11-14: 사장님이 직접 보내는 매장 정보 (migrate_2026-11-14e.sql) ──
+-- 정보 제보가 들어온 곳(via): 'map'(지도) / 'review'(후기 페이지) / 'owner'(사장님 페이지 ppaxse.com/owner/)
+-- 사장님 제보도 '대기'로 들어가고 운영자가 확인한 뒤 반영
+alter table public.place_reports drop constraint if exists place_reports_via_check;
+alter table public.place_reports add constraint place_reports_via_check
+  check (via in ('map', 'review', 'owner'));

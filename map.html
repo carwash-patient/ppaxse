@@ -874,6 +874,7 @@ function openDetail(id) {
         <button class="report-btn" type="button" onclick="startReport(${p.id})">✏️ 달라요 · 더 알려주기</button>
       </div>
       ${window.ppxAdmin ? `<a class="report-btn" style="text-decoration:none;margin-top:8px" href="admin.html?edit=${p.id}">🛠️ 운영자: 위치·정보 고치기</a>` : ''}
+      <a href="owner/?p=${p.id}" style="display:block;margin-top:10px;text-align:center;font-size:12px;color:var(--muted);text-decoration:none">🏪 이 세차장 사장님이세요? <b style="color:#fde68a">매장 정보 직접 알려주기 →</b></a>
       <div class="dp-src">세차장 기본 정보: 행정안전부 전국세차장표준데이터(공공데이터포털) · 이용자 제보</div>
     </div>
     <div class="dp-section">
