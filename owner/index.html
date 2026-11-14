@@ -80,6 +80,17 @@ textarea:focus,.in:focus{border-color:var(--gold)}
 .confirm{display:flex;gap:10px;align-items:flex-start;padding:14px;border-radius:14px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.35);font-size:14px;margin-bottom:14px;cursor:pointer}
 .confirm input{width:22px;height:22px;flex-shrink:0;margin-top:1px;accent-color:#fbbf24}
 .confirm small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.mine{margin:18px 0 0;padding:14px 16px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.mine h3{font-size:14px;font-weight:900;margin-bottom:8px}
+.mine .it{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px solid rgba(255,255,255,.06);font-size:13px}
+.mine .it:first-of-type{border-top:none}
+.mine .it small{display:block;color:var(--muted);font-size:11px}
+.st{flex-shrink:0;align-self:center;font-size:11px;font-weight:900;padding:4px 9px;border-radius:999px}
+.st.pending{background:rgba(251,191,36,.16);color:#fde68a}
+.st.applied{background:rgba(16,185,129,.16);color:var(--ok)}
+.st.dismissed{background:rgba(255,255,255,.08);color:var(--muted)}
+.soon{margin-top:18px;padding:14px 16px;border-radius:16px;border:1px dashed rgba(251,191,36,.4);font-size:13px;color:var(--foam);line-height:1.7}
+.soon b{color:#fde68a}
 .note{font-size:11px;color:var(--muted);text-align:center;margin-top:10px;line-height:1.7}
 .note a{color:var(--aqua)}
 .done{text-align:center;padding:30px 0 10px}
@@ -118,6 +129,8 @@ textarea:focus,.in:focus{border-color:var(--gold)}
       <button class="btn p" type="submit">찾기</button>
     </form>
     <div class="results" id="results"></div>
+    <div class="mine" id="mine" hidden></div>
+    <div class="soon"><b>🛠️ 사장님 전용 기능을 준비하고 있어요</b><br>매장 정보를 직접 관리하고, 빡세에서 우리 매장을 얼마나 봤는지 확인하는 기능을 만들고 있어요. 준비되면 이 페이지에서 알려드릴게요.</div>
   </section>
 
   <!-- 2. 매장 정보 입력 -->
@@ -188,6 +201,7 @@ textarea:focus,.in:focus{border-color:var(--gold)}
       <h2>보내주셔서 감사해요!</h2>
       <p>운영자가 확인한 뒤 지도에 반영할게요.<br>확인을 위해 매장 번호로 연락드릴 수 있어요.</p>
     </div>
+    <div class="mine" id="mineDone" hidden style="margin:0 0 16px"></div>
     <div class="done-acts">
       <a class="btn p w" id="seeMap" href="../map.html">🗺️ 지도에서 우리 매장 보기</a>
       <button class="btn g w" type="button" data-go="home">🏪 다른 매장도 알려주기</button>
@@ -212,7 +226,7 @@ function toast(msg, warn) {
   clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2800);
 }
 function show(v) { ['vHome','vPlace','vDone'].forEach(x => $(x).hidden = x !== v); window.scrollTo(0, 0); }
-document.querySelectorAll('[data-go="home"]').forEach(b => b.onclick = () => { show('vHome'); history.replaceState(null, '', location.pathname); });
+document.querySelectorAll('[data-go="home"]').forEach(b => b.onclick = () => { show('vHome'); history.replaceState(null, '', location.pathname); if(window.PPX && PPX.ready) loadMine('mine'); });
 
 const typesOf = p => (p.types && p.types.length) ? p.types : [p.type];
 const facVal = (p, f) => f.col ? (p[f.k] ?? null) : ((p.info || {})[f.k] ?? null);
@@ -353,16 +367,33 @@ $('send').onclick = async () => {
     await PPX.reportPlace(p.id, suggest, ('[사장님] ' + memo).trim().slice(0, 500), { photo: photoBlob, via: 'owner' });
     $('seeMap').href = '../map.html';
     show('vDone');
+    loadMine('mineDone');
   } catch(e) { toast(PPX.koError(e), true); }
   btn.disabled = false; btn.textContent = '매장 정보 보내기 🏪';
 };
 
+// ── 이 기기로 보낸 사장님 정보와 처리 상태 ──
+const ST = { pending: '확인 중', applied: '반영됨', dismissed: '반영 안 됨' };
+async function loadMine(boxId) {
+  const box = $(boxId);
+  try {
+    const list = (await PPX.myReports()).filter(r => String(r.memo || '').startsWith('[사장님]')).slice(0, 10);
+    if(!list.length) { box.hidden = true; return; }
+    box.innerHTML = '<h3>📮 이 기기로 보낸 매장 정보</h3>' + list.map(r => `
+      <div class="it"><div>${esc(r.place && r.place.name || '세차장')}<small>${new Date(r.created_at).toLocaleDateString('ko-KR')} 보냄</small></div>
+      <span class="st ${esc(r.status)}">${esc(ST[r.status] || r.status)}</span></div>`).join('') +
+      '<p style="font-size:11px;color:var(--muted);margin-top:8px">‘반영됨’이면 지도에 바로 보여요. 다른 기기나 브라우저에서 보낸 건 여기 안 보여요.</p>';
+    box.hidden = false;
+  } catch(e) { box.hidden = true; }
+}
+
 // 지도에서 '사장님이세요?'로 들어온 경우 (?p=세차장번호)
 (async () => {
   const id = +new URLSearchParams(location.search).get('p');
-  if(!id) return;
   for(let i = 0; i < 20 && !PPX.ready; i++) await new Promise(r => setTimeout(r, 150));
   if(!PPX.ready) return;
+  loadMine('mine');
+  if(!id) return;
   try { const p = await PPX.placeById(id); if(p) openPlace(p); } catch(e) {}
 })();
 </script>
