@@ -1,0 +1,32 @@
+Copyright (c) 2026 빡세(Ppaxse). All rights reserved.
+
+이 저장소의 코드, 화면 디자인, 문구, 이미지, 그리고 빡세가 모으고 검수·보완한
+세차장 데이터(places.json, Supabase 데이터베이스의 내용 포함)의 저작권과
+데이터베이스 제작자의 권리는 빡세에 있습니다.
+
+공개 저장소로 열어 둔 것은 소스를 볼 수 있게 한 것이며, 사용을 허락한 것이 아닙니다.
+빡세의 서면 허락 없이 다음을 할 수 없습니다.
+
+  - 코드·디자인·데이터의 전부 또는 상당한 부분을 복제, 수정, 배포, 판매하는 것
+  - 이 데이터를 크롤링·자동 수집하거나, 다른 서비스나 데이터베이스에 옮겨 쓰는 것
+  - 이 저장소를 바탕으로 같거나 비슷한 서비스를 만드는 것
+
+행정안전부 '전국세차장표준데이터' 등 공공데이터의 원래 내용은 각 제공 기관의
+이용 조건을 따릅니다. 위 제한은 빡세가 더하고 고친 부분과, 빡세가 구성한
+데이터베이스 전체에 적용됩니다.
+
+이용 문의: ppaxse@gmail.com
+
+---
+
+Copyright (c) 2026 Ppaxse. All rights reserved.
+
+The source code, design, text, images, and the car wash data compiled, verified
+and enriched by Ppaxse (including places.json and the contents of its database)
+are the property of Ppaxse. This repository is public for viewing only; no
+license is granted to copy, modify, distribute, scrape, or reuse any part of it,
+or to build a similar service from it, without prior written permission.
+Original public data (e.g. the Ministry of the Interior and Safety's national
+car wash standard data) remains under the terms of its provider.
+
+Contact: ppaxse@gmail.com
