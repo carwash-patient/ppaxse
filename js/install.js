@@ -15,9 +15,18 @@
   const isMobile = isIOS || /Android/.test(ua);
   // 삼성 인터넷은 '앱 설치' 때 옛 안드로이드 기준 설치 파일을 만들어 Play 프로텍트 경고가 뜸 → 설치 창 대신 '홈 화면에 추가' 안내만
   const isSamsung = /SamsungBrowser/.test(ua);
+  // 카톡·네이버앱·인스타 등 '앱 속 브라우저'에서는 바탕화면 추가가 안 됨 → 크롬(아이폰은 사파리)으로 넘겨서 추가
+  const isKakao = /KAKAOTALK/i.test(ua);
+  const isAndroid = /Android/.test(ua);
+  // 갤럭시 네이버 앱은 자체 메뉴에 '홈 화면에 추가'가 있어서 그대로 안내 (아이폰 네이버 앱은 사파리로)
+  const naverAndroid = isAndroid && /NAVER\(inapp/.test(ua);
+  const inApp = !naverAndroid && (isKakao || /NAVER\(inapp|Instagram|FBAN|FBAV|Line\/|DaumApps|BAND\/|everytimeApp|; wv\)/.test(ua));
   const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
   let stored = null; try { stored = localStorage.getItem(KEY); } catch(_) {}
-  if(standalone || stored) return;
+  // 앱 속 브라우저에서 '크롬으로 열기'로 넘어온 경우: 닫은 적 있어도 카드를 보여주고, 주소의 install 표시는 지움
+  const q = new URLSearchParams(location.search), fromApp = q.has('install');
+  if(fromApp) try { q.delete('install'); history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash); } catch(_) {}
+  if(standalone || (stored && !fromApp)) return;
 
   const css = document.createElement('style');
   css.textContent = `
@@ -49,13 +58,30 @@
   box.innerHTML = `<div class="pi-card"><img src="${esc(d.icon)}" alt=""><div class="pi-t"><b>${esc(d.title)}</b><span>${esc(d.sub)}</span></div>
     <button class="pi-go" type="button">📲 추가</button><button class="pi-x" type="button" aria-label="닫기">✕</button></div>`;
 
-  function show() { if(box.hidden) { box.hidden = false; document.body.classList.add('pi-on'); } }
+  function show() {
+    if(!box.hidden) return;
+    box.hidden = false; document.body.classList.add('pi-on');
+    if(fromApp) { box.scrollIntoView({block:'center'}); box.firstElementChild.style.boxShadow = '0 0 0 3px #22d3ee'; }
+  }
   function hide(save) {
     box.hidden = true; document.body.classList.remove('pi-on');
     if(save) try { localStorage.setItem(KEY, save); } catch(_) {}
   }
 
+  // 지금 주소를 바깥 브라우저로 열기 (?install=1 붙여서, 열리면 추가 카드를 바로 보여줌)
+  function openOutside() {
+    const u = new URL(location.href); u.searchParams.set('install', '1');
+    const url = u.toString();
+    if(isKakao) { location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(url); return; }
+    if(isAndroid) {
+      location.href = 'intent://' + url.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;'
+        + 'S.browser_fallback_url=' + encodeURIComponent(url) + ';end';
+    }
+  }
+  const canJump = isKakao || (isAndroid && inApp);
+
   function guide() {
+    if(inApp) return guideInApp();
     const steps = isIOS
       ? ['① 화면 아래(또는 위) <em>공유 버튼 <span class="pi-share">↑</span></em> 누르기',
          '② 아래로 내려서 <em>\'홈 화면에 추가\'</em> 누르기',
@@ -79,6 +105,25 @@
     document.body.append(ov, sh);
   }
 
+  function guideInApp() {
+    const where = isKakao ? '카카오톡' : /NAVER/.test(ua) ? '네이버 앱' : '이 앱';
+    const target = isIOS ? '사파리' : '크롬', ro = isIOS ? '사파리로' : '크롬으로', ga = isIOS ? '사파리가' : '크롬이';
+    const ov = document.createElement('div'); ov.className = 'pi-ov';
+    const sh = document.createElement('div'); sh.className = 'pi-sheet';
+    sh.innerHTML = `<div class="h"><img src="${esc(d.icon)}" alt=""><div><b>${target}에서 열어야 추가돼요</b><span>${where} 안에서는 바탕화면 추가가 안 돼요</span></div></div>`
+      + (canJump
+        ? `<button class="pi-go pi-jump" type="button" style="width:100%;min-height:52px;font-size:16px;margin-bottom:10px">🌐 ${ro} 열어서 추가하기</button>`
+          + `<div class="pi-step" style="font-size:13px;color:#94a3b8">${ga} 열리면 화면의 <em>📲 추가</em>를 한 번 더 눌러 주세요</div>`
+        : `<div class="pi-step">① 오른쪽 위나 아래 <em>메뉴(⋯ 또는 ⋮)</em> 누르기</div>`
+          + `<div class="pi-step">② <em>'${isIOS ? 'Safari로 열기' : '다른 브라우저로 열기'}'</em> 누르기</div>`
+          + `<div class="pi-step">③ 열린 화면에서 <em>📲 추가</em> 누르기</div>`)
+      + `<button class="pi-ok" type="button">닫기</button>`;
+    const close = () => { ov.remove(); sh.remove(); };
+    ov.onclick = close; sh.querySelector('.pi-ok').onclick = close;
+    const j = sh.querySelector('.pi-jump'); if(j) j.onclick = () => { close(); openOutside(); };
+    document.body.append(ov, sh);
+  }
+
   box.querySelector('.pi-x').onclick = () => hide('closed');
   box.querySelector('.pi-go').onclick = async () => {
     if(!deferred) return guide();
@@ -90,7 +135,6 @@
   window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); if(isSamsung) return; deferred = e; show(); });
   window.addEventListener('appinstalled', () => hide('installed'));
   // 아이폰은 바로 보여줌. 안드로이드는 설치 창 준비 신호를 잠깐 기다렸다가, 안 오면 안내 방식으로 보여줌. PC는 설치 가능할 때만
-  if(isIOS) show();
-  else if(isSamsung) show();
+  if(isIOS || isSamsung || inApp || naverAndroid || fromApp) show();
   else if(isMobile) setTimeout(show, 2500);
 })();
