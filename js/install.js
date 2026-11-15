@@ -13,6 +13,8 @@
   const ua = navigator.userAgent;
   const isIOS = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
   const isMobile = isIOS || /Android/.test(ua);
+  // 삼성 인터넷은 '앱 설치' 때 옛 안드로이드 기준 설치 파일을 만들어 Play 프로텍트 경고가 뜸 → 설치 창 대신 '홈 화면에 추가' 안내만
+  const isSamsung = /SamsungBrowser/.test(ua);
   const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
   let stored = null; try { stored = localStorage.getItem(KEY); } catch(_) {}
   if(standalone || stored) return;
@@ -58,6 +60,10 @@
       ? ['① 화면 아래(또는 위) <em>공유 버튼 <span class="pi-share">↑</span></em> 누르기',
          '② 아래로 내려서 <em>\'홈 화면에 추가\'</em> 누르기',
          '③ 오른쪽 위 <em>\'추가\'</em> 누르면 끝!']
+      : isSamsung
+      ? ['① 화면 아래 <em>메뉴(≡)</em> 누르기',
+         '② <em>\'현재 페이지 추가\'</em> 누르기',
+         '③ <em>\'홈 화면\'</em> 고르고 <em>\'추가\'</em> 누르면 끝!']
       : isMobile
       ? ['① 브라우저 <em>메뉴(⋮ 또는 ≡)</em> 누르기',
          '② <em>\'홈 화면에 추가\'</em> 또는 <em>\'현재 페이지 추가 → 홈 화면\'</em> 누르기',
@@ -81,9 +87,10 @@
     deferred = null;
   };
 
-  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; show(); });
+  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); if(isSamsung) return; deferred = e; show(); });
   window.addEventListener('appinstalled', () => hide('installed'));
   // 아이폰은 바로 보여줌. 안드로이드는 설치 창 준비 신호를 잠깐 기다렸다가, 안 오면 안내 방식으로 보여줌. PC는 설치 가능할 때만
   if(isIOS) show();
+  else if(isSamsung) show();
   else if(isMobile) setTimeout(show, 2500);
 })();
