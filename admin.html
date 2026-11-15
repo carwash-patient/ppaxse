@@ -194,6 +194,7 @@ async function init() {
       <button class="tab" data-t="reports" type="button">정보 제보<b id="reportsN"></b></button>
       <button class="tab ${tab==='edit'?'on':''}" data-t="edit" type="button">세차장 고치기</button>
       <button class="tab" data-t="comments" type="button">한마디<b id="commentsN"></b></button>
+      <button class="tab" data-t="allComments" type="button">📜 전체 한마디</button>
       <button class="tab" data-t="commentReports" type="button">한마디 신고<b id="commentReportsN"></b></button>
       <button class="tab" data-t="abuse" type="button">이상 요청<b id="abuseN"></b></button>
       <button class="tab" data-t="event" type="button">🎁 추첨</button>
@@ -256,6 +257,7 @@ async function load() {
     reports: '📍 빨간 핀 = 제보된 세차장 · 파란 점 = 근처 세차장',
     edit: '📍 빨간 핀 = 고치는 세차장 · 파란 점 = 근처 세차장',
     comments: '📍 한마디가 달린 세차장',
+    allComments: '📜 지금까지 쓰인 한마디 전부 (운영자만 볼 수 있어요) · 날짜를 고르면 그날 것만 · 카드를 누르면 지도에서 위치',
     commentReports: '🚩 신고가 많이 쌓인 한마디부터 보여요',
     abuse: '⚠️ 최근 7일 동안 도배 방지 제한에 걸린 사람(기기)이에요. 많은 순',
     event: '🎁 기간 안에 후기(제보·한마디·정보가 맞아요·추가 요청)를 남긴 가입 회원이에요. 가입 전에 남긴 후기도 가입하면 포함돼요.',
@@ -264,6 +266,7 @@ async function load() {
   document.getElementById('mapNote').textContent = note;
   if(tab === 'event') return loadEvent();
   if(tab === 'visits') return loadVisits();
+  if(tab === 'allComments') return loadAllComments();
   document.getElementById('searchBox').innerHTML = tab === 'edit' ? `
     <form class="search" id="searchForm">
       <input id="searchInput" placeholder="세차장 이름, 주소, 지역 (예: 컴인워시, 남동구)" value="${esc(searchTerm)}" maxlength="40">
@@ -584,6 +587,65 @@ const evMd = d => { const t = new Date(d + 'T00:00:00Z'); return `${t.getUTCMont
 const evToday = () => new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);   // 한국 날짜
 const evWeekOf = d => { const t = new Date(d + 'T00:00:00Z'); return evAdd(d, -((t.getUTCDay() + 1) % 7)); };   // 그 주 토요일
 let evWeek = null, evList = [], evWinners = [];
+// ── 📜 전체 한마디 (읽기 전용, 운영자만: 숨긴 한마디는 RLS상 운영자에게만 보임) ──
+let allCm = [], allCmDay = '';
+const kstDay = iso => new Date(new Date(iso).getTime() + 9 * 3600000).toISOString().slice(0, 10);
+const kstTime = iso => new Date(new Date(iso).getTime() + 9 * 3600000).toISOString().slice(11, 16);
+async function loadAllComments() {
+  if(reqMarker) reqMarker.setMap(null);
+  nearMarkers.forEach(m => m.setMap(null)); nearMarkers = [];
+  const list = document.getElementById('list');
+  document.getElementById('searchBox').innerHTML = '';
+  list.innerHTML = '<div class="msg">불러오는 중…</div>';
+  try {
+    allCm = [];
+    for(let from = 0; ; from += 1000) {
+      const { data, error } = await PPX.db.from('place_comments')
+        .select('id,place_id,nickname,body,hidden,created_at,place:places!place_comments_place_id_fkey(name,region,lat,lng)')
+        .order('created_at', { ascending: false }).range(from, from + 999);
+      if(error) throw error;
+      allCm = allCm.concat(data || []);
+      if(!data || data.length < 1000) break;
+    }
+  } catch(e) { list.innerHTML = `<div class="msg">${esc(PPX.koError(e))}</div>`; return; }
+  renderAllComments();
+}
+function renderAllComments() {
+  const days = [];
+  allCm.forEach(c => { const d = kstDay(c.created_at); if(days[days.length - 1] !== d) days.push(d); });
+  const cnt = d => allCm.filter(c => kstDay(c.created_at) === d).length;
+  if(allCmDay && !days.includes(allCmDay)) allCmDay = '';
+  const hiddenN = allCm.filter(c => c.hidden).length;
+  document.getElementById('searchBox').innerHTML = `
+    <div class="search"><select id="cmDay" style="flex:1">
+      <option value="">전체 날짜 (${allCm.length}개)</option>
+      ${days.map(d => `<option value="${d}" ${d === allCmDay ? 'selected' : ''}>${evMd(d)} · ${cnt(d)}개</option>`).join('')}
+    </select></div>`;
+  document.getElementById('cmDay').onchange = e => { allCmDay = e.target.value; renderAllComments(); };
+  const list = document.getElementById('list');
+  if(!allCm.length) { list.innerHTML = '<div class="msg">아직 한마디가 없어요</div>'; return; }
+  const show = allCmDay ? [allCmDay] : days;
+  list.innerHTML = `<div class="msg" style="padding:8px 0 4px">모두 ${allCm.length}개${hiddenN ? ` · 숨긴 것 ${hiddenN}개 포함` : ''} · 최근 것부터</div>` +
+    show.map(d => `
+      <div style="margin:14px 0 6px;font-size:13px;font-weight:900;color:var(--aqua,#22d3ee)">${evMd(d)} · ${cnt(d)}개</div>
+      ${allCm.filter(c => kstDay(c.created_at) === d).map(c => `
+        <div class="card" data-cm="${c.id}">
+          <div class="c-top"><span class="c-name">${esc(c.place ? c.place.name : '(지도에서 내려간 세차장)')}</span><span class="c-when">${kstTime(c.created_at)}</span></div>
+          <div class="memo" style="${c.hidden ? 'opacity:.5;text-decoration:line-through' : ''}">💬 ${esc(c.body)}</div>
+          <div class="c-who">${esc(c.nickname || '익명 세차러')}${c.place && c.place.region ? ' · ' + esc(c.place.region) : ''}${c.hidden ? ' · <span class="blocked">숨김</span>' : ''}</div>
+        </div>`).join('')}`).join('');
+  list.querySelectorAll('.card[data-cm]').forEach(card => card.onclick = () => {
+    const c = allCm.find(x => x.id === +card.dataset.cm);
+    list.querySelectorAll('.card').forEach(x => x.classList.toggle('sel', x === card));
+    if(map && c && c.place && c.place.lat != null) {
+      const pos = new naver.maps.LatLng(c.place.lat, c.place.lng);
+      map.setCenter(pos);
+      if(reqMarker) reqMarker.setMap(null);
+      reqMarker = new naver.maps.Marker({ position: pos, map });
+    }
+  });
+}
+
 // ── 📊 방문자 ──
 const PAGE_NAMES = { home: '홈', map: '지도', review: '후기 페이지', login: '로그인', join: '가입', mypage: '마이페이지', other: '기타' };
 async function loadVisits() {
