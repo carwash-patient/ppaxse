@@ -647,7 +647,7 @@ function renderAllComments() {
 }
 
 // ── 📊 방문자 ──
-const PAGE_NAMES = { home: '홈', map: '지도', review: '후기 페이지', login: '로그인', join: '가입', mypage: '마이페이지', other: '기타' };
+const PAGE_NAMES = { home: '홈', map: '지도', review: '후기 페이지', login: '로그인', join: '가입', mypage: '마이페이지', other: '기타', app: '📲 바탕화면 아이콘으로 열기' };
 async function loadVisits() {
   if(reqMarker) reqMarker.setMap(null);
   nearMarkers.forEach(m => m.setMap(null)); nearMarkers = [];
@@ -672,6 +672,10 @@ async function loadVisits() {
         ${box('최근 7일', s.uniq7 || 0, '겹치지 않게 센 기기 수')}
         ${box('최근 30일', s.uniq30 || 0, `지금까지 전체 ${(s.total || 0).toLocaleString()}명`)}
       </div>
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        ${box('📲 아이콘으로 연 사람 (오늘)', td.app_visitors || 0, `어제 ${yd.app_visitors || 0}명`)}
+        ${box('📲 아이콘 (최근 7일)', s.app7 || 0, `지금까지 ${(s.app_total || 0).toLocaleString()}명`)}
+      </div>
       <div class="memo" style="margin-bottom:6px;font-weight:900">날짜별 방문자</div>
       ${days.map(d => `<div style="display:flex;align-items:center;gap:8px;font-size:13px;margin:5px 0">
         <span style="width:62px;flex:none;color:rgba(255,255,255,.7)">${label(d.day)}</span>
@@ -682,7 +686,7 @@ async function loadVisits() {
         <span>${esc(PAGE_NAMES[p.page] || p.page)}</span><span>${p.visitors}명 · ${p.views}회</span></div>`).join('') : '<div class="msg">아직 오늘 방문이 없어요</div>'}
       <div class="memo" style="margin:16px 0 6px;font-weight:900">채널별 성과 (최근 30일)</div>
       <div id="chanBox"><div class="msg">불러오는 중…</div></div>
-      <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:14px;line-height:1.6">· 같은 휴대폰·브라우저는 하루 1명으로 세요. 브라우저를 바꾸거나 기록을 지우면 새 사람으로 셀 수 있어요.<br>· 운영자 화면을 연 기기는 세지 않아요. 날짜는 한국 시간 기준이에요.<br>· 이 숫자는 운영자만 봐요. 홈 화면 등에 공개하지 않아요.</div>`;
+      <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:14px;line-height:1.6">· 같은 휴대폰·브라우저는 하루 1명으로 세요. 브라우저를 바꾸거나 기록을 지우면 새 사람으로 셀 수 있어요.<br>· 운영자 화면을 연 기기는 세지 않아요. 날짜는 한국 시간 기준이에요.<br>· 📲 아이콘으로 연 사람은 위 방문자 수에 이미 들어가 있어요(따로 더하지 않아요).<br>· 이 숫자는 운영자만 봐요. 홈 화면 등에 공개하지 않아요.</div>`;
   } catch(e) { list.innerHTML = `<div class="msg">${esc(PPX.koError(e))}</div>`; return; }
   // 채널별: 링크 꼬리표(?ref=)로 처음 들어온 기기 → 응모 → 가입
   try {

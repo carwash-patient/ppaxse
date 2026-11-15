@@ -22,6 +22,13 @@
   const naverAndroid = isAndroid && /NAVER\(inapp/.test(ua);
   const inApp = !naverAndroid && (isKakao || /NAVER\(inapp|Instagram|FBAN|FBAV|Line\/|DaumApps|BAND\/|everytimeApp|; wv\)/.test(ua));
   const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  // 바탕화면 아이콘으로 연 방문은 'app'으로 한 번 더 기록 (운영자 방문 통계에서 따로 봄). 방문자 수는 늘지 않음
+  if(standalone) try {
+    const v = localStorage.getItem('ppxVisitor');
+    if(window.PPX && PPX.db && !navigator.webdriver && !localStorage.getItem('ppxNoTrack') && /^[0-9a-f-]{36}$/.test(v || ''))
+      setTimeout(() => PPX.db.rpc('ppx_track', { v, p: 'app', r: null }).then(() => {}, () => {}), 1500);
+  } catch(_) {}
+
   let stored = null; try { stored = localStorage.getItem(KEY); } catch(_) {}
   // 앱 속 브라우저에서 '크롬으로 열기'로 넘어온 경우: 닫은 적 있어도 카드를 보여주고, 주소의 install 표시는 지움
   const q = new URLSearchParams(location.search), fromApp = q.has('install');

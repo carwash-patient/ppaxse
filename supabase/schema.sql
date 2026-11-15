@@ -1038,7 +1038,7 @@ grant execute on function public.admin_abuse_summary() to authenticated;
 create table if not exists public.ppx_visits (
   day      date not null,
   visitor  uuid not null,
-  page     text not null check (page in ('home','map','review','login','join','mypage','other')),
+  page     text not null check (page in ('home','map','review','login','join','mypage','other','app')),
   hits     int  not null default 1,
   first_at timestamptz not null default now(),
   last_at  timestamptz not null default now(),
@@ -1066,7 +1066,7 @@ grant execute on function public.ppx_track(uuid, text) to anon, authenticated;
 
 -- 운영자: 방문 통계 한 번에 (최근 days일)
 create or replace function public.admin_visit_stats(days int default 14)
-returns json language plpgsql stable security definer set search_path = public as $$
+returns json language plpgsql stable security definer set search_path = pg_catalog, public, pg_temp as $$
 declare
   today date := (now() at time zone 'Asia/Seoul')::date;
   n int := greatest(1, least(coalesce(days, 14), 90));
@@ -1074,13 +1074,14 @@ begin
   if not public.is_admin() then raise exception '운영자만 할 수 있어요'; end if;
   return json_build_object(
     'today', today,
-    -- 날짜별: 방문자(기기 수), 본 횟수, 처음 온 기기 수
+    -- 날짜별: 방문자(기기 수), 본 횟수, 처음 온 기기 수, 바탕화면 아이콘으로 연 기기 수
     'days', coalesce((
       select json_agg(x order by x.day desc) from (
         select g.day::date as day,
                count(distinct v.visitor) as visitors,
-               coalesce(sum(v.hits), 0) as views,
-               count(distinct v.visitor) filter (where f.first_day = g.day::date) as new_visitors
+               coalesce(sum(v.hits) filter (where v.page <> 'app'), 0) as views,
+               count(distinct v.visitor) filter (where f.first_day = g.day::date) as new_visitors,
+               count(distinct v.visitor) filter (where v.page = 'app') as app_visitors
         from generate_series(today - (n - 1), today, interval '1 day') g(day)
         left join public.ppx_visits v on v.day = g.day::date
         left join (select visitor, min(day) as first_day from public.ppx_visits group by visitor) f
@@ -1091,6 +1092,8 @@ begin
     'uniq7',  (select count(distinct visitor) from public.ppx_visits where day > today - 7),
     'uniq30', (select count(distinct visitor) from public.ppx_visits where day > today - 30),
     'total',  (select count(distinct visitor) from public.ppx_visits),
+    'app7',   (select count(distinct visitor) from public.ppx_visits where page = 'app' and day > today - 7),
+    'app_total', (select count(distinct visitor) from public.ppx_visits where page = 'app'),
     -- 오늘 화면별
     'pages_today', coalesce((
       select json_agg(y order by y.visitors desc) from (
@@ -1522,12 +1525,13 @@ revoke all on public.ppx_visitor_ref from anon, authenticated;
 
 -- 방문 기록 (꼬리표가 있으면 그 기기의 첫 유입 경로로 한 번만 저장)
 drop function if exists public.ppx_track(uuid, text);
+-- (2026-11-16) 'app' = 바탕화면 아이콘으로 연 방문
 create or replace function public.ppx_track(v uuid, p text, r text default null)
-returns void language plpgsql security definer set search_path = public as $$
+returns void language plpgsql security definer set search_path = pg_catalog, public, pg_temp as $$
 declare d date := (now() at time zone 'Asia/Seoul')::date;
 begin
   if v is null then return; end if;
-  if p is null or p not in ('home','map','review','login','join','mypage') then p := 'other'; end if;
+  if p is null or p not in ('home','map','review','login','join','mypage','app') then p := 'other'; end if;
   insert into public.ppx_visits (day, visitor, page) values (d, v, p)
   on conflict (day, visitor, page) do update
     set hits = least(public.ppx_visits.hits + 1, 200), last_at = now();
