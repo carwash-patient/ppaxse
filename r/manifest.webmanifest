@@ -1,7 +1,6 @@
 {
-  "id": "/r/",
   "name": "함께 만드는 세차장 지도 · 빡세",
-  "short_name": "빡세 한마디",
+  "short_name": "세차장지도",
   "description": "다녀온 세차장의 폼건·온수·가격을 1분 만에 알려주세요",
   "lang": "ko",
   "start_url": "./",
@@ -10,23 +9,8 @@
   "background_color": "#04111e",
   "theme_color": "#04111e",
   "icons": [
-    {
-      "src": "../icons/review-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "../icons/review-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "../icons/review-maskable-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
-    }
+    { "src": "../icons/review-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "../icons/review-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "../icons/review-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }
