@@ -186,6 +186,8 @@ textarea:focus,.in:focus{border-color:var(--aqua)}
     </form>
     <button class="btn g near" id="nearBtn" type="button">📍 내 주변 세차장 보기</button>
     <div class="results" id="results"></div>
+    <div id="ppxInstall" hidden style="margin-top:28px" data-key="review" data-icon="../icons/review-192.png"
+         data-title="바탕화면에 빡세 한마디 추가" data-sub="아이콘 한 번에 바로 열려요"></div>
   </section>
 
   <!-- 2. 세차장 화면 -->
@@ -295,6 +297,7 @@ textarea:focus,.in:focus{border-color:var(--aqua)}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../js/config.js?v=20261110f"></script>
 <script src="../js/ppx.js?v=20261114a"></script>
+<script src="../js/install.js?v=20261116a" defer></script>
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
