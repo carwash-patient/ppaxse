@@ -305,6 +305,8 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
 .af-note a{color:var(--aqua)}
 
 /* 한마디 남기기 카드 · 네이버 리뷰 버튼 (2026-11-13) */
+.rf-talk{padding:12px;border-radius:14px;background:linear-gradient(135deg,rgba(52,211,153,.10),rgba(14,165,233,.06));border:1px solid rgba(52,211,153,.3)}
+.rf-ev{font-size:11px;font-weight:900;color:#fde68a;background:rgba(251,191,36,.14);border:1px solid rgba(251,191,36,.4);padding:2px 8px;border-radius:999px;margin-left:4px}
 .talk-cta{display:block;text-decoration:none;padding:16px;border-radius:16px;background:linear-gradient(135deg,rgba(52,211,153,.12),rgba(14,165,233,.08));border:1px solid rgba(52,211,153,.3);text-align:center;margin:4px 0 8px}
 .talk-cta .h{font-size:14px;font-weight:900;color:#fff;margin-bottom:4px}
 .talk-cta .p{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:12px}
@@ -1374,7 +1376,7 @@ async function startReport(id) {
   reportPhoto = null;
   const i = p.info || {};
   Object.assign(reportForm, {
-    types: [...typesOf(p)], closed: false, memo: '', visit: null,
+    types: [...typesOf(p)], closed: false, memo: '', comment: '', nick: reportForm.nick || myNick(), visit: null,
     pay: [...(i.pay || [])], svc: [...(i.svc || [])],
     bays: i.bays ?? '', pw: i.pw ?? '', pm: i.pm ?? '', height: i.height ?? '',
     hours: p.hours || '', tel: p.tel || '', price: p.price || ''
@@ -1445,9 +1447,15 @@ function renderReportForm() {
       <label class="af-photo"><input type="file" id="rfPhoto" accept="image/*">📷 <span id="rfPhotoName">${reportPhoto ? '<b>사진 1장 골랐어요</b> (다시 누르면 바꾸기)' : '가격표나 시설 안내판을 찍어 주세요'}</span></label>
       <div class="rf-cur" style="margin:6px 0 0">번호판·얼굴이 나오지 않게 찍어 주세요. 사진은 운영자만 봐요.</div>
     </div>
+    <div class="af-field rf-talk">
+      <div class="af-label">💬 한마디 남기기 (선택) <span class="rf-ev">🎁 추첨 응모</span></div>
+      <div class="rf-cur" style="margin:0 0 6px">다른 분들께 바로 보여요. <b style="color:#fde68a">10자 이상</b> 쓰시면 기프티콘 추첨에 응모돼요.</div>
+      <textarea class="af-input" data-in="comment" id="rfComment" maxlength="200" placeholder="예: 수압 최고 💦 주말 오후엔 대기 조금 있어요">${esc(reportForm.comment)}</textarea>
+      <div style="display:flex;gap:8px;margin-top:8px"><input class="af-input" data-in="nick" id="rfNick" maxlength="20" placeholder="닉네임" value="${esc(reportForm.nick)}" style="flex:1"><button type="button" class="af-type" id="rfDice" aria-label="다른 이름 뽑기" style="flex:0 0 auto">🎲</button></div>
+    </div>
     <div class="af-field">
-      <div class="af-label">더 알려주고 싶은 점 (선택)</div>
-      <textarea class="af-input" data-in="memo" id="rfMemo" maxlength="500" placeholder="예: 노터치 기계 2대, 주말엔 대기 30분">${esc(reportForm.memo)}</textarea>
+      <div class="af-label">운영자에게만 전할 말 (선택)</div>
+      <textarea class="af-input" data-in="memo" id="rfMemo" maxlength="500" placeholder="예: 노터치 기계 2대, 주말엔 대기 30분 (지도에는 안 보여요)" style="height:56px">${esc(reportForm.memo)}</textarea>
     </div>
     <button class="af-submit" id="rfSubmit" type="button">제보 보내기</button>
     <div class="af-note">가입하지 않아도 보낼 수 있어요. 운영자가 확인한 뒤 반영돼요. 고마워요 💧<br><a href="privacy.html" target="_blank">개인정보처리방침</a></div>`);
@@ -1484,6 +1492,11 @@ function renderReportForm() {
     catch(err) { reportPhoto = null; name.textContent = '이 사진은 쓸 수 없어요. 다른 사진을 골라 주세요'; }
   };
   document.getElementById('rfSubmit').onclick = submitReport;
+  document.getElementById('rfDice').onclick = () => {
+    const el = document.getElementById('rfNick');
+    el.value = randomNick(el.value.trim()); reportForm.nick = el.value;
+    try { localStorage.setItem('ppxNick', el.value); } catch(e) {}
+  };
 }
 
 // 사진을 긴 쪽 1600px 이하 JPEG로 줄임 (용량 절약 + 위치 등 사진 속 정보 제거)
@@ -1530,19 +1543,65 @@ async function submitReport() {
   ['hours','tel','price'].forEach(k => { if(reportForm[k] && reportForm[k] !== (p[k] || '')) suggest[k] = reportForm[k]; });
   if(Object.keys(info).length) suggest.info = info;
   if(reportForm.closed) suggest.closed = true;
-  if(!Object.keys(suggest).length && !reportForm.memo && !reportPhoto)
+  const comment = reportForm.comment, nick = reportForm.nick;
+  const hasReport = Object.keys(suggest).length || reportForm.memo || reportPhoto;
+  if(!hasReport && !comment)
     return toast('바뀐 내용이 없어요. 그대로 맞다면 ‘정보가 맞아요’를 눌러 주세요', true);
+  if(comment && nickReserved(nick)) return toast('이 닉네임은 쓸 수 없어요. 🎲를 눌러 다른 이름을 골라 주세요.', true);
   const btn = document.getElementById('rfSubmit');
   btn.disabled = true; btn.textContent = reportPhoto ? '사진 올리는 중…' : '보내는 중…';
   try {
-    await PPX.reportPlace(p.id, suggest, reportForm.memo, { visit: reportForm.visit, photo: reportPhoto });
-    closeAddPanel();
-    reportPhoto = null;
-    toast('제보를 보냈어요! 운영자 확인 후 반영돼요 💧');
+    if(hasReport) await PPX.reportPlace(p.id, suggest, reportForm.memo, { visit: reportForm.visit, photo: reportPhoto });
   } catch(e) {
     toast(PPX.koError(e), true);
     btn.disabled = false; btn.textContent = '제보 보내기';
+    return;
   }
+  reportPhoto = null;
+  let msg = hasReport ? '제보를 보냈어요! 운영자 확인 후 반영돼요 💧' : '', warn = false;
+  if(comment) {
+    try {
+      // 다녀왔다고만 고르고 한마디만 쓴 경우: '정보가 맞아요'도 남김 (후기 페이지와 같은 추첨 응모 조건)
+      if(!hasReport && reportForm.visit) {
+        try { await PPX.checkPlace(p.id); } catch(e) { if(!/이미 확인/.test(PPX.koError(e))) throw e; }
+      }
+      const cm = await PPX.addComment(p.id, comment, nick);
+      try { if(nick) localStorage.setItem('ppxNick', nick); } catch(e) {}
+      let ev = null;
+      try { ev = await PPX.enterEvent(cm.id); } catch(e) { ev = { err: PPX.koError(e) }; }
+      msg += (msg ? ' ' : '') + '한마디가 올라갔어요 💬' +
+        (ev && ev.code ? ` 🎁 추첨 응모 완료 (응모번호 ${ev.code})` : ev && ev.err && comment.length >= 10 ? ` (추첨: ${ev.err})` : '');
+      reportForm.comment = '';
+      if(typeof loadComments === 'function') loadComments(p.id);
+    } catch(e) {
+      msg += (msg ? ' ' : '') + '한마디는 못 올렸어요: ' + PPX.koError(e); warn = !hasReport;
+      if(!hasReport) { btn.disabled = false; btn.textContent = '제보 보내기'; return toast(msg, true); }
+    }
+  }
+  closeAddPanel();
+  toast(msg, warn);
+}
+
+// ── 한마디 닉네임 (후기 페이지와 같은 규칙: 이 기기에서는 같은 무작위 이름, 🎲로 다시 뽑기) ──
+const NICK_A = ['폼건 든','고압수 쏘는','버블 가득한','거품 좋아하는','두 버킷 쓰는','휠 닦는','타이어 닦는','매트 빠는','실내 털어내는','타월 접는',
+  '물기 닦는','드라잉 중인','물자국 싫어하는','철분제거 중인','클레이 문지르는','왁스 바르는','코팅 올리는','유리막 입힌','광 내는','반짝이는',
+  '광택에 진심인','디테일에 집착하는','무광 지키는','셀프세차 장인','세차장 단골','새벽 세차하는','주말마다 세차하는','비 와도 세차하는','동전 챙긴','세차 끝낸'];
+const NICK_B = ['수달','해달','비버','물개','돌고래','펭귄','오리','참새','부엉이','고양이','강아지','여우','북극여우','너구리','다람쥐',
+  '청설모','토끼','고슴도치','햄스터','두더지','미어캣','카피바라','알파카','코알라','판다','레서판다','백곰','사슴','거북이','하마'];
+function randomNick(not) {
+  let n; do { n = NICK_A[Math.floor(Math.random() * NICK_A.length)] + ' ' + NICK_B[Math.floor(Math.random() * NICK_B.length)]; } while(n === not);
+  return n;
+}
+function nickReserved(n) {
+  const k = String(n || '').normalize('NFKC').toLowerCase().replace(/[^0-9a-z가-힣]/g, '');
+  return /(빡세|빡쎄|빡새|빡쌔|ppaxse|ppakse|운영자|운영진|운영팀|관리자|관리인|어드민|admin|공식)/.test(k);
+}
+function myNick() {
+  let saved = null, auto = null;
+  try { saved = localStorage.getItem('ppxNick'); auto = localStorage.getItem('ppxNickAuto'); } catch(e) {}
+  if(saved) return saved;
+  if(!auto) { auto = randomNick(); try { localStorage.setItem('ppxNickAuto', auto); } catch(e) {} }
+  return auto;
 }
 
 // ══════════════════════════════════════════════════
