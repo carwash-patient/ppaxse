@@ -874,7 +874,7 @@ function openDetail(id) {
         fieldVal(p, f) === null
           ? `<button type="button" class="spec-item ask" onclick="startReport(${p.id})"><div class="spec-label">${esc(f.l)}</div>${specVal(null)}</button>`
           : `<div class="spec-item"><div class="spec-label">${esc(f.l)}</div>${specVal(fieldVal(p, f), ...yn(f))}</div>`).join('')}</div>` : ''}
-      ${unknown.length ? `<div class="dp-more">${shown.length ? '그 밖에 ' : ''}${esc(unknown.slice(0,4).map(f => f.l).join(', '))}${unknown.length > 4 ? ' 등' : ''}도<br>다녀오셨다면 <b>알려주세요</b> 🙏</div>` : ''}
+      ${unknown.length ? `<div class="dp-more">${shown.length ? '그 밖에 ' : ''}${esc(unknown.slice(0,4).map(f => f.l).join(', '))}${unknown.length > 4 ? ' 등' : ''}도<br>있었다면 <b>알려주세요</b> 🙏</div>` : ''}
       <div class="dp-two">
         <button class="report-btn check-btn" id="checkBtn" type="button" onclick="checkPlace(${p.id})">👍 정보가 맞아요</button>
         <button class="report-btn" type="button" onclick="startReport(${p.id})">➕ 정보 추가하기</button>
