@@ -26,7 +26,9 @@
   // 앱 속 브라우저에서 '크롬으로 열기'로 넘어온 경우: 닫은 적 있어도 카드를 보여주고, 주소의 install 표시는 지움
   const q = new URLSearchParams(location.search), fromApp = q.has('install');
   if(fromApp) try { q.delete('install'); history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash); } catch(_) {}
-  if(standalone || (stored && !fromApp)) return;
+  // ✕로 닫은 경우만 계속 숨김. '설치함' 기록은 삭제했을 수도 있어서, 브라우저가 '설치 가능'이라고 알려주면 다시 보여줌
+  if(standalone || (stored === 'closed' && !fromApp)) return;
+  const wasInstalled = stored === 'installed' && !fromApp;
 
   const css = document.createElement('style');
   css.textContent = `
@@ -132,9 +134,15 @@
     deferred = null;
   };
 
-  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); if(isSamsung) return; deferred = e; show(); });
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault(); if(isSamsung) return;
+    deferred = e;
+    if(wasInstalled) try { localStorage.removeItem(KEY); } catch(_) {}   // 지웠다가 다시 온 사람
+    show();
+  });
   window.addEventListener('appinstalled', () => hide('installed'));
   // 아이폰은 바로 보여줌. 안드로이드는 설치 창 준비 신호를 잠깐 기다렸다가, 안 오면 안내 방식으로 보여줌. PC는 설치 가능할 때만
+  if(wasInstalled) return;   // 설치한 사람: 위 '설치 가능' 신호가 올 때만 다시 보여줌
   if(isIOS || isSamsung || inApp || naverAndroid || fromApp) show();
   else if(isMobile) setTimeout(show, 2500);
 })();
