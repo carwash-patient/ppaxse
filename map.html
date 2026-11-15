@@ -837,6 +837,10 @@ function openDetail(id) {
     const v = fieldVal(p, f);
     if(v !== null || (CORE.includes(f.k) && groups.has('self'))) shown.push(f); else unknown.push(f);
   });
+  // 이미 정보가 하나라도 들어간 곳은 '알려주실 수 있나요?' 칸을 빼고 아는 것만 보여줌
+  if(shown.some(f => fieldVal(p, f) !== null)) {
+    for(let k = shown.length - 1; k >= 0; k--) if(fieldVal(p, shown[k]) === null) unknown.unshift(...shown.splice(k, 1));
+  }
   const yn = f => YESNO[f.k] || ['있음','없음'];
 
   const checked = p.check_count
@@ -847,7 +851,7 @@ function openDetail(id) {
     <div class="dp-type-tag">${esc(typeNames(p).join(' · '))}</div>
     <div class="dp-name">${esc(p.name)}</div>
     <div class="dp-addr">📍 ${esc(p.addr)}</div>
-    ${typesOf(p).every(t => t === 'wash') ? `<div class="dp-more" style="margin:-4px 0 12px;text-align:left;color:#fde68a">🔍 어떤 세차장인지 확인하고 있어요. 곧 구분될 예정이에요.<br>다녀오셨다면 <b>달라요 · 더 알려주기</b>에서 종류를 골라 주세요!</div>` : ''}
+    ${typesOf(p).every(t => t === 'wash') ? `<div class="dp-more" style="margin:-4px 0 12px;text-align:left;color:#fde68a">🔍 어떤 세차장인지 확인하고 있어요. 곧 구분될 예정이에요.<br>다녀오셨다면 <b>정보 추가하기</b>에서 종류를 골라 주세요!</div>` : ''}
     <div class="dp-check" id="dpCheck">${checked}</div>
     <div class="dp-badges">
       ${p.foam?'<span class="badge b">💨 폼건</span>':''}
@@ -873,7 +877,7 @@ function openDetail(id) {
       ${unknown.length ? `<div class="dp-more">${shown.length ? '그 밖에 ' : ''}${esc(unknown.slice(0,4).map(f => f.l).join(', '))}${unknown.length > 4 ? ' 등' : ''}도<br>다녀오셨다면 <b>알려주세요</b> 🙏</div>` : ''}
       <div class="dp-two">
         <button class="report-btn check-btn" id="checkBtn" type="button" onclick="checkPlace(${p.id})">👍 정보가 맞아요</button>
-        <button class="report-btn" type="button" onclick="startReport(${p.id})">✏️ 달라요 · 더 알려주기</button>
+        <button class="report-btn" type="button" onclick="startReport(${p.id})">➕ 정보 추가하기</button>
       </div>
       ${window.ppxAdmin ? `<a class="report-btn" style="text-decoration:none;margin-top:8px" href="admin.html?edit=${p.id}">🛠️ 운영자: 위치·정보 고치기</a>` : ''}
       <a href="owner/?p=${p.id}" style="display:block;margin-top:10px;text-align:center;font-size:12px;color:var(--muted);text-decoration:none">🏪 이 세차장 사장님이세요? <b style="color:#fde68a">매장 정보 직접 알려주기 →</b></a>

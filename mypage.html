@@ -304,7 +304,7 @@ async function loadLists() {
         </div>
         <div class="req-state ${r.status === 'applied' ? 'approved' : r.status === 'dismissed' ? 'rejected' : 'pending'}">${repState[r.status]||r.status}</div>
       </div>`).join('')
-      : '<div class="req-empty">아직 보낸 제보가 없어요.<br>지도에서 세차장을 눌러 <b>정보가 맞아요</b> 또는 <b>달라요 · 더 알려주기</b>를 눌러 주세요!</div>';
+      : '<div class="req-empty">아직 보낸 제보가 없어요.<br>지도에서 세차장을 눌러 <b>정보가 맞아요</b> 또는 <b>정보 추가하기</b>를 눌러 주세요!</div>';
   } catch(e) { rep.innerHTML = '<div class="req-empty">목록을 불러오지 못했어요</div>'; }
 }
 
