@@ -984,7 +984,8 @@ function openNaverNavi(id) {
   const p = places.find(x => x.id===id);
   if(!p) return;
   const {lat, lng} = p;
-  const enc = encodeURIComponent(p.name);
+  // 도착지 이름은 주소로: 상호명이 네이버에 등록된 이름과 다르면 길찾기에서 못 찾는 경우가 있어서 (위치는 좌표로 정확히 감)
+  const enc = encodeURIComponent(p.addr || p.name);
   const appname = encodeURIComponent(location.hostname || 'ppaxse');
   // 네이버 지도 앱 딥링크 → 앱이 없으면 모바일 웹으로
   const appUrl = `nmap://route/car?dlat=${lat}&dlng=${lng}&dname=${enc}&appname=${appname}`;
