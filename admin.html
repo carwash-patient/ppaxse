@@ -650,7 +650,7 @@ function renderAllComments() {
 }
 
 // ── 📊 방문자 ──
-const PAGE_NAMES = { home: '홈', map: '지도', review: '후기 페이지', login: '로그인', join: '가입', mypage: '마이페이지', other: '기타', app: '📲 바탕화면 아이콘으로 열기' };
+const PAGE_NAMES = { home: '홈', map: '지도', review: '후기 페이지', login: '로그인', join: '가입', mypage: '마이페이지', other: '기타', app: '📲 바탕화면 아이콘으로 열기', seo: '🔎 가이드 글·지역 페이지' };
 async function loadVisits() {
   if(reqMarker) reqMarker.setMap(null);
   nearMarkers.forEach(m => m.setMap(null)); nearMarkers = [];
@@ -689,6 +689,8 @@ async function loadVisits() {
         <span>${esc(PAGE_NAMES[p.page] || p.page)}</span><span>${p.visitors}명 · ${p.views}회</span></div>`).join('') : '<div class="msg">아직 오늘 방문이 없어요</div>'}
       <div class="memo" style="margin:16px 0 6px;font-weight:900">채널별 성과 (최근 30일)</div>
       <div id="chanBox"><div class="msg">불러오는 중…</div></div>
+      <div class="memo" style="margin:16px 0 6px;font-weight:900">🔎 가이드 글·지역 페이지 조회수 (최근 30일)</div>
+      <div id="seoBox"><div class="msg">불러오는 중…</div></div>
       <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:14px;line-height:1.6">· 같은 휴대폰·브라우저는 하루 1명으로 세요. 브라우저를 바꾸거나 기록을 지우면 새 사람으로 셀 수 있어요.<br>· 운영자 화면을 연 기기는 세지 않아요. 날짜는 한국 시간 기준이에요.<br>· 📲 아이콘으로 연 사람은 위 방문자 수에 이미 들어가 있어요(따로 더하지 않아요).<br>· 이 숫자는 운영자만 봐요. 홈 화면 등에 공개하지 않아요.</div>`;
   } catch(e) { list.innerHTML = `<div class="msg">${esc(PPX.koError(e))}</div>`; return; }
   // 채널별: 링크 꼬리표(?ref=)로 처음 들어온 기기 → 응모 → 가입
@@ -703,6 +705,32 @@ async function loadVisits() {
       + ((c.by_source || []).length ? `<div class="memo" style="margin:12px 0 4px">가입할 때 답한 경로</div>` + c.by_source.map(s => `<div style="display:flex;justify-content:space-between;font-size:13px;margin:4px 0"><span>${esc(SRC[s.source] || s.source)}</span><span>${s.members}명</span></div>${(s.notes || []).length ? `<div style="font-size:12px;color:rgba(255,255,255,.55);margin:-2px 0 6px 8px">└ ${s.notes.map(esc).join(' · ')}</div>` : ''}`).join('') : '')
       + `<div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:8px;line-height:1.6">· 채널마다 링크 끝에 꼬리표를 붙여 올리세요. 예) ppaxse.com/r<b>?ref=cafe</b>, ?ref=insta, ?ref=qr<br>· 꼬리표는 영어 소문자·숫자·-·_ 로 30자까지. 한 기기는 처음 들어온 꼬리표로만 세요.</div>`;
   } catch(e) { const box = document.getElementById('chanBox'); if(box) box.innerHTML = `<div class="msg">${esc(PPX.koError(e))}</div>`; }
+  loadSeoStats();
+}
+
+// 🔎 가이드 글·지역 페이지(검색용 페이지)별 조회수 — supabase/migrate_2026-11-17c.sql
+async function loadSeoStats() {
+  const box = document.getElementById('seoBox');
+  if(!box) return;
+  try {
+    const { data: s, error } = await PPX.db.rpc('admin_page_stats', { days: 30 });
+    if(error) throw error;
+    const pages = s.pages || [], src = s.by_src || {};
+    if(!pages.length) { box.innerHTML = '<div class="msg">아직 조회 기록이 없어요. 검색에 노출되기 시작하면 여기에 쌓여요.</div>'; return; }
+    const guides = pages.filter(p => p.path.startsWith('/guide/')), wash = pages.filter(p => p.path.startsWith('/wash/'));
+    const name = p => esc(p.title || p.path);
+    const row = p => `<tr><td style="padding:6px 4px"><a href="${esc(p.path)}" target="_blank" rel="noopener" style="color:#fff;text-decoration:none">${name(p)}</a></td>
+      <td style="text-align:right">${p.today_visitors}</td><td style="text-align:right">${p.week_visitors}</td><td style="text-align:right;font-weight:900">${p.visitors}</td>
+      <td style="text-align:right">${p.views}</td><td style="text-align:right;color:rgba(255,255,255,.6);white-space:nowrap">${p.google}·${p.naver}·${p.etc}</td></tr>`;
+    const head = `<tr style="color:rgba(255,255,255,.6);font-size:11px;white-space:nowrap"><th style="text-align:left;padding:4px">페이지</th><th style="text-align:right">오늘</th><th style="text-align:right">7일</th><th style="text-align:right">30일</th><th style="text-align:right">본 횟수</th><th style="text-align:right">구글·네이버·기타</th></tr>`;
+    const table = (t, list, max) => list.length ? `<div class="memo" style="margin:10px 0 4px">${t} (${list.length}개)</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12.5px">${head}${list.slice(0, max).map(row).join('')}</table>` : '';
+    box.innerHTML = `<div style="display:flex;gap:8px;flex-wrap:wrap;font-size:12.5px;margin-bottom:4px">
+        <span>사람 <b>${(s.total_visitors || 0).toLocaleString()}</b>명 · 본 횟수 <b>${(s.total_views || 0).toLocaleString()}</b>회</span>
+        <span style="color:rgba(255,255,255,.6)">구글 ${src.google || 0} · 네이버 ${src.naver || 0} · 다음 ${src.daum || 0} · 빡세 안에서 ${src.ppaxse || 0} · 주소 직접 ${src.direct || 0} · 기타 ${(src.other || 0) + (src.bing || 0)}</span></div>
+      ${table('📖 세차 가이드 글', guides, 100)}${table('📍 지역별 세차장 페이지 (많이 본 순 30개)', wash, 30)}
+      <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:8px;line-height:1.6">· 숫자는 사람(기기) 수예요. 같은 사람이 같은 날 여러 번 봐도 1명, 대신 '본 횟수'가 올라가요.<br>· 구글·네이버·기타 = 어디서 검색해서 들어왔는지(사람 수). 검색 로봇과 운영자 기기는 세지 않아요.</div>`;
+  } catch(e) { box.innerHTML = `<div class="msg">${esc(PPX.koError(e))}</div>`; }
 }
 
 // ── 📣 이벤트 글 (events 표) ──

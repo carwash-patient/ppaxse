@@ -51,10 +51,31 @@ def esc(s):
 
 
 # ── 데이터 ─────────────────────────────────────────
-def load_supabase():
+def supa_cfg():
     cfg = open(os.path.join(ROOT, 'js', 'config.js'), encoding='utf-8').read()
-    url = re.search(r"url:\s*'([^']+)'", cfg).group(1)
-    key = re.search(r"key:\s*'([^']+)'", cfg).group(1)
+    return re.search(r"url:\s*'([^']+)'", cfg).group(1), re.search(r"key:\s*'([^']+)'", cfg).group(1)
+
+
+# 조회수 세기: 기존 방문자 세기와 같은 기기 번호(ppxVisitor)를 써서 supabase 함수 ppx_track_page 호출
+#  · 운영자 기기(ppxNoTrack), 검색엔진 로봇은 세지 않음 · 실패해도 화면에는 영향 없음
+def track_script():
+    url, key = supa_cfg()
+    return '''<script>
+(function(){try{
+var ua=navigator.userAgent||'';
+if(navigator.webdriver||/bot|crawl|spider|slurp|yeti|daumoa|bingpreview|headless|lighthouse/i.test(ua)||localStorage.getItem('ppxNoTrack'))return;
+var v=localStorage.getItem('ppxVisitor');
+if(!v||!/^[0-9a-f-]{36}$/.test(v)){v=crypto.randomUUID?crypto.randomUUID():'10000000-1000-4000-8000-100000000000'.replace(/[018]/g,function(c){return(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16)});localStorage.setItem('ppxVisitor',v);}
+var r=document.referrer,h='';try{h=r?new URL(r).hostname:''}catch(e){}
+var s=!r?'direct':/google\\./.test(h)?'google':/naver\\./.test(h)?'naver':/daum\\.|kakao/.test(h)?'daum':/bing\\./.test(h)?'bing':/ppaxse\\.com$/.test(h)?'ppaxse':'other';
+var t=(document.querySelector('h1')||{}).textContent||document.title;
+setTimeout(function(){fetch('%s/rest/v1/rpc/ppx_track_page',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json',apikey:'%s',Authorization:'Bearer %s'},body:JSON.stringify({v:v,pth:decodeURI(location.pathname),s:s,t:t.slice(0,120)})}).catch(function(){})},800);
+}catch(e){}})();
+</script>''' % (url, key, key)
+
+
+def load_supabase():
+    url, key = supa_cfg()
     out, step = [], 1000
     while True:
         q = f"{url}/rest/v1/places?select={COLS}&status=eq.approved&order=id&offset={len(out)}&limit={step}"
@@ -132,6 +153,7 @@ def page(path, title, desc, body, crumbs=(), jsonld=None):
 운영시간·시설은 바뀔 수 있어요. 가기 전에 전화로 확인해 주세요. 틀린 정보는 지도에서 알려주세요.<br>
 © 2026 빡세(Ppaxse)
 </footer>
+{track_script()}
 </body>
 </html>
 '''
