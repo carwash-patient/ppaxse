@@ -531,5 +531,17 @@
 운영시간·시설은 바뀔 수 있어요. 가기 전에 전화로 확인해 주세요. 틀린 정보는 지도에서 알려주세요.<br>
 © 2026 빡세(Ppaxse)
 </footer>
+<script>
+(function(){try{
+var ua=navigator.userAgent||'';
+if(navigator.webdriver||/bot|crawl|spider|slurp|yeti|daumoa|bingpreview|headless|lighthouse/i.test(ua)||localStorage.getItem('ppxNoTrack'))return;
+var v=localStorage.getItem('ppxVisitor');
+if(!v||!/^[0-9a-f-]{36}$/.test(v)){v=crypto.randomUUID?crypto.randomUUID():'10000000-1000-4000-8000-100000000000'.replace(/[018]/g,function(c){return(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16)});localStorage.setItem('ppxVisitor',v);}
+var r=document.referrer,h='';try{h=r?new URL(r).hostname:''}catch(e){}
+var s=!r?'direct':/google\./.test(h)?'google':/naver\./.test(h)?'naver':/daum\.|kakao/.test(h)?'daum':/bing\./.test(h)?'bing':/ppaxse\.com$/.test(h)?'ppaxse':'other';
+var t=(document.querySelector('h1')||{}).textContent||document.title;
+setTimeout(function(){fetch('https://zylyncnevdxpimyqrifp.supabase.co/rest/v1/rpc/ppx_track_page',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json',apikey:'sb_publishable_i5ZeUzflI5otoD9GqwQpew_2x3y_RPA',Authorization:'Bearer sb_publishable_i5ZeUzflI5otoD9GqwQpew_2x3y_RPA'},body:JSON.stringify({v:v,pth:decodeURI(location.pathname),s:s,t:t.slice(0,120)})}).catch(function(){})},800);
+}catch(e){}})();
+</script>
 </body>
 </html>
