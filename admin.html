@@ -198,6 +198,7 @@ async function init() {
       <button class="tab" data-t="commentReports" type="button">한마디 신고<b id="commentReportsN"></b></button>
       <button class="tab" data-t="abuse" type="button">이상 요청<b id="abuseN"></b></button>
       <button class="tab" data-t="event" type="button">🎁 추첨</button>
+      <button class="tab" data-t="posts" type="button">📣 이벤트 글</button>
       <button class="tab" data-t="visits" type="button">📊 방문자</button>
       <button class="tab" data-t="done" type="button">처리 내역</button>
     </div>
@@ -260,11 +261,13 @@ async function load() {
     allComments: '📜 지금까지 쓰인 한마디 전부 (운영자만 볼 수 있어요) · 날짜를 고르면 그날 것만 · 카드를 누르면 지도에서 위치',
     commentReports: '🚩 신고가 많이 쌓인 한마디부터 보여요',
     abuse: '⚠️ 최근 7일 동안 도배 방지 제한에 걸린 사람(기기)이에요. 많은 순',
+    posts: '📣 이벤트 게시판(events.html)에 올릴 글 · 매주 기프티콘 이벤트와 당첨 발표는 자동이라 여기서 안 써도 돼요',
     event: '🎁 기간 안에 후기(제보·한마디·정보가 맞아요·추가 요청)를 남긴 가입 회원이에요. 가입 전에 남긴 후기도 가입하면 포함돼요.',
     done: '📍 처리한 항목의 위치'
   }[tab];
   document.getElementById('mapNote').textContent = note;
   if(tab === 'event') return loadEvent();
+  if(tab === 'posts') return loadPosts();
   if(tab === 'visits') return loadVisits();
   if(tab === 'allComments') return loadAllComments();
   document.getElementById('searchBox').innerHTML = tab === 'edit' ? `
@@ -700,6 +703,75 @@ async function loadVisits() {
       + ((c.by_source || []).length ? `<div class="memo" style="margin:12px 0 4px">가입할 때 답한 경로</div>` + c.by_source.map(s => `<div style="display:flex;justify-content:space-between;font-size:13px;margin:4px 0"><span>${esc(SRC[s.source] || s.source)}</span><span>${s.members}명</span></div>${(s.notes || []).length ? `<div style="font-size:12px;color:rgba(255,255,255,.55);margin:-2px 0 6px 8px">└ ${s.notes.map(esc).join(' · ')}</div>` : ''}`).join('') : '')
       + `<div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:8px;line-height:1.6">· 채널마다 링크 끝에 꼬리표를 붙여 올리세요. 예) ppaxse.com/r<b>?ref=cafe</b>, ?ref=insta, ?ref=qr<br>· 꼬리표는 영어 소문자·숫자·-·_ 로 30자까지. 한 기기는 처음 들어온 꼬리표로만 세요.</div>`;
   } catch(e) { const box = document.getElementById('chanBox'); if(box) box.innerHTML = `<div class="msg">${esc(PPX.koError(e))}</div>`; }
+}
+
+// ── 📣 이벤트 글 (events 표) ──
+let evPosts = [], evEditId = null;
+const EV_ST = { on: '진행 중', win: '당첨자 발표', end: '마감' }, EV_KIND = { ppaxse: '빡세', sponsor: '협찬', ad: '광고 세차장' };
+async function loadPosts() {
+  if(reqMarker) reqMarker.setMap(null);
+  nearMarkers.forEach(m => m.setMap(null)); nearMarkers = [];
+  document.getElementById('searchBox').innerHTML = '';
+  const list = document.getElementById('list');
+  list.innerHTML = '<div class="msg">불러오는 중…</div>';
+  const { data, error } = await PPX.db.from('events').select('*').order('pinned', { ascending: false }).order('created_at', { ascending: false });
+  if(error) { list.innerHTML = `<div class="msg">${esc(PPX.koError(error))}</div>`; return; }
+  evPosts = data || [];
+  renderPosts();
+}
+function postForm(p) {
+  p = p || { kind: 'ppaxse', status: 'on' };
+  const sel = (name, map, v) => `<select name="${name}">${Object.entries(map).map(([k, l]) => `<option value="${k}"${k === v ? ' selected' : ''}>${l}</option>`).join('')}</select>`;
+  const v = k => esc(p[k] ?? '');
+  return `<form class="card sel" id="evForm" style="cursor:default">
+    <div class="c-top"><span class="c-name">${p.id ? '✏️ 이벤트 글 고치기' : '＋ 새 이벤트 글'}</span></div>
+    <div class="f"><label>제목 (80자)</label><input name="title" maxlength="80" required value="${v('title')}" placeholder="예) 무광 차량 체험단 모집"></div>
+    <div class="f-row"><div class="f"><label>상태</label>${sel('status', EV_ST, p.status)}</div><div class="f"><label>종류 (표시가 자동으로 붙어요)</label>${sel('kind', EV_KIND, p.kind)}</div></div>
+    <div class="f-row"><div class="f"><label>시작일</label><input type="date" name="start_date" value="${v('start_date')}"></div><div class="f"><label>마감일</label><input type="date" name="end_date" value="${v('end_date')}"></div></div>
+    <div class="f-row"><div class="f"><label>추첨(발표)일 · 없으면 비움</label><input type="date" name="draw_date" value="${v('draw_date')}"></div><div class="f"><label>당첨자 수 · 없으면 비움</label><input type="number" min="0" max="1000" name="winners" value="${v('winners')}"></div></div>
+    <div class="f"><label>대상 (추첨 없는 이벤트 등, 80자)</label><input name="target" maxlength="80" value="${v('target')}" placeholder="예) 첫 방문 손님 누구나 (추첨 없음)"></div>
+    <div class="f"><label>내용 (4000자)</label><textarea name="body" rows="7" maxlength="4000" placeholder="참여 방법, 경품, 발표 방법 등">${v('body')}</textarea></div>
+    <div class="f-row"><div class="f"><label>아이콘 (이모지 1개)</label><input name="icon" maxlength="8" value="${v('icon')}" placeholder="🎁"></div><div class="f"><label>버튼 글자</label><input name="btn_label" maxlength="30" value="${v('btn_label')}" placeholder="신청하기"></div></div>
+    <div class="f"><label>버튼 링크 (https://… 또는 r/ · map.html 같은 빡세 안 주소)</label><input name="btn_url" maxlength="500" value="${v('btn_url')}"></div>
+    <div class="f-row"><label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" name="pinned" style="width:18px;height:18px"${p.pinned ? ' checked' : ''}> 📌 위에 고정</label>
+      <label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" name="hidden" style="width:18px;height:18px"${p.hidden ? ' checked' : ''}> 🙈 숨기기 (운영자만 보임)</label></div>
+    <div class="acts"><button type="button" class="no" id="evCancel">취소</button><button type="submit" class="ok" id="evSave">${p.id ? '고친 내용 저장' : '올리기'}</button></div>
+    ${p.id ? `<div class="acts"><a class="no" style="flex:1;min-height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;text-decoration:none;font-weight:900;font-size:13px" href="events.html#e=${p.id}" target="_blank">이벤트 화면에서 보기 ↗</a></div>` : ''}
+  </form>`;
+}
+function renderPosts() {
+  const list = document.getElementById('list');
+  const editing = evEditId === 'new' ? null : evPosts.find(p => p.id === evEditId);
+  list.innerHTML = (evEditId ? postForm(editing) : `<button type="button" class="card" id="evNew" style="width:100%;text-align:center;font:inherit;font-weight:900;color:#22d3ee">＋ 새 이벤트 글 쓰기</button>`)
+    + (evPosts.length ? evPosts.map(p => `<div class="card" data-ev="${p.id}" style="${p.hidden ? 'opacity:.55' : ''}">
+        <div class="c-top"><span class="state ${p.status === 'on' ? 'approved' : p.status === 'win' ? 'pending' : 'closed'}">${EV_ST[p.status]}</span>
+          <span class="c-who">${EV_KIND[p.kind]}${p.pinned ? ' · 📌 고정' : ''}${p.hidden ? ' · 🙈 숨김' : ''}</span><span class="c-when">${kstDay(p.created_at)}</span></div>
+        <div class="c-name">${esc(p.icon || '')} ${esc(p.title)}</div>
+        <div class="c-who" style="margin-top:4px">${p.start_date || p.end_date ? `기간 ${esc(p.start_date || '')} ~ ${esc(p.end_date || '')}` : ''}${p.draw_date ? ` · 발표 ${esc(p.draw_date)}` : ''}${p.winners != null ? ` · ${p.winners}명` : ''}</div>
+      </div>`).join('') : '<div class="msg">아직 쓴 이벤트 글이 없어요</div>');
+  const nb = document.getElementById('evNew'); if(nb) nb.onclick = () => { evEditId = 'new'; renderPosts(); };
+  list.querySelectorAll('[data-ev]').forEach(c => c.onclick = () => { evEditId = +c.dataset.ev; renderPosts(); window.scrollTo({ top: list.offsetTop - 10, behavior: 'smooth' }); });
+  const f = document.getElementById('evForm');
+  if(!f) return;
+  document.getElementById('evCancel').onclick = () => { evEditId = null; renderPosts(); };
+  f.onsubmit = async e => {
+    e.preventDefault();
+    const fd = new FormData(f), g = k => (fd.get(k) || '').toString().trim();
+    const row = {
+      title: g('title'), status: g('status'), kind: g('kind'), body: g('body'),
+      start_date: g('start_date') || null, end_date: g('end_date') || null, draw_date: g('draw_date') || null,
+      winners: g('winners') === '' ? null : +g('winners'), target: g('target') || null, icon: g('icon') || null,
+      btn_label: g('btn_label') || null, btn_url: g('btn_url') || null, pinned: fd.has('pinned'), hidden: fd.has('hidden'),
+    };
+    if(row.btn_url && !/^https:\/\//.test(row.btn_url) && !/^[a-z0-9_./?=&#-]+$/.test(row.btn_url)) return toast('버튼 링크는 https://로 시작하거나 r/, map.html 같은 빡세 안 주소만 돼요', true);
+    const btn = document.getElementById('evSave'); btn.disabled = true;
+    const q = evEditId === 'new' ? PPX.db.from('events').insert(row) : PPX.db.from('events').update(row).eq('id', evEditId);
+    const { error } = await q;
+    btn.disabled = false;
+    if(error) return toast(PPX.koError(error), true);
+    toast(evEditId === 'new' ? '이벤트 글을 올렸어요' : '고친 내용을 저장했어요');
+    evEditId = null; loadPosts();
+  };
 }
 
 async function loadEvent() {

@@ -101,6 +101,8 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
 .nav-item.active{color:var(--aqua)}
 .nav-item-icon{font-size:22px}
 .nav-item-label{font-size:10px;font-weight:700}
+.nav-item{position:relative}
+.nav-item.has-dot::after{content:'';position:absolute;top:8px;left:calc(50% + 8px);width:8px;height:8px;border-radius:50%;background:#f43f5e}
 .nav-item.dim{opacity:.35;pointer-events:none}
 
 .req-section{margin:0 16px 18px}
@@ -132,6 +134,7 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
 
 <nav class="bottom-nav">
   <a href="map.html" class="nav-item"><div class="nav-item-icon">🗺️</div><div class="nav-item-label">지도</div></a>
+  <a href="events.html" class="nav-item" data-ev><div class="nav-item-icon">🎁</div><div class="nav-item-label">이벤트</div></a>
   <a href="mypage.html" class="nav-item active"><div class="nav-item-icon">👤</div><div class="nav-item-label">내 정보</div></a>
 </nav>
 <div class="toast" id="toast"></div>
@@ -139,6 +142,7 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js?v=20261110f"></script>
 <script src="js/ppx.js?v=20261114a"></script>
+<script src="js/ev.js?v=20261117a"></script>
 <script>
 const escHTML = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const skillLabel={beginner:'🌱 세린이',mid:'💨 폼건은 기본이죠',pro:'✨ 디테일링 직접 함',maniac:'🫧 3시간은 기본 아닌가?'};
@@ -155,6 +159,10 @@ async function render() {
     if(!me) { try { anon = await PPX.isAnon(); } catch(e) {} }
   }
   document.getElementById('logoutBtn').style.display = me ? '' : 'none';
+  const evSec = `<div class="req-section" id="evSec" hidden>
+      <div class="section-header"><div class="section-title">🎁 내 응모·<em>당첨</em></div></div>
+      <div id="myEv"></div>
+    </div>`;
   const lists = `
     <div class="req-section">
       <div class="section-header"><div class="section-title">📍 내가 요청한 <em>세차장</em></div></div>
@@ -178,8 +186,8 @@ async function render() {
           <a href="join.html" class="g-btn ghost">가입하기</a>
         </div>
       </div>
-      ${anon ? lists : ''}`;
-    if(anon) loadLists();
+      ${anon ? evSec + lists : ''}`;
+    if(anon) { loadLists(); loadMyEvents(false); }
     return;
   }
 
@@ -208,6 +216,7 @@ async function render() {
     </div>
     ${me.role === 'admin' ? '<a class="admin-link" href="admin.html">🛠️ 운영자 · 세차장 관리 (요청·제보 처리)</a>' : ''}
     <div id="mkCard" style="background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:16px"></div>
+    ${evSec}
     ${lists}
     ${me.role === 'admin' ? '' : `<div style="margin:28px 0 8px;text-align:center"><button type="button" id="withdrawBtn" style="min-height:44px;padding:0 14px;background:none;border:0;color:rgba(255,255,255,.45);font-size:12px;text-decoration:underline;cursor:pointer">회원 탈퇴</button></div>`}`;
   setupAvatarEditor(me);
@@ -215,6 +224,7 @@ async function render() {
   const wb = document.getElementById('withdrawBtn');
   if(wb) wb.onclick = doWithdraw;
   loadLists();
+  loadMyEvents(true);
 }
 
 // 혜택·이벤트 소식 이메일 수신 동의 (선택)
@@ -276,6 +286,37 @@ async function doWithdraw() {
     location.href = './';
   }
   catch(e) { showToast(PPX.koError(e), true); }
+}
+
+// 🎁 내 응모·당첨: 회원은 계정으로, 가입 없이 응모했으면 응모한 이 기기에서만 보임
+async function loadMyEvents(isMember) {
+  const sec = document.getElementById('evSec'), box = document.getElementById('myEv');
+  if(!sec || !box) return;
+  let st; try { st = await PPX.eventStatus(); } catch(e) { return; }
+  const mine = (st && st.mine) || [];
+  const today = new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
+  const add = (d, n) => { const t = new Date(d + 'T00:00:00Z'); t.setUTCDate(t.getUTCDate() + n); return t.toISOString().slice(0, 10); };
+  const md = d => { const [, m, dd] = d.split('-'); return `${+m}/${+dd}`; };
+  const mx = st.max_tickets || 3;
+  if(!mine.length) {
+    if(!isMember) return;
+    sec.hidden = false;
+    box.innerHTML = '<div class="req-empty">아직 응모 내역이 없어요.<br>다녀온 세차장에 한마디를 남기면 매주 기프티콘 추첨에 응모돼요.<br><a href="events.html#weekly" style="color:#22d3ee">이벤트 보기 →</a></div>';
+    return;
+  }
+  sec.hidden = false;
+  box.innerHTML = mine.map(m => {
+    const draw = add(m.week, 9), until = add(m.week, 16);
+    let state;
+    if(m.won) state = today <= until
+      ? `<a class="req-state approved" style="text-decoration:none;background:rgba(245,183,43,.18);color:#fbbf24" href="mailto:ppaxse@gmail.com?subject=${encodeURIComponent('[빡세 당첨] 응모번호 ' + m.code)}&body=${encodeURIComponent('응모번호: ' + m.code + '\n한마디를 남긴 세차장 이름: \n')}">🎉 당첨 · ${md(until)}까지 메일</a>`
+      : '<span class="req-state rejected">🎉 당첨 · 연락 기한 지남</span>';
+    else if(today < draw) state = `<span class="req-state pending">응모 중 · ${md(draw)} 발표</span>`;
+    else state = '<span class="req-state" style="background:rgba(255,255,255,.08);color:rgba(255,255,255,.6)">당첨 안 됨</span>';
+    return `<div class="req-item"><div><div class="req-name" style="letter-spacing:1px">${escHTML(m.code)}</div>
+      <div class="req-sub">${md(m.week)}~${md(add(m.week, 6))} 회차 · 응모권 ${m.tickets || 0}/${mx}장${m.valid === false ? ' · 추첨 제외' : ''}</div></div>${state}</div>`;
+  }).join('') + (isMember ? '' : '<div class="req-sub" style="padding:4px 4px 0;line-height:1.7">가입 없이 응모한 기록은 응모한 이 휴대폰·브라우저에서만 보여요. 가입하면 다른 기기에서도 볼 수 있어요.</div>')
+    + '<div class="req-sub" style="padding:4px 4px 0">당첨 번호를 누르면 번호가 적힌 메일 쓰기 화면이 열려요</div>';
 }
 
 async function loadLists() {

@@ -327,6 +327,8 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
 .nav-item.active{color:var(--aqua)}
 .nav-item-icon{font-size:22px}
 .nav-item-label{font-size:10px;font-weight:700}
+.nav-item{position:relative}
+.nav-item.has-dot::after{content:'';position:absolute;top:8px;left:calc(50% + 8px);width:8px;height:8px;border-radius:50%;background:#f43f5e}
 .nav-item.dim{opacity:.35;pointer-events:none}
 </style>
 </head>
@@ -440,12 +442,14 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
 
 <nav class="bottom-nav">
   <a href="map.html" class="nav-item active"><div class="nav-item-icon">🗺️</div><div class="nav-item-label">지도</div></a>
+  <a href="events.html" class="nav-item" data-ev><div class="nav-item-icon">🎁</div><div class="nav-item-label">이벤트</div></a>
   <a href="mypage.html" class="nav-item"><div class="nav-item-icon">👤</div><div class="nav-item-label">내 정보</div></a>
 </nav>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js?v=20261110f"></script>
 <script src="js/ppx.js?v=20261114a"></script>
+<script src="js/ev.js?v=20261117a"></script>
 <script>
 // 로그인 연결 파일을 못 불러와도 지도는 places.json 으로 계속 동작하도록
 if(!window.PPX) window.PPX = { ready:false, me: async () => null, koError: e => (e && e.message) || '문제가 생겼어요' };

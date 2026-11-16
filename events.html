@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#04111e">
+<meta name="apple-mobile-web-app-title" content="빡세">
+<title>이벤트 · 빡세</title>
+<meta name="description" content="빡세 이벤트 — 한마디 남기고 기프티콘 받기, 세차장·세차용품 이벤트, 당첨자 발표">
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--deep:#04111e;--sky:#0ea5e9;--aqua:#22d3ee;--foam:#bae6fd;--line:rgba(14,165,233,.18);--muted:rgba(186,230,253,.6);--card:rgba(7,24,40,.88)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;background:var(--deep);overflow-x:hidden}
+.bg{position:fixed;inset:0;background:radial-gradient(ellipse 60% 45% at 20% 5%,rgba(14,165,233,.18),transparent 55%),radial-gradient(ellipse 50% 40% at 85% 90%,rgba(6,182,212,.14),transparent 50%);pointer-events:none}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:300;backdrop-filter:blur(20px);background:rgba(4,17,30,.92);border-bottom:1px solid var(--line)}
+.topbar-inner{display:flex;align-items:center;gap:10px;padding:14px 18px;min-height:56px}
+.topbar-title{font-family:'Black Han Sans',sans-serif;font-size:19px;letter-spacing:-.3px}
+.topbar-title em{color:var(--aqua);font-style:normal}
+.back{background:none;border:none;color:var(--foam);font-size:24px;line-height:1;cursor:pointer;min-width:32px;min-height:32px}
+.content{position:relative;z-index:5;padding:76px 16px 100px;max-width:560px;margin:0 auto}
+.sub{color:var(--muted);font-size:13px;margin:2px 0 14px}
+.tabs{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto}
+.tabs button{flex:none;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:none;color:var(--foam);font:inherit;font-size:13px;font-weight:700;cursor:pointer;min-height:36px}
+.tabs .on{background:rgba(34,211,238,.15);border-color:var(--aqua);color:#fff}
+.ev{display:flex;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:12px;cursor:pointer;text-decoration:none;color:inherit}
+.ev.end{opacity:.55}
+.ev .th{width:60px;height:60px;border-radius:14px;flex:none;display:flex;align-items:center;justify-content:center;font-size:28px;background:rgba(14,165,233,.15)}
+.ev .tt{font-size:15px;font-weight:900;line-height:1.4}
+.ev .dl{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.65}
+.ev .now{color:#34d399;font-weight:900}
+.st{display:inline-block;font-size:11px;font-weight:900;padding:3px 8px;border-radius:999px;margin:0 4px 6px 0}
+.st.on{background:rgba(16,185,129,.18);color:#34d399;border:1px solid rgba(16,185,129,.5)}
+.st.win{background:rgba(245,183,43,.18);color:#fbbf24;border:1px solid rgba(245,183,43,.5)}
+.st.end{background:rgba(148,163,184,.15);color:#94a3b8;border:1px solid rgba(148,163,184,.35)}
+.pin{font-size:11px;font-weight:900;color:var(--aqua)}
+.tag{display:inline-block;font-size:10px;font-weight:900;padding:2px 6px;border-radius:6px;vertical-align:middle;margin-left:4px}
+.tag.sp{color:#c4b5fd;border:1px solid rgba(167,139,250,.6);background:rgba(124,58,237,.2)}
+.tag.ad{color:#f5b72b;border:1px solid rgba(245,183,43,.55);background:rgba(245,183,43,.18)}
+.tag.hid{color:#fca5a5;border:1px solid rgba(239,68,68,.5);background:rgba(239,68,68,.12)}
+.empty{text-align:center;color:var(--muted);font-size:13px;padding:40px 0;line-height:1.8}
+.hero{border-radius:20px;padding:18px;background:linear-gradient(135deg,rgba(14,165,233,.22),rgba(124,58,237,.18));border:1px solid rgba(34,211,238,.35);margin-bottom:14px}
+.hero.win{background:linear-gradient(135deg,rgba(245,183,43,.25),rgba(14,165,233,.12));border-color:rgba(245,183,43,.5)}
+.hero.sp{background:linear-gradient(135deg,rgba(124,58,237,.3),rgba(14,165,233,.15));border-color:rgba(167,139,250,.5)}
+.hero h1{font-size:21px;font-weight:900;line-height:1.4;margin-top:4px}
+.hero p{font-size:13px;color:var(--foam);margin-top:8px;line-height:1.6}
+.box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;font-size:14px;line-height:1.75}
+.box h3{font-size:15px;color:var(--aqua);margin-bottom:6px}
+.box .dim{color:var(--muted);font-size:12px}
+.codes{font-size:19px;font-weight:900;letter-spacing:1px}
+.claim{border-color:rgba(245,183,43,.6)}.claim h3{color:#fbbf24}
+.myinfo{margin-top:8px;padding:8px 10px;border-radius:10px;background:rgba(34,211,238,.1);font-size:13px}
+.mine{background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.4);border-radius:14px;padding:12px;font-size:13px;margin-bottom:12px;line-height:1.7}
+.btn{display:block;text-align:center;padding:15px;border-radius:14px;font-weight:900;font-size:15px;color:#04111e;background:linear-gradient(135deg,#38bdf8,#22d3ee);text-decoration:none;margin-top:4px}
+.body{white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:600;display:flex;background:rgba(4,17,30,.97);border-top:1px solid var(--line);backdrop-filter:blur(20px);padding-bottom:env(safe-area-inset-bottom)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;text-decoration:none;color:rgba(255,255,255,.35);gap:3px;position:relative}
+.nav-item.active{color:var(--aqua)}
+.nav-item-icon{font-size:22px}
+.nav-item-label{font-size:10px;font-weight:700}
+.nav-item.has-dot::after{content:'';position:absolute;top:8px;left:calc(50% + 8px);width:8px;height:8px;border-radius:50%;background:#f43f5e}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="topbar"><div class="topbar-inner">
+  <button class="back" id="back" type="button" aria-label="목록으로" hidden>‹</button>
+  <div class="topbar-title" id="ttl">🎁 <em>이벤트</em></div>
+</div></div>
+
+<div class="content" id="content"><div class="empty">불러오는 중…</div></div>
+
+<nav class="bottom-nav">
+  <a href="map.html" class="nav-item"><div class="nav-item-icon">🗺️</div><div class="nav-item-label">지도</div></a>
+  <a href="events.html" class="nav-item active" data-ev><div class="nav-item-icon">🎁</div><div class="nav-item-label">이벤트</div></a>
+  <a href="mypage.html" class="nav-item"><div class="nav-item-icon">👤</div><div class="nav-item-label">내 정보</div></a>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js?v=20261110f"></script>
+<script src="js/ppx.js?v=20261114a"></script>
+<script src="js/ev.js?v=20261117a"></script>
+<script>
+const E = window.PPXEV || {};
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
+const addDays = (d, n) => { const t = new Date(d + 'T00:00:00Z'); t.setUTCDate(t.getUTCDate() + n); return t.toISOString().slice(0, 10); };
+const md = d => { if(!d) return ''; const [, m, dd] = String(d).split('-'); return `${+m}/${+dd}`; };
+const wk = d => '일월화수목금토'[new Date(d + 'T00:00:00Z').getUTCDay()];
+const KIND = { sponsor: '<span class="tag sp">협찬</span>', ad: '<span class="tag ad">광고</span>', ppaxse: '' };
+const STL = { on: '진행 중', win: '당첨자 발표', end: '마감' };
+let st = null, rounds = [], posts = [], filter = 'all', isAdmin = false;
+
+// 회차 번호: 첫 회차(이벤트 시작 주)부터 1회차
+const roundNo = w => st && st.start ? Math.round((new Date(w) - new Date(st.start)) / (7 * 864e5)) + 1 : '';
+
+async function load() {
+  const P = window.PPX;
+  if(!P || !P.ready) { document.getElementById('content').innerHTML = '<div class="empty">이벤트를 불러오지 못했어요. 잠시 후 다시 열어 주세요.</div>'; return; }
+  const [a, b, c] = await Promise.allSettled([
+    P.eventStatus(),
+    P.db.rpc('ppx_event_rounds'),
+    P.db.from('events').select('*').order('pinned', { ascending: false }).order('created_at', { ascending: false }).limit(100),
+  ]);
+  st = a.status === 'fulfilled' ? a.value : null;
+  rounds = b.status === 'fulfilled' && !b.value.error ? (b.value.data || []) : [];
+  posts = c.status === 'fulfilled' && !c.value.error ? (c.value.data || []) : [];
+  try { const me = await P.me(); isAdmin = !!(me && me.role === 'admin'); } catch(_) {}
+  route();
+}
+
+// 목록에 보일 항목들 (기프티콘 이번 주 · 지난 회차 발표 · 운영자 글)
+function items() {
+  const t = today(), out = [];
+  if(st) out.push({ type: 'weekly', status: 'on', pinned: true, sortDate: st.week });
+  rounds.forEach(r => out.push({ type: 'round', r, status: t <= r.claim_until ? 'win' : 'end', sortDate: r.draw_date }));
+  posts.forEach(p => out.push({ type: 'post', p, status: p.status, pinned: p.pinned, sortDate: (p.created_at || '').slice(0, 10) }));
+  const rank = { on: 0, win: 1, end: 2 };
+  return out.sort((x, y) => (rank[x.status] - rank[y.status]) || ((y.pinned ? 1 : 0) - (x.pinned ? 1 : 0)) || (y.sortDate > x.sortDate ? 1 : -1));
+}
+
+function card(it) {
+  if(it.type === 'weekly') {
+    const n = st.all_count || 0;
+    return `<a class="ev" href="#weekly"><div class="th" style="background:linear-gradient(135deg,#0ea5e9,#7c3aed)">🎁</div><div>
+      <span class="st on">진행 중</span><span class="pin">📌 매주</span>
+      <div class="tt">한마디 남기고 기프티콘 받기</div>
+      <div class="dl">기간 : ${md(st.week)} ~ ${md(st.week_end)}<br>추첨 일자, 당첨자 : ${md(st.draw_date)}, ${(st.winners_all || 2) + (st.winners_member || 2)}명<br>
+      <span class="now">${n ? `지금 ${n}명 참여 중` : '아직 참여자가 없어요 · 첫 참여자가 되어 보세요'}</span></div></div></a>`;
+  }
+  if(it.type === 'round') {
+    const r = it.r, w = r.winners || [];
+    return `<a class="ev ${it.status === 'end' ? 'end' : ''}" href="#round=${r.week}"><div class="th" style="background:rgba(245,183,43,.18)">🏆</div><div>
+      <span class="st ${it.status}">${it.status === 'win' ? '당첨자 발표' : '마감'}</span>
+      <div class="tt">${roundNo(r.week)}회차 기프티콘 당첨번호</div>
+      <div class="dl">${md(r.draw_date)} 발표 · ${w.length ? `${esc(w[0].code)}${w.length > 1 ? ` 외 ${w.length - 1}명` : ''}` : '당첨자 없음'}</div></div></a>`;
+  }
+  const p = it.p;
+  const lines = [];
+  if(p.start_date || p.end_date) lines.push(`기간 : ${md(p.start_date)} ~ ${md(p.end_date)}`);
+  if(p.draw_date || p.winners != null) lines.push(`추첨 일자, 당첨자 : ${p.draw_date ? md(p.draw_date) : '-'}${p.winners != null ? `, ${p.winners}명` : ''}`);
+  if(p.target) lines.push(`대상 : ${esc(p.target)}`);
+  return `<a class="ev ${p.status === 'end' ? 'end' : ''}" href="#e=${p.id}"><div class="th">${esc(p.icon || (p.kind === 'ad' ? '🚿' : p.kind === 'sponsor' ? '🧽' : '💧'))}</div><div>
+    <span class="st ${p.status}">${STL[p.status] || ''}</span>${p.pinned ? '<span class="pin">📌 고정</span>' : ''}
+    <div class="tt">${esc(p.title)}${KIND[p.kind] || ''}${p.hidden ? '<span class="tag hid">숨김</span>' : ''}</div>
+    ${lines.length ? `<div class="dl">${lines.join('<br>')}</div>` : ''}</div></a>`;
+}
+
+function renderList() {
+  document.getElementById('back').hidden = true;
+  document.getElementById('ttl').innerHTML = '🎁 <em>이벤트</em>';
+  const all = items(), shown = filter === 'all' ? all : all.filter(i => i.status === filter);
+  const tab = (k, l) => `<button type="button" class="${filter === k ? 'on' : ''}" data-f="${k}">${l}</button>`;
+  document.getElementById('content').innerHTML = `
+    <div class="sub">빡세와 세차장·브랜드가 여는 이벤트를 모았어요</div>
+    <div class="tabs">${tab('all', '전체')}${tab('on', '진행 중')}${tab('win', '당첨자 발표')}${tab('end', '마감')}</div>
+    ${shown.length ? shown.map(card).join('') : '<div class="empty">아직 여기에 해당하는 이벤트가 없어요</div>'}`;
+  document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => { filter = b.dataset.f; renderList(); });
+}
+
+function detailHead() {
+  document.getElementById('back').hidden = false;
+  document.getElementById('ttl').textContent = '이벤트';
+  window.scrollTo(0, 0);
+}
+
+function renderWeekly() {
+  detailHead();
+  const mine = (st.mine || []).find(m => m.week === st.week), mx = st.max_tickets || 3, last = rounds[0];
+  document.getElementById('content').innerHTML = `
+    <div class="hero"><span class="st on">진행 중</span><span class="pin">📌 매주</span>
+      <h1>한마디 남기고<br>기프티콘 받기 🎁</h1>
+      <p>매주 ${(st.winners_all || 2) + (st.winners_member || 2)}명 · 누구나 ${st.winners_all || 2}명 + 회원 ${st.winners_member || 2}명</p></div>
+    <div class="box"><h3>이번 주</h3>
+      응모 ${md(st.week)}(${wk(st.week)}) ~ ${md(st.week_end)}(${wk(st.week_end)})<br>
+      발표 ${md(st.draw_date)}(${wk(st.draw_date)}) 17시<br>
+      누구나 추첨 <b>${st.all_count || 0}명</b> 참여 · 회원 추첨 <b>${st.member_count || 0}명</b> 참여</div>
+    ${mine ? `<div class="mine">내 응모번호 <b>${esc(mine.code)}</b> · 응모권 <b>${mine.tickets}/${mx}장</b><br>
+      <span style="color:var(--muted)">${mine.tickets >= mx ? '이번 주 응모권을 다 모았어요' : mine.today ? '오늘은 응모했어요. 내일 다른 세차장에 한마디를 남기면 1장 더!' : '오늘 다른 세차장에 한마디를 남기면 1장 더!'}</span></div>` : ''}
+    <div class="box"><h3>참여 방법</h3>
+      ① 다녀온 세차장 찾기 ② 다녀온 시기나 정보를 하나 이상 고르기 ③ 한마디 10자 이상<br>
+      <span class="dim">하루 1번 · 한 주 최대 ${mx}장 · 같은 세차장은 한 주 1번 · 응모권이 많을수록 당첨 확률이 올라가요 · 가입하면 회원 추첨까지 기회 2번</span></div>
+    ${last ? `<a class="box" href="#round=${last.week}" style="display:block;text-decoration:none;color:inherit"><h3>지난 회차 →</h3>${md(last.draw_date)} 발표 · ${(last.winners || []).map(w => esc(w.code)).join(', ') || '당첨자 없음'}</a>` : ''}
+    <div class="box dim" style="font-size:12px">당첨되면 응모한 기기로 빡세에 들어왔을 때 알려드려요. [내 정보]에서도 확인할 수 있어요.<br>연락처는 받지 않아요. 당첨자가 직접 메일로 연락해 주셔야 기프티콘을 드려요.</div>
+    <a class="btn" href="r/">💬 한마디 남기러 가기</a>`;
+}
+
+function renderRound(w) {
+  const r = rounds.find(x => x.week === w);
+  if(!r) return renderList();
+  detailHead();
+  const wn = r.winners || [], mem = wn.filter(x => x.pool === 'member'), all = wn.filter(x => x.pool === 'all');
+  const t = today(), open = t <= r.claim_until;
+  const mine = (st && st.mine || []).find(m => m.week === w && m.won);
+  document.getElementById('content').innerHTML = `
+    <div class="hero win"><span class="st ${open ? 'win' : 'end'}">${open ? '당첨자 발표' : '마감'}</span>
+      <h1>${roundNo(w)}회차 기프티콘 당첨번호 🏆</h1>
+      <p>응모 ${md(r.week)}~${md(r.week_end)} · ${md(r.draw_date)}(${wk(r.draw_date)}) 17시 발표</p></div>
+    <div class="box"><h3>회원 추첨 (${mem.length}명)</h3><div class="codes">${mem.map(x => esc(x.code)).join(' · ') || '-'}</div><div class="dim">${r.member_count}명 중 ${mem.length}명</div></div>
+    <div class="box"><h3>누구나 추첨 (${all.length}명)</h3><div class="codes">${all.map(x => esc(x.code)).join(' · ') || '-'}</div><div class="dim">${r.all_count}명 중 ${all.length}명</div></div>
+    ${mine ? `<div class="mine">🎉 <b>당첨됐어요!</b> 내 전체 번호 <b style="font-size:16px;letter-spacing:1px">${esc(mine.code)}</b></div>` : ''}
+    <div class="box claim"><h3>📮 당첨되셨나요?</h3>
+      <b>발표 후 7일 안에 (${md(r.claim_until)}(${wk(r.claim_until)})까지)</b> 전체 응모번호와 한마디를 남긴 세차장 이름을 <b>ppaxse@gmail.com</b>으로 보내 주세요. 기프티콘 코드를 메일로 보내드려요.
+      <div class="myinfo">👤 <b>당첨 여부와 내 전체 번호는 [내 정보]에서 확인할 수 있어요.</b> (응모한 기기 또는 계정으로)</div>
+      <div class="dim" style="margin-top:6px">기한이 지나면 지급되지 않아요 · 번호 뒤 두 자리는 당첨자만 알아요${open ? '' : ' · 이 회차는 연락 기한이 지났어요'}</div></div>
+    <a class="btn" href="mypage.html">👤 내 정보에서 확인하기</a>`;
+}
+
+function renderPost(id) {
+  const p = posts.find(x => String(x.id) === String(id));
+  if(!p) return renderList();
+  detailHead();
+  const lines = [];
+  if(p.start_date || p.end_date) lines.push(`기간 : ${md(p.start_date)} ~ ${md(p.end_date)}`);
+  if(p.draw_date || p.winners != null) lines.push(`추첨 일자, 당첨자 : ${p.draw_date ? md(p.draw_date) : '-'}${p.winners != null ? `, ${p.winners}명` : ''}`);
+  if(p.target) lines.push(`대상 : ${esc(p.target)}`);
+  const safeUrl = p.btn_url && (/^https:\/\//.test(p.btn_url) || /^[a-z0-9_./?=&#-]+$/.test(p.btn_url)) ? p.btn_url : '';
+  document.getElementById('content').innerHTML = `
+    <div class="hero ${p.status === 'win' ? 'win' : p.kind === 'sponsor' ? 'sp' : ''}"><span class="st ${p.status}">${STL[p.status] || ''}</span>${KIND[p.kind] || ''}${p.hidden ? '<span class="tag hid">숨김</span>' : ''}
+      <h1>${esc(p.icon || '')} ${esc(p.title)}</h1>
+      ${lines.length ? `<p>${lines.join('<br>')}</p>` : ''}</div>
+    ${p.body ? `<div class="box body">${esc(p.body)}</div>` : ''}
+    ${p.kind === 'sponsor' ? '<div class="box dim" style="font-size:12px">이 이벤트는 협찬을 받아 진행해요. 이벤트로 남긴 후기에는 ‘협찬’ 표시가 붙어요.</div>' : ''}
+    ${p.kind === 'ad' ? '<div class="box dim" style="font-size:12px">이 이벤트는 세차장이 광고로 진행해요. 혜택 내용은 세차장이 제공해요.</div>' : ''}
+    ${safeUrl && p.btn_label ? `<a class="btn" href="${esc(safeUrl)}"${/^https:/.test(safeUrl) ? ' target="_blank" rel="noopener"' : ''}>${esc(p.btn_label)}</a>` : ''}`;
+}
+
+function route() {
+  const h = location.hash.slice(1);
+  if(h === 'weekly' && st) return renderWeekly();
+  if(h.startsWith('round=')) return renderRound(h.slice(6));
+  if(h.startsWith('e=')) return renderPost(h.slice(2));
+  renderList();
+}
+window.addEventListener('hashchange', route);
+document.getElementById('back').onclick = () => { location.hash = ''; };
+load();
+</script>
+</body>
+</html>
