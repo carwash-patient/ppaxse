@@ -2527,3 +2527,8 @@ grant execute on function public.ppx_set_marketing(boolean) to authenticated;
 alter table public.place_reports drop constraint if exists place_reports_via_check;
 alter table public.place_reports add constraint place_reports_via_check
   check (via in ('map', 'review', 'owner'));
+
+-- ═══ 2026-11-16b (시험 기간 한정) 운영자도 추첨 응모권을 받아 보게 함 ═══
+-- 운영 DB에 migrate_2026-11-16b.sql을 실행한 동안: ppx_enter_event가 운영자를 막지 않고, ppx_entry_weight가 운영자 응모권도 세며,
+-- ppx_entry_valid가 운영자 응모를 추첨 대상에서 빼고, ppx_event_status의 mine.valid가 응모권 기준으로 바뀜.
+-- 시험이 끝나면 rollback_2026-11-16b.sql로 위 함수들을 이 파일의 원래 정의대로 되돌림.
