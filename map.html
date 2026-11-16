@@ -129,6 +129,12 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
 .ppx-toast{position:fixed;left:50%;bottom:calc(150px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(10px);z-index:900;background:rgba(16,185,129,.95);color:#fff;padding:12px 20px;border-radius:14px;font-size:13px;font-weight:700;opacity:0;transition:.25s;pointer-events:none;max-width:calc(100% - 40px);text-align:center;line-height:1.5}
 .ppx-toast.show{opacity:1;transform:translateX(-50%)}
 .ppx-toast.warn{background:rgba(239,68,68,.95)}
+.er-ov{position:fixed;inset:0;z-index:950;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:24px}
+.er-box{width:100%;max-width:340px;background:linear-gradient(180deg,#0d1e35,#071828);border:1px solid rgba(34,211,238,.35);border-radius:22px;padding:24px 20px 18px;text-align:center;color:#fff;animation:slideUp .25s ease}
+.er-icon{font-size:40px;line-height:1}.er-title{font-size:18px;font-weight:900;margin:10px 0 8px}
+.er-body{font-size:14px;line-height:1.7;color:#e2e8f0}.er-code{font-size:20px;letter-spacing:1px;color:#22d3ee}
+.er-dim{font-size:12px;color:#94a3b8}.er-sub{margin-top:12px;font-size:12px;color:#94a3b8}
+.er-ok{margin-top:16px;width:100%;min-height:48px;border:none;border-radius:14px;font:inherit;font-weight:900;font-size:15px;color:#04111e;background:linear-gradient(135deg,#38bdf8,#22d3ee);cursor:pointer}
 
 /* 기본 지역 */
 .rp-home{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 18px 10px;padding:11px 13px;border-radius:13px;background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.25);font-size:13px}
@@ -1599,7 +1605,7 @@ async function submitReport() {
     return;
   }
   reportPhoto = null;
-  let msg = hasReport ? '제보를 보냈어요! 운영자 확인 후 반영돼요 💧' : '', warn = false;
+  let msg = hasReport ? '제보를 보냈어요! 운영자 확인 후 반영돼요 💧' : '', warn = false, evResult = null;
   if(comment) {
     try {
       // 다녀왔다고만 고르고 한마디만 쓴 경우: '정보가 맞아요'도 남김 (후기 페이지와 같은 추첨 응모 조건)
@@ -1610,8 +1616,8 @@ async function submitReport() {
       try { if(nick) localStorage.setItem('ppxNick', nick); } catch(e) {}
       let ev = null;
       try { ev = await PPX.enterEvent(cm.id); } catch(e) { ev = { err: PPX.koError(e) }; }
-      msg += (msg ? ' ' : '') + '한마디가 올라갔어요 💬' +
-        (ev && ev.code ? ` 🎁 추첨 응모 완료 (응모번호 ${ev.code})` : ev && ev.err && comment.length >= 10 ? ` (추첨: ${ev.err})` : '');
+      msg += (msg ? ' ' : '') + '한마디가 올라갔어요 💬';
+      evResult = ev && (ev.code || comment.length >= 10) ? ev : null;
       reportForm.comment = '';
       if(typeof loadComments === 'function') loadComments(p.id);
     } catch(e) {
@@ -1620,7 +1626,27 @@ async function submitReport() {
     }
   }
   closeAddPanel();
-  toast(msg, warn);
+  if(evResult) showEventResult(evResult, msg); else toast(msg, warn);
+}
+
+// 추첨 응모 결과: 토스트는 금방 사라져 놓치기 쉬워서, 확인 버튼이 있는 작은 창으로 보여줌
+function showEventResult(ev, sub) {
+  const esc2 = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  let icon = '🎁', title, body;
+  const tk = ev.tickets ? `이번 주 응모권 <b>${ev.tickets}/${ev.max || 3}장</b>` : '';
+  if(ev.err) { icon = '🙏'; title = '추첨 응모는 안 됐어요'; body = esc2(ev.err); }
+  else if(!ev.already) { title = '추첨 응모 완료!'; body = `응모번호 <b class="er-code">${esc2(ev.code)}</b><br>${tk}<br><span class="er-dim">매주 월요일 17시 발표 · 응모권이 많을수록 당첨 확률이 올라가요</span>`; }
+  else if(ev.reason === 'today') { icon = '✅'; title = '오늘은 이미 응모했어요'; body = `응모번호 <b class="er-code">${esc2(ev.code)}</b><br>${tk}<br><span class="er-dim">내일 다른 세차장 한마디로 응모권을 더 모을 수 있어요</span>`; }
+  else if(ev.reason === 'place') { icon = '✅'; title = '이 세차장은 이번 주에 이미 응모했어요'; body = `응모번호 <b class="er-code">${esc2(ev.code)}</b><br>${tk}<br><span class="er-dim">다른 세차장 한마디로 응모권을 더 모을 수 있어요</span>`; }
+  else { icon = '🎉'; title = '이번 주 응모권을 다 모았어요'; body = `응모번호 <b class="er-code">${esc2(ev.code)}</b><br>${tk}`; }
+  const wrap = document.createElement('div');
+  wrap.className = 'er-ov';
+  wrap.innerHTML = `<div class="er-box" role="dialog"><div class="er-icon">${icon}</div><div class="er-title">${title}</div>
+    <div class="er-body">${body}</div>${sub ? `<div class="er-sub">${esc2(sub)}</div>` : ''}<button class="er-ok" type="button">확인</button></div>`;
+  const close = () => wrap.remove();
+  wrap.onclick = e => { if(e.target === wrap) close(); };
+  wrap.querySelector('.er-ok').onclick = close;
+  document.body.appendChild(wrap);
 }
 
 // ── 한마디 닉네임 (후기 페이지와 같은 규칙: 이 기기에서는 같은 무작위 이름, 🎲로 다시 뽑기) ──
