@@ -68,8 +68,10 @@ var v=localStorage.getItem('ppxVisitor');
 if(!v||!/^[0-9a-f-]{36}$/.test(v)){v=crypto.randomUUID?crypto.randomUUID():'10000000-1000-4000-8000-100000000000'.replace(/[018]/g,function(c){return(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16)});localStorage.setItem('ppxVisitor',v);}
 var r=document.referrer,h='';try{h=r?new URL(r).hostname:''}catch(e){}
 var s=!r?'direct':/google\\./.test(h)?'google':/naver\\./.test(h)?'naver':/daum\\.|kakao/.test(h)?'daum':/bing\\./.test(h)?'bing':/ppaxse\\.com$/.test(h)?'ppaxse':'other';
-var t=(document.querySelector('h1')||{}).textContent||document.title;
-setTimeout(function(){fetch('%s/rest/v1/rpc/ppx_track_page',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json',apikey:'%s',Authorization:'Bearer %s'},body:JSON.stringify({v:v,pth:decodeURI(location.pathname),s:s,t:t.slice(0,120)})}).catch(function(){})},800);
+var t=(document.querySelector('h1')||{}).textContent||document.title,P=decodeURI(location.pathname);
+function rpc(f,b){return fetch('%s/rest/v1/rpc/'+f,{method:'POST',keepalive:true,headers:{'Content-Type':'application/json',apikey:'%s',Authorization:'Bearer %s'},body:JSON.stringify(b)}).catch(function(){})}
+document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('[data-cta]');if(a)rpc('ppx_track_click',{v:v,pth:P,b:a.getAttribute('data-cta')})});
+setTimeout(function(){rpc('ppx_track_page',{v:v,pth:P,s:s,t:t.slice(0,120)})},800);
 }catch(e){}})();
 </script>''' % (url, key, key)
 
@@ -176,17 +178,22 @@ def place_card(p, up):
     if p.get('hours'):
         meta.append(f'🕒 {esc(p["hours"])}')
     talk = p.get('comment_count') or 0
-    talk_txt = f'한마디 {talk}개 보기' if talk else '첫 한마디 남기기'
+    talk_txt = f'💬 한마디 {talk}개 보기·남기기' if talk else '✏️ 이 세차장에 한마디 남기기'
     return f'''<li class="pl"><h3>{esc(p["name"])}</h3>
 <div class="meta">{"<br>".join(meta)}</div>
 <div class="badges">{badges}</div>
-<div class="acts"><a class="main" href="{up}r/?p={p["id"]}">✏️ {talk_txt}</a><a href="{up}map.html">🗺️ 지도</a></div></li>'''
+<div class="acts"><a class="main" href="{up}r/?p={p["id"]}" data-cta="card_review">{talk_txt}</a><a href="{up}map.html" data-cta="card_map">🗺️ 지도에서 보기</a></div></li>'''
 
 
-def cta(up, where):
-    return f'''<div class="cta"><b>🎁 {esc(where)} 세차장, 다녀와 보셨나요?</b>
-<p>폼건·온수·하부세차 있는지 한마디만 남겨 주세요. 가입 없이도 돼요. 매주 기프티콘 추첨해요.</p>
-<a href="{up}r/">✏️ 한마디 남기기</a><a class="sub" href="{up}map.html">🗺️ 내 주변 세차장 찾기</a></div>'''
+def cta(up, where, equal=False):
+    """검색으로 들어온 사람을 빡세 지도로 보내는 안내 상자. where 가 비어 있으면 '우리 동네'
+    equal=True(가이드 글): 두 버튼을 같은 모양으로 — 어느 쪽이 더 눌리는지 보려고"""
+    w = where or '우리 동네'
+    sub = '' if equal else ' class="sub"'
+    return f'''<div class="cta"><b>🗺️ {esc(w)} 세차장, 지도에서 한눈에 보세요</b>
+<p>셀프세차·노터치·손세차를 종류별로 골라 보고, 폼건·온수·하부세차 같은 시설 정보도 확인할 수 있어요.</p>
+<a href="{up}map.html" data-cta="cta_map">🗺️ 세차장 지도 열기</a><a{sub} href="{up}r/" data-cta="cta_review">✏️ 자주 가는 세차장에 한마디 남기기</a>
+<p style="font-size:12.5px;margin:8px 0 0;color:var(--muted)">🎁 한마디를 남기면 가입 없이도 매주 기프티콘 추첨에 응모돼요.</p></div>'''
 
 
 def type_summary(ps):
@@ -292,7 +299,7 @@ def build_wash(places):
                    for s, g in sorted(by_sido.items(), key=lambda x: -sum(len(v) for v in x[1].values())))
     body = f'''<h1>전국 세차장 {total:,}곳 · 지역별 모음</h1>
 <p class="lead">셀프세차·노터치·손세차·디테일링샵·자동세차를 지역별로 정리했어요. 공공데이터에 이용자 제보를 더해 계속 고쳐가고 있어요.</p>
-<ul class="grid">{grid}</ul>{cta('../', '우리 동네')}'''
+<ul class="grid">{grid}</ul>{cta('../', '')}'''
     write('wash/', page('wash/', f'전국 세차장 {total:,}곳 지역별 모음 - 셀프세차·노터치·손세차 | 빡세',
                         '전국 세차장을 시·도, 시·군·구별로 모았어요. 셀프세차·노터치·손세차 위치와 폼건·하부세차 정보.',
                         body, [('빡세', ''), ('지역별 세차장', None)]))
@@ -322,7 +329,7 @@ def build_guides():
               'author': {'@type': 'Organization', 'name': '빡세'}, 'publisher': {'@type': 'Organization', 'name': '빡세'}}
         full = f'''<article><h1>{esc(title)}</h1><div class="date">{esc(date)} · 빡세 세차 가이드</div>
 {body}
-{cta('../../', '자주 가는')}</article>'''
+{cta('../../', '', equal=True)}</article>'''
         write(path, page(path, f'{title} | 빡세', desc, full, [('빡세', ''), ('세차 가이드', 'guide/'), (title, None)], jl))
         posts.append((date, slug, title, desc))
         urls.append(path)

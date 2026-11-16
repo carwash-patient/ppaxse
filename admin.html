@@ -715,21 +715,24 @@ async function loadSeoStats() {
   try {
     const { data: s, error } = await PPX.db.rpc('admin_page_stats', { days: 30 });
     if(error) throw error;
-    const pages = s.pages || [], src = s.by_src || {};
+    const pages = s.pages || [], src = s.by_src || {}, ck = s.clicks || {};
+    const clickLine = (t, k) => `<div style="font-size:12.5px;margin:2px 0">${t} 누른 사람 — 🗺️ 지도 <b>${(ck[k + '_cta_map'] || 0) + (ck[k + '_card_map'] || 0)}</b> · ✏️ 한마디 <b>${(ck[k + '_cta_review'] || 0) + (ck[k + '_card_review'] || 0)}</b></div>`;
     if(!pages.length) { box.innerHTML = '<div class="msg">아직 조회 기록이 없어요. 검색에 노출되기 시작하면 여기에 쌓여요.</div>'; return; }
     const guides = pages.filter(p => p.path.startsWith('/guide/')), wash = pages.filter(p => p.path.startsWith('/wash/'));
     const name = p => esc(p.title || p.path);
     const row = p => `<tr><td style="padding:6px 4px"><a href="${esc(p.path)}" target="_blank" rel="noopener" style="color:#fff;text-decoration:none">${name(p)}</a></td>
       <td style="text-align:right">${p.today_visitors}</td><td style="text-align:right">${p.week_visitors}</td><td style="text-align:right;font-weight:900">${p.visitors}</td>
-      <td style="text-align:right">${p.views}</td><td style="text-align:right;color:rgba(255,255,255,.6);white-space:nowrap">${p.google}·${p.naver}·${p.etc}</td></tr>`;
-    const head = `<tr style="color:rgba(255,255,255,.6);font-size:11px;white-space:nowrap"><th style="text-align:left;padding:4px">페이지</th><th style="text-align:right">오늘</th><th style="text-align:right">7일</th><th style="text-align:right">30일</th><th style="text-align:right">본 횟수</th><th style="text-align:right">구글·네이버·기타</th></tr>`;
+      <td style="text-align:right">${p.views}</td><td style="text-align:right;color:rgba(255,255,255,.6);white-space:nowrap">${p.google}·${p.naver}·${p.etc}</td>
+      <td style="text-align:right;white-space:nowrap">${p.map_clicks || 0}·${p.review_clicks || 0}</td></tr>`;
+    const head = `<tr style="color:rgba(255,255,255,.6);font-size:11px;white-space:nowrap"><th style="text-align:left;padding:4px">페이지</th><th style="text-align:right">오늘</th><th style="text-align:right">7일</th><th style="text-align:right">30일</th><th style="text-align:right">본 횟수</th><th style="text-align:right">구글·네이버·기타</th><th style="text-align:right">지도·한마디</th></tr>`;
     const table = (t, list, max) => list.length ? `<div class="memo" style="margin:10px 0 4px">${t} (${list.length}개)</div>
       <table style="width:100%;border-collapse:collapse;font-size:12.5px">${head}${list.slice(0, max).map(row).join('')}</table>` : '';
     box.innerHTML = `<div style="display:flex;gap:8px;flex-wrap:wrap;font-size:12.5px;margin-bottom:4px">
         <span>사람 <b>${(s.total_visitors || 0).toLocaleString()}</b>명 · 본 횟수 <b>${(s.total_views || 0).toLocaleString()}</b>회</span>
         <span style="color:rgba(255,255,255,.6)">구글 ${src.google || 0} · 네이버 ${src.naver || 0} · 다음 ${src.daum || 0} · 빡세 안에서 ${src.ppaxse || 0} · 주소 직접 ${src.direct || 0} · 기타 ${(src.other || 0) + (src.bing || 0)}</span></div>
+      ${clickLine('📖 가이드 글에서', 'guide')}${clickLine('📍 지역 페이지에서', 'wash')}
       ${table('📖 세차 가이드 글', guides, 100)}${table('📍 지역별 세차장 페이지 (많이 본 순 30개)', wash, 30)}
-      <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:8px;line-height:1.6">· 숫자는 사람(기기) 수예요. 같은 사람이 같은 날 여러 번 봐도 1명, 대신 '본 횟수'가 올라가요.<br>· 구글·네이버·기타 = 어디서 검색해서 들어왔는지(사람 수). 검색 로봇과 운영자 기기는 세지 않아요.</div>`;
+      <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:8px;line-height:1.6">· 숫자는 사람(기기) 수예요. 같은 사람이 같은 날 여러 번 봐도 1명, 대신 '본 횟수'가 올라가요.<br>· 구글·네이버·기타 = 어디서 검색해서 들어왔는지(사람 수). 지도·한마디 = 그 페이지에서 버튼을 누른 사람 수.<br>· 가이드 글은 두 버튼을 같은 모양으로, 지역 페이지는 지도 버튼을 더 눈에 띄게 해 두었어요. 검색 로봇과 운영자 기기는 세지 않아요.</div>`;
   } catch(e) { box.innerHTML = `<div class="msg">${esc(PPX.koError(e))}</div>`; }
 }
 
