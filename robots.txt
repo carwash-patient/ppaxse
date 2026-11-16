@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /owner/
+Disallow: /mypage.html
+
+Sitemap: https://ppaxse.com/sitemap.xml
