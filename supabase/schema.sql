@@ -2548,7 +2548,7 @@ create table if not exists public.events (
   target      text check (target is null or char_length(target) <= 80),                  -- 예) 첫 방문 손님 누구나 (추첨 없음)
   body        text not null default '' check (char_length(body) <= 4000),
   btn_label   text check (btn_label is null or char_length(btn_label) <= 30),
-  btn_url     text check (btn_url is null or (char_length(btn_url) <= 500 and (btn_url ~ '^https://' or btn_url ~ '^[a-z0-9_./?=&#-]+$'))),
+  btn_url     text constraint events_btn_url_check check (btn_url is null or (char_length(btn_url) <= 500 and (btn_url ~ '^https://[^/]' or btn_url ~ '^[a-z0-9_.?=&#-][a-z0-9_./?=&#-]*$'))),  -- 17b: '//' 시작 막음
   pinned      boolean not null default false,
   hidden      boolean not null default false,
   created_at  timestamptz not null default now(),

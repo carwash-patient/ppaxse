@@ -763,7 +763,7 @@ function renderPosts() {
       winners: g('winners') === '' ? null : +g('winners'), target: g('target') || null, icon: g('icon') || null,
       btn_label: g('btn_label') || null, btn_url: g('btn_url') || null, pinned: fd.has('pinned'), hidden: fd.has('hidden'),
     };
-    if(row.btn_url && !/^https:\/\//.test(row.btn_url) && !/^[a-z0-9_./?=&#-]+$/.test(row.btn_url)) return toast('버튼 링크는 https://로 시작하거나 r/, map.html 같은 빡세 안 주소만 돼요', true);
+    if(row.btn_url && !/^https:\/\/[^/]/.test(row.btn_url) && !/^[a-z0-9_.?=&#-][a-z0-9_./?=&#-]*$/.test(row.btn_url)) return toast('버튼 링크는 https://로 시작하거나 r/, map.html 같은 빡세 안 주소만 돼요', true);
     const btn = document.getElementById('evSave'); btn.disabled = true;
     const q = evEditId === 'new' ? PPX.db.from('events').insert(row) : PPX.db.from('events').update(row).eq('id', evEditId);
     const { error } = await q;
