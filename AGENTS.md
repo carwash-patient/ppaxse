@@ -71,3 +71,9 @@
 6. 화면 문구는 친근하고 짧은 존댓말로 씁니다. (예: '알려주실 수 있나요? ✏️')
 7. 관련 없는 파일을 정리하거나, 코드 스타일을 통째로 바꾸지 마세요.
 8. `js/ppx.js`나 `js/config.js`를 고치면 모든 HTML의 `<script src="…js/ppx.js?v=날짜">` 버전 숫자를 오늘 날짜로 함께 올려 주세요. 안 그러면 이용자 브라우저가 옛 파일을 캐시해 화면과 코드가 어긋납니다.
+
+## 7. 검색 유입용 페이지 (wash/, guide/)
+
+- `wash/`, `guide/`, `sitemap.xml`, `robots.txt`는 `tools/build_seo.py`가 **자동으로 만드는 파일**입니다. 직접 고치지 말고, 틀은 `tools/build_seo.py`, 가이드 원고는 `guide-src/`를 고치세요.
+- GitHub Actions(`.github/workflows/build-seo.yml`)가 매일 새벽 Supabase의 승인된 세차장으로 다시 만들고, `guide-src/`가 바뀌면 바로 다시 만듭니다.
+- 가이드 글은 **하루 1편까지**, 지어낸 숫자·후기 금지. 자세한 내용은 `docs/seo-guide.md`.

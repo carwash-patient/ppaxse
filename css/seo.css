@@ -1,0 +1,44 @@
+/* 검색 유입용 페이지(지역별 세차장 · 세차 가이드) 공통 스타일 — tools/build_seo.py 가 만드는 페이지에서 씀 */
+:root{--deep:#04111e;--deep2:#071828;--sky:#0ea5e9;--cyan:#06b6d4;--aqua:#22d3ee;--foam:#bae6fd;--line:rgba(14,165,233,.18);--muted:rgba(186,230,253,.68);--card:rgba(255,255,255,.045)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:'Noto Sans KR',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:var(--deep);color:#fff;line-height:1.7;-webkit-text-size-adjust:100%}
+a{color:var(--aqua)}
+.top{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:rgba(4,17,30,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top .brand{display:flex;align-items:center;gap:8px;color:#fff;text-decoration:none;font-weight:900;font-size:18px}
+.top .brand em{font-style:normal;color:var(--aqua)}
+.top .go{padding:8px 14px;border-radius:999px;background:linear-gradient(135deg,var(--sky),var(--cyan));color:#fff;text-decoration:none;font-size:13px;font-weight:700}
+main{max-width:760px;margin:0 auto;padding:20px 18px 60px}
+.crumb{font-size:12px;color:var(--muted);margin-bottom:10px}
+.crumb a{color:var(--muted);text-decoration:none}
+h1{font-size:24px;line-height:1.35;font-weight:900;letter-spacing:-.5px;margin-bottom:10px}
+h2{font-size:19px;font-weight:900;margin:30px 0 12px;letter-spacing:-.3px}
+h3{font-size:16px;font-weight:700;margin:20px 0 8px}
+p{margin:0 0 12px;color:rgba(255,255,255,.88)}
+.lead{color:var(--muted);font-size:14px}
+.stats{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+.stat{padding:6px 12px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:13px;text-decoration:none;color:#fff}
+.list{list-style:none;display:grid;gap:10px}
+.pl{background:var(--card);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:14px 16px}
+.pl h3{margin:0 0 4px;font-size:15px}
+.pl .meta{font-size:13px;color:var(--muted)}
+.badges{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.bd{font-size:11.5px;padding:3px 8px;border-radius:999px;background:rgba(14,165,233,.14);color:var(--foam)}
+.bd.t{background:rgba(34,211,238,.18);color:#cffafe;font-weight:700}
+.acts{display:flex;gap:8px;margin-top:10px}
+.acts a{font-size:12.5px;padding:6px 11px;border-radius:999px;border:1px solid var(--line);text-decoration:none;color:var(--foam)}
+.acts a.main{background:rgba(14,165,233,.2);color:#fff;border-color:rgba(14,165,233,.5)}
+.cta{margin:26px 0;padding:18px;border-radius:18px;background:linear-gradient(135deg,rgba(14,165,233,.22),rgba(6,182,212,.12));border:1px solid rgba(34,211,238,.35)}
+.cta b{display:block;font-size:16px;margin-bottom:4px}
+.cta p{font-size:14px;margin-bottom:12px;color:var(--foam)}
+.cta a{display:inline-block;padding:10px 16px;border-radius:999px;background:#fff;color:#04111e;font-weight:900;text-decoration:none;font-size:14px;margin:0 6px 6px 0}
+.cta a.sub{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.4)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;list-style:none}
+.grid a{display:block;padding:10px 12px;border-radius:12px;background:var(--card);border:1px solid rgba(255,255,255,.07);text-decoration:none;color:#fff;font-size:14px}
+.grid a span{color:var(--muted);font-size:12px;margin-left:4px}
+article p,article li{font-size:15.5px}
+article ul,article ol{margin:0 0 14px 20px}
+article li{margin-bottom:6px;color:rgba(255,255,255,.88)}
+.tip{padding:12px 14px;border-left:3px solid var(--aqua);background:var(--card);border-radius:0 12px 12px 0;margin:14px 0;font-size:14.5px}
+.date{font-size:12px;color:var(--muted);margin-bottom:16px}
+footer{max-width:760px;margin:0 auto;padding:24px 18px 40px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);line-height:1.8}
+footer a{color:var(--muted)}

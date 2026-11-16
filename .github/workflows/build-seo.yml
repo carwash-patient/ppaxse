@@ -1,0 +1,44 @@
+# 검색용 페이지(지역별 세차장·세차 가이드) 자동 갱신
+# - 매일 새벽 3시 10분(한국 시간)에 Supabase 의 승인된 세차장으로 wash/ 페이지를 다시 만듦
+# - guide-src/ 에 새 가이드 원고가 올라오면 바로 다시 만듦
+# - GitHub → Actions → "검색용 페이지 만들기" → Run workflow 로 직접 실행도 가능
+# 바뀐 게 있을 때만 main 에 커밋합니다.
+name: 검색용 페이지 만들기
+
+on:
+  schedule:
+    - cron: '10 18 * * *'   # UTC 18:10 = 한국 03:10
+  push:
+    branches: [main]
+    paths: ['guide-src/**', 'tools/build_seo.py', 'css/seo.css']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-seo
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: 페이지 만들기
+        run: python3 tools/build_seo.py
+      - name: 바뀐 게 있으면 커밋
+        run: |
+          git config user.name "ppaxse-bot"
+          git config user.email "ppaxse@gmail.com"
+          git add -A wash guide sitemap.xml robots.txt
+          if git diff --cached --quiet; then
+            echo "바뀐 것 없음"
+          else
+            git commit -m "검색용 페이지 자동 갱신 ($(TZ=Asia/Seoul date +%Y-%m-%d))"
+            git pull --rebase
+            git push
+          fi
