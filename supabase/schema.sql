@@ -2532,6 +2532,7 @@ alter table public.place_reports add constraint place_reports_via_check
 -- 운영 DB에 migrate_2026-11-16b.sql을 실행한 동안: ppx_enter_event가 운영자를 막지 않고, ppx_entry_weight가 운영자 응모권도 세며,
 -- ppx_entry_valid가 운영자 응모를 추첨 대상에서 빼고, ppx_event_status의 mine.valid가 응모권 기준으로 바뀜.
 -- 시험이 끝나면 rollback_2026-11-16b.sql로 위 함수들을 이 파일의 원래 정의대로 되돌림.
+-- → 2026-11-17 운영 DB에 rollback_2026-11-16b.sql 실행 완료. 네 함수 모두 원래 정의로 돌아감(실행 권한 그대로). 시험 응모 1건은 남아 있고 응모권 0장(추첨 제외).
 
 -- ═══ 2026-11-17 이벤트 게시판 (migrate_2026-11-17.sql) ═══
 
