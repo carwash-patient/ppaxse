@@ -102,6 +102,24 @@ html,body{min-height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backg
 .toast.show{opacity:1;transform:translateX(-50%)}
 .toast.warn{background:rgba(239,68,68,.95)}
 [hidden]{display:none!important}
+/* 한마디 카드의 세차장 이름 → 누르면 아래에서 지도 창 */
+.pl-go{background:none;border:none;padding:0;font-family:inherit;font-size:15px;font-weight:900;color:#fff;text-align:left;cursor:pointer;text-decoration:underline;text-decoration-color:rgba(34,211,238,.6);text-underline-offset:4px}
+.ms-dim{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:80;opacity:0;transition:opacity .2s;pointer-events:none}
+.ms-dim.open{opacity:1;pointer-events:auto}
+.msheet{position:fixed;left:0;right:0;bottom:0;z-index:81;height:74vh;max-width:720px;margin:0 auto;background:var(--deep2);border-radius:22px 22px 0 0;border-top:1px solid var(--line);transform:translateY(105%);transition:transform .25s ease;display:flex;flex-direction:column}
+.msheet.open{transform:translateY(0)}
+.msheet.drag{transition:none}
+.ms-head{padding:8px 14px 10px;touch-action:none;cursor:grab}
+.ms-grip{width:46px;height:5px;border-radius:3px;background:rgba(255,255,255,.3);margin:0 auto 10px}
+.ms-row{display:flex;align-items:flex-start;gap:10px}
+.ms-t{flex:1;min-width:0}
+.ms-t b{display:block;font-size:16px;line-height:1.4}
+.ms-t span{display:block;font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5}
+.ms-x{width:42px;height:42px;border-radius:50%;border:none;background:rgba(255,255,255,.12);color:#fff;font-size:22px;line-height:1;cursor:pointer;flex-shrink:0}
+#msMap{flex:1;margin:0 12px;border-radius:16px;overflow:hidden;background:#0a1b2e}
+.ms-foot{display:flex;gap:8px;padding:10px 12px calc(12px + env(safe-area-inset-bottom))}
+.ms-foot a{flex:1;text-align:center;padding:13px 6px;border-radius:13px;font-size:13.5px;font-weight:900;text-decoration:none;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15)}
+.ms-foot a.main{background:linear-gradient(135deg,var(--sky),var(--aqua));border:none}
 </style>
 </head>
 <body>
@@ -111,6 +129,17 @@ html,body{min-height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backg
 </div>
 <div id="app"><div class="msg">확인 중…</div></div>
 <div class="toast" id="toast"></div>
+<!-- 한마디의 세차장 위치 보기 (X 또는 위쪽 손잡이를 아래로 내려 닫기) -->
+<div class="ms-dim" id="msDim"></div>
+<div class="msheet" id="msheet" role="dialog" aria-label="세차장 위치" aria-hidden="true">
+  <div class="ms-head" id="msHead">
+    <div class="ms-grip"></div>
+    <div class="ms-row"><div class="ms-t"><b id="msName"></b><span id="msAddr"></span></div>
+      <button class="ms-x" id="msX" type="button" aria-label="닫기">×</button></div>
+  </div>
+  <div id="msMap"></div>
+  <div class="ms-foot"><a id="msOpen" class="main" target="_blank" rel="noopener">🗺️ 빡세 지도에서 열기</a><a id="msEdit">✏️ 이 세차장 고치기</a></div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js?v=20261117"></script>
@@ -308,7 +337,7 @@ async function load() {
           const c = x.comment;
           g = { kind: 'creport', id: 's' + x.comment_id, cid: x.comment_id, n: 0, reasons: {}, created_at: x.created_at,
             body: c ? c.body : '(삭제된 한마디)', nickname: c ? c.nickname : '', hidden: c ? c.hidden : true,
-            place: c ? c.place : null, lat: c && c.place ? c.place.lat : null, lng: c && c.place ? c.place.lng : null };
+            place: c ? c.place : null, place_id: c ? c.place_id : null, lat: c && c.place ? c.place.lat : null, lng: c && c.place ? c.place.lng : null };
           groups.set(x.comment_id, g);
         }
         g.n++; g.reasons[x.reason] = (g.reasons[x.reason] || 0) + 1;
@@ -512,7 +541,7 @@ function cardCommentReport(it) {
     .map(([k, n]) => esc(REPORT_REASONS[k] || '기타') + (n > 1 ? ' ' + n : '')).join(' · ');
   return `
     <div class="card ${it.id===selId?'sel':''}" data-id="${it.id}">
-      <div class="c-top"><span class="c-name">${it.n >= 3 ? '<span class="state pending" style="margin-right:6px">신고 많음</span>' : ''}${esc(it.place ? it.place.name : '(세차장 정보 없음)')}</span><span class="c-when">${ago(it.created_at)}</span></div>
+      <div class="c-top"><span class="c-name">${it.n >= 3 ? '<span class="state pending" style="margin-right:6px">신고 많음</span>' : ''}${plName(it.place_id, it.place, '(세차장 정보 없음)')}</span><span class="c-when">${ago(it.created_at)}</span></div>
       <div class="memo">🚩 신고 ${it.n}건 — ${why}</div>
       <div class="memo" style="${it.hidden ? 'opacity:.5;text-decoration:line-through' : ''}">💬 ${esc(it.body)}</div>
       <div class="c-who">${esc(it.nickname || '익명 세차러')}${it.hidden ? ' · 숨김 상태' : ''}</div>
@@ -572,7 +601,7 @@ async function loadAbComments(it) {
 function cardComment(it) {
   return `
     <div class="card ${it.id===selId?'sel':''}" data-id="${it.id}">
-      <div class="c-top"><span class="c-name">${it.created_at > (cmSeenBefore || '') ? '<span class="state pending" style="margin-right:6px">NEW</span>' : ''}${esc(it.place ? it.place.name : '(지도에서 내려간 세차장)')}</span><span class="c-when">${ago(it.created_at)}</span></div>
+      <div class="c-top"><span class="c-name">${it.created_at > (cmSeenBefore || '') ? '<span class="state pending" style="margin-right:6px">NEW</span>' : ''}${plName(it.place_id, it.place, '(지도에서 내려간 세차장)')}</span><span class="c-when">${ago(it.created_at)}</span></div>
       <div class="memo" style="${it.hidden ? 'opacity:.5;text-decoration:line-through' : ''}">💬 ${esc(it.body)}</div>
       <div class="c-who">${esc(it.nickname || '익명 세차러')}${it.hidden ? ' · <span class="blocked">숨김</span>' : ''}</div>
       <div class="acts">
@@ -581,6 +610,69 @@ function cardComment(it) {
       </div>
     </div>`;
 }
+
+// ── 📍 한마디의 세차장 위치 보기: 이름을 누르면 아래에서 지도 창이 올라옴 ──
+// 좌표는 지도에 올라간 세차장 목록(approved)에서 찾음 (없으면 한마디에 딸려 온 좌표)
+function placeOf(pid, place) {
+  const p = pid != null ? approved.find(x => x.id === pid) : null;
+  if(p) return p;
+  return place && place.lat != null ? Object.assign({ id: pid }, place) : null;
+}
+function plName(pid, place, none) {
+  if(!place && pid == null) return esc(none);
+  const name = esc(place ? place.name : none);
+  return placeOf(pid, place) ? `<button class="pl-go" type="button" data-pl="${pid}">📍 ${name}</button>` : name;
+}
+let msMap = null, msMarkers = [];
+function openPlaceSheet(p) {
+  const sheet = document.getElementById('msheet');
+  document.getElementById('msName').textContent = p.name || '';
+  document.getElementById('msAddr').textContent = p.addr || p.region || '';
+  document.getElementById('msOpen').href = 'map.html?p=' + p.id;
+  document.getElementById('msEdit').href = 'admin.html?edit=' + p.id;
+  sheet.style.transform = '';
+  sheet.classList.add('open'); sheet.setAttribute('aria-hidden', 'false');
+  document.getElementById('msDim').classList.add('open');
+  const el = document.getElementById('msMap');
+  if(!(window.naver && naver.maps && !window.__naverAuthFailed)) { el.innerHTML = '<div class="msg" style="padding:40px 10px">지도를 불러올 수 없어요</div>'; return; }
+  const pos = new naver.maps.LatLng(p.lat, p.lng);
+  if(!msMap) msMap = new naver.maps.Map('msMap', { center: pos, zoom: 17, zoomControl: true, mapDataControl: false });
+  msMarkers.forEach(m => m.setMap(null)); msMarkers = [];
+  // 근처 세차장(파란 점) — 같은 곳이 두 번 올라가 있는지 보기 좋게
+  approved.filter(x => x.id !== p.id && Math.abs(x.lat - p.lat) < 0.006 && Math.abs(x.lng - p.lng) < 0.008).forEach(x => msMarkers.push(new naver.maps.Marker({
+    position: new naver.maps.LatLng(x.lat, x.lng), map: msMap,
+    icon: { content: `<div style="transform:translate(-50%,-50%);display:flex;align-items:center;gap:4px;white-space:nowrap"><span style="width:12px;height:12px;border-radius:50%;background:#0ea5e9;border:2px solid #fff;display:inline-block"></span><span style="font-size:11px;font-weight:700;color:#fff;background:rgba(4,17,30,.9);padding:2px 6px;border-radius:6px">${esc(x.name)}</span></div>`, anchor: new naver.maps.Point(0, 0) } })));
+  msMarkers.push(new naver.maps.Marker({ position: pos, map: msMap, zIndex: 100 }));
+  // 창이 다 올라온 뒤 크기를 다시 재고 가운데로
+  setTimeout(() => { msMap.setSize(new naver.maps.Size(el.clientWidth, el.clientHeight)); msMap.setZoom(17); msMap.setCenter(pos); }, 260);
+}
+function closePlaceSheet() {
+  const sheet = document.getElementById('msheet');
+  sheet.classList.remove('open', 'drag'); sheet.style.transform = ''; sheet.setAttribute('aria-hidden', 'true');
+  document.getElementById('msDim').classList.remove('open');
+}
+// 이름 버튼: 카드 자체를 누른 것으로 치지 않도록 먼저 가로챔
+document.addEventListener('click', e => {
+  const b = e.target.closest('.pl-go');
+  if(!b) return;
+  e.stopPropagation(); e.preventDefault();
+  const pid = b.dataset.pl === 'undefined' || b.dataset.pl === 'null' ? null : +b.dataset.pl;
+  const src = [...items, ...allCm].find(c => c.place_id === pid);
+  const p = placeOf(pid, src && src.place);
+  if(p) openPlaceSheet(p);
+}, true);
+document.getElementById('msX').onclick = closePlaceSheet;
+document.getElementById('msDim').onclick = closePlaceSheet;
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closePlaceSheet(); });
+// 위쪽 손잡이를 아래로 끌면 닫힘
+(() => {
+  const head = document.getElementById('msHead'), sheet = document.getElementById('msheet');
+  let y0 = null, dy = 0;
+  head.addEventListener('pointerdown', e => { if(e.target.closest('.ms-x')) return; y0 = e.clientY; dy = 0; sheet.classList.add('drag'); head.setPointerCapture(e.pointerId); });
+  head.addEventListener('pointermove', e => { if(y0 === null) return; dy = Math.max(0, e.clientY - y0); sheet.style.transform = `translateY(${dy}px)`; });
+  const end = () => { if(y0 === null) return; y0 = null; sheet.classList.remove('drag'); if(dy > 80) closePlaceSheet(); else sheet.style.transform = ''; };
+  head.addEventListener('pointerup', end); head.addEventListener('pointercancel', end);
+})();
 
 // ── 🎁 기프티콘 추첨 (주간: 토~금 응모, 월 추첨, 회원 2 + 누구나 2) ──
 const EV_START = '2026-11-14';
@@ -633,7 +725,7 @@ function renderAllComments() {
       <div style="margin:14px 0 6px;font-size:13px;font-weight:900;color:var(--aqua,#22d3ee)">${evMd(d)} · ${cnt(d)}개</div>
       ${allCm.filter(c => kstDay(c.created_at) === d).map(c => `
         <div class="card" data-cm="${c.id}">
-          <div class="c-top"><span class="c-name">${esc(c.place ? c.place.name : '(지도에서 내려간 세차장)')}</span><span class="c-when">${kstTime(c.created_at)}</span></div>
+          <div class="c-top"><span class="c-name">${plName(c.place_id, c.place, '(지도에서 내려간 세차장)')}</span><span class="c-when">${kstTime(c.created_at)}</span></div>
           <div class="memo" style="${c.hidden ? 'opacity:.5;text-decoration:line-through' : ''}">💬 ${esc(c.body)}</div>
           <div class="c-who">${esc(c.nickname || '익명 세차러')}${c.place && c.place.region ? ' · ' + esc(c.place.region) : ''}${c.hidden ? ' · <span class="blocked">숨김</span>' : ''}</div>
         </div>`).join('')}`).join('');
