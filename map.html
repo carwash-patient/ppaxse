@@ -1704,7 +1704,30 @@ async function geoPermission() {
   } catch(e) { return 'unknown'; }
 }
 
+// 검색용 페이지(wash/, guide/)에서 온 주소: map.html?p=세차장번호 → 그 세차장, ?r=지역 → 그 지역
+function startFromLink() {
+  let q;
+  try { q = new URLSearchParams(location.search); } catch(e) { return ''; }
+  const id = Number(q.get('p'));
+  const p = id ? places.find(x => x.id === id) : null;
+  if(p) {
+    if(naverMap) { naverMap.setCenter(new naver.maps.LatLng(p.lat, p.lng)); naverMap.setZoom(16); }
+    openDetail(p.id);
+    return 'link';
+  }
+  const r = (q.get('r') || '').trim();
+  if(r) {
+    const [sido, ...rest] = r.split(' ');
+    const sgg = rest.join(' ');
+    if(sgg ? (regionIndex[sido] || {})[sgg] : regionIndex[sido]) { selectRegion(r); return 'link'; }
+  }
+  return '';
+}
+
 async function decideStart() {
+  // 0) 검색 페이지의 '지도에서 보기'로 왔으면 그 세차장·지역 먼저
+  const fromLink = startFromLink();
+  if(fromLink) return fromLink;
   try { homeRegion = PPX.getHome ? await PPX.getHome() : null; } catch(e) { homeRegion = null; }
   // ① 기본 지역을 정한 사람: 그 지역 먼저 (지금 위치는 📍 버튼으로)
   if(homeRegion) {

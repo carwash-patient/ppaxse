@@ -182,7 +182,7 @@ def place_card(p, up):
     return f'''<li class="pl"><h3>{esc(p["name"])}</h3>
 <div class="meta">{"<br>".join(meta)}</div>
 <div class="badges">{badges}</div>
-<div class="acts"><a class="main" href="{up}r/?p={p["id"]}" data-cta="card_review">{talk_txt}</a><a href="{up}map.html" data-cta="card_map">🗺️ 지도에서 보기</a></div></li>'''
+<div class="acts"><a class="main" href="{up}r/?p={p["id"]}" data-cta="card_review">{talk_txt}</a><a href="{up}map.html?p={p["id"]}" data-cta="card_map">🗺️ 지도에서 보기</a></div></li>'''
 
 
 def cta(up, where, equal=False):
@@ -190,9 +190,10 @@ def cta(up, where, equal=False):
     equal=True(가이드 글): 두 버튼을 같은 모양으로 — 어느 쪽이 더 눌리는지 보려고"""
     w = where or '우리 동네'
     sub = '' if equal else ' class="sub"'
+    map_url = f'{up}map.html?r={quote(where)}' if where else f'{up}map.html'   # 지역 페이지면 그 지역으로 바로
     return f'''<div class="cta"><b>🗺️ {esc(w)} 세차장, 지도에서 한눈에 보세요</b>
 <p>셀프세차·노터치·손세차를 종류별로 골라 보고, 폼건·온수·하부세차 같은 시설 정보도 확인할 수 있어요.</p>
-<a href="{up}map.html" data-cta="cta_map">🗺️ 세차장 지도 열기</a><a{sub} href="{up}r/" data-cta="cta_review">✏️ 자주 가는 세차장에 한마디 남기기</a>
+<a href="{map_url}" data-cta="cta_map">🗺️ 세차장 지도 열기</a><a{sub} href="{up}r/" data-cta="cta_review">✏️ 자주 가는 세차장에 한마디 남기기</a>
 <p style="font-size:12.5px;margin:8px 0 0;color:var(--muted)">🎁 한마디를 남기면 가입 없이도 매주 기프티콘 추첨에 응모돼요.</p></div>'''
 
 
