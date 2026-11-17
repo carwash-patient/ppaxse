@@ -642,7 +642,8 @@ function openPlaceSheet(p) {
   approved.filter(x => x.id !== p.id && Math.abs(x.lat - p.lat) < 0.006 && Math.abs(x.lng - p.lng) < 0.008).forEach(x => msMarkers.push(new naver.maps.Marker({
     position: new naver.maps.LatLng(x.lat, x.lng), map: msMap,
     icon: { content: `<div style="transform:translate(-50%,-50%);display:flex;align-items:center;gap:4px;white-space:nowrap"><span style="width:12px;height:12px;border-radius:50%;background:#0ea5e9;border:2px solid #fff;display:inline-block"></span><span style="font-size:11px;font-weight:700;color:#fff;background:rgba(4,17,30,.9);padding:2px 6px;border-radius:6px">${esc(x.name)}</span></div>`, anchor: new naver.maps.Point(0, 0) } })));
-  msMarkers.push(new naver.maps.Marker({ position: pos, map: msMap, zIndex: 100 }));
+  msMarkers.push(new naver.maps.Marker({ position: pos, map: msMap, zIndex: 100,
+    icon: { content: '<div style="font-size:34px;transform:translate(-50%,-100%);filter:drop-shadow(0 4px 6px rgba(0,0,0,.5))">📍</div>', anchor: new naver.maps.Point(0, 0) } }));
   // 창이 다 올라온 뒤 크기를 다시 재고 가운데로
   setTimeout(() => { msMap.setSize(new naver.maps.Size(el.clientWidth, el.clientHeight)); msMap.setZoom(17); msMap.setCenter(pos); }, 260);
 }
