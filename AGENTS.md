@@ -76,4 +76,4 @@
 
 - `wash/`, `guide/`, `sitemap.xml`, `robots.txt`는 `tools/build_seo.py`가 **자동으로 만드는 파일**입니다. 직접 고치지 말고, 틀은 `tools/build_seo.py`, 가이드 원고는 `guide-src/`를 고치세요.
 - GitHub Actions(`.github/workflows/build-seo.yml`)가 매일 새벽 Supabase의 승인된 세차장으로 다시 만들고, `guide-src/`가 바뀌면 바로 다시 만듭니다.
-- 가이드 글은 **하루 1편까지**, 지어낸 숫자·후기 금지. 자세한 내용은 `docs/seo-guide.md`.
+- 가이드 글은 **하루 1편까지**(예외: 2026-11-18 첫 묶음), 지어낸 숫자·후기 금지. 자세한 내용은 `docs/seo-guide.md`.
