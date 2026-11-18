@@ -84,6 +84,9 @@ html,body{min-height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backg
 .loc-box .lb-st{font-weight:800;color:#fff;margin-bottom:8px}
 .loc-box .lb-st.moved{color:#fde68a}
 .loc-box .lb-btns{display:flex;flex-wrap:wrap;gap:6px}
+.loc-box .lb-nv{display:flex;gap:6px;margin-bottom:8px}
+.loc-box .lb-nv button{flex:1;padding:11px 8px;border-radius:10px;border:none;background:#03c75a;color:#fff;font-family:inherit;font-size:13px;font-weight:900;cursor:pointer}
+.loc-box .lb-nv button.sub{flex:0 0 auto;background:rgba(3,199,90,.15);border:1px solid rgba(3,199,90,.6)}
 .loc-box .lb-res{margin-top:8px;display:flex;flex-direction:column;gap:6px}
 .loc-box .lb-res button{text-align:left;padding:9px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#fff;font-family:inherit;font-size:12.5px;cursor:pointer}
 .loc-box .lb-res small{display:block;color:#94a3b8;font-size:11px}
@@ -410,10 +413,19 @@ function locBox(it) {
 function updLocBox() {
   const box = document.getElementById('locBox');
   if(!box) return;
-  if(!locEdit) { box.innerHTML = '<div class="lb-st">📍 위치 정보가 없어요</div>'; return; }
+  const nv = `<div class="lb-nv">
+      <button type="button" data-loc="nvAddr">N 네이버지도에서 이 주소 검색</button>
+      <button type="button" class="sub" data-loc="nvName">이름으로</button>
+    </div>`;
+  if(!locEdit) {
+    box.innerHTML = '<div class="lb-st">📍 위치 정보가 없어요</div>' + nv;
+    box.querySelectorAll('[data-loc]').forEach(b => b.onclick = () => locAct(b.dataset.loc, b));
+    return;
+  }
   const d = Math.round(distM(locEdit, locEdit.orig));
   box.innerHTML = `
     <div class="lb-st ${locMoved() ? 'moved' : ''}">${locMoved() ? `📍 핀을 옮겼어요 (원래 자리에서 ${d >= 1000 ? (d/1000).toFixed(1) + 'km' : d + 'm'}) · 저장하면 지도에 반영돼요` : '📍 핀 위치: 지금 등록된 그대로'}</div>
+    ${nv}
     <div class="lb-btns">
       <button class="mini" type="button" data-loc="addr">🔍 주소칸 주소로 핀 옮기기</button>
       <button class="mini" type="button" data-loc="map">🗺️ 지도에서 직접 찍기</button>
@@ -448,6 +460,16 @@ function reverseAddr(lat, lng) {
 async function locAct(what, btn) {
   const card = btn.closest('.card');
   const addrIn = card && card.querySelector('[data-k="addr"]');
+  // 네이버지도에서 확인: 주소칸(또는 이름칸 + 지역) 그대로 검색 — 새 창(휴대폰은 네이버지도 앱/모바일 웹)
+  if(what === 'nvAddr' || what === 'nvName') {
+    const nameIn = card && card.querySelector('[data-k="name"]'), regIn = card && card.querySelector('[data-k="region"]');
+    const q = what === 'nvAddr'
+      ? (addrIn ? addrIn.value.trim() : '')
+      : [regIn ? regIn.value.trim() : '', nameIn ? nameIn.value.trim() : ''].filter(Boolean).join(' ');
+    if(q.length < 2) return toast(what === 'nvAddr' ? '주소칸이 비어 있어요' : '이름칸이 비어 있어요', true);
+    window.open('https://map.naver.com/p/search/' + encodeURIComponent(q), '_blank', 'noopener');
+    return;
+  }
   if(what === 'undo') return moveLoc(locEdit.orig.lat, locEdit.orig.lng, 'addr');
   if(what === 'map') {
     document.getElementById('map').scrollIntoView({ behavior: 'smooth', block: 'start' });
