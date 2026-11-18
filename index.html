@@ -226,17 +226,20 @@ footer{position:relative;z-index:5;padding:28px 20px;text-align:center;font-size
 <script src="js/ev.js?v=20261117a"></script>
 <script src="js/install.js?v=20261116e" defer></script>
 <script>
-// 등록 세차장 수 = 지도에 올라간 세차장 수, 100단위 버림 (예: 5,773 → 5,700+)
+// 등록 세차장 수 = 지도에 올라간(승인된) 세차장 수를 그대로 표시 (예: 11,602)
+// DB를 못 읽어 places.json(예전 사본)으로 대신할 때만 100단위 버림 + '+' 표시
 (async () => {
-  let n = 0;
+  const el = document.getElementById('placeCount'), plus = el.nextElementSibling;
+  let n = 0, exact = false;
   try {
     if(window.PPX && PPX.ready) {
       const { count, error } = await PPX.db.from('places').select('id', { count: 'exact', head: true }).eq('status', 'approved');
-      if(!error) n = count || 0;
+      if(!error && count) { n = count; exact = true; }
     }
     if(!n) n = (await fetch('places.json').then(r => r.json())).length;
   } catch(e) {}
-  if(n >= 100) document.getElementById('placeCount').textContent = (Math.floor(n / 100) * 100).toLocaleString();
+  if(exact) { el.textContent = n.toLocaleString(); if(plus) plus.remove(); }
+  else if(n >= 100) el.textContent = (Math.floor(n / 100) * 100).toLocaleString();
 })();
 
 // 로그인한 사람에게는 '로그인 / 무료 가입' 대신 '지도 열기 / 마이페이지'
