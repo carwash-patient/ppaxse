@@ -2822,3 +2822,30 @@ begin
 end $$;
 revoke all on function public.ppx_track_click(uuid, text, text) from public, anon, authenticated;
 grant execute on function public.ppx_track_click(uuid, text, text) to anon, authenticated;
+
+
+-- ===== 2026-11-18b: 지도용 가벼운 세차장 목록 (migrate_2026-11-18b.sql) =====
+create or replace function public.map_places_version()
+returns text language sql stable security invoker set search_path = pg_catalog, public, pg_temp as $$
+  select (select count(*) from public.places where status = 'approved')::text || '-' ||
+         coalesce((select extract(epoch from max(updated_at))::bigint from public.places), 0)::text
+$$;
+revoke all on function public.map_places_version() from public, anon, authenticated;
+grant execute on function public.map_places_version() to anon, authenticated;
+
+create or replace function public.map_places()
+returns json language sql stable security invoker set search_path = pg_catalog, public, pg_temp as $$
+  select json_build_object(
+    'v', public.map_places_version(),
+    'rows', coalesce(json_agg(json_build_array(
+      id, name, coalesce(addr, ''), coalesce(region, ''), type, types,
+      round(lat::numeric, 6), round(lng::numeric, 6),
+      (case when foam then 1 else 0 end) + (case when under then 2 else 0 end) +
+      (case when indoor then 4 else 0 end) + (case when h24 then 8 else 0 end),
+      comment_count, check_count, checked_at
+    ) order by id), '[]'::json))
+  from public.places
+  where status = 'approved' and lat is not null and lng is not null
+$$;
+revoke all on function public.map_places() from public, anon, authenticated;
+grant execute on function public.map_places() to anon, authenticated;
