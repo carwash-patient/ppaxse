@@ -97,6 +97,9 @@ main{position:relative;z-index:5}
 .kpi-num{font-family:'Noto Sans KR',sans-serif;font-weight:900;font-size:30px;color:var(--white)}
 .kpi-num span{color:var(--aqua)}
 .kpi-label{font-size:11px;color:var(--muted);font-weight:700;margin-top:4px;letter-spacing:.5px}
+.hero-kpi.top{margin:0 0 36px;animation:fadeUp .7s ease both}
+.hero{justify-content:flex-start;padding-top:96px;padding-bottom:48px;min-height:auto}
+.pi-on .hero{padding-top:24px;min-height:auto}
 .odo-title{font-size:14px;color:var(--muted);font-weight:700;margin-bottom:12px}
 .odo{display:inline-flex;gap:4px;align-items:flex-end;min-height:48px}
 .odo-d{width:32px;height:48px;overflow:hidden;background:rgba(14,165,233,.08);border:1px solid var(--line);border-radius:7px}
@@ -173,6 +176,13 @@ footer{position:relative;z-index:5;padding:28px 20px;text-align:center;font-size
   <div id="ppxInstall" class="inst-top" hidden data-key="main" data-icon="icons/icon-192.png"
        data-title="바탕화면에 빡세 추가" data-sub="아이콘 한 번에 세차장 지도"></div>
   <section class="hero">
+    <div class="hero-kpi top">
+      <div class="kpi-item odo-wrap">
+        <div class="odo-title">🚗 빡세 누적 세차장</div>
+        <div class="odo" id="placeCount" role="img" aria-label="지도에 있는 세차장 수"></div>
+        <div class="odo-live" id="placeLive" hidden><span class="odo-dot"></span>실시간 업데이트 중</div>
+      </div>
+    </div>
     <div class="hero-eyebrow">
       <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
       전국 세차장 지도 · 같이 채워가요
@@ -187,13 +197,6 @@ footer{position:relative;z-index:5;padding:28px 20px;text-align:center;font-size
     </p>
     <div class="hero-cta">
       <a href="map.html" class="cta-btn primary">🗺️ 내 주변 세차장 찾기</a>
-    </div>
-    <div class="hero-kpi">
-      <div class="kpi-item odo-wrap">
-        <div class="odo-title">🚗 빡세 누적 세차장</div>
-        <div class="odo" id="placeCount" role="img" aria-label="지도에 있는 세차장 수"></div>
-        <div class="odo-live" id="placeLive" hidden><span class="odo-dot"></span>실시간 업데이트 중</div>
-      </div>
     </div>
   </section>
 
@@ -274,7 +277,7 @@ footer{position:relative;z-index:5;padding:28px 20px;text-align:center;font-size
     cols.forEach(c => c.style.transform = 'translateY(-' + ((10 + (+c.dataset.d)) * H) + 'px)');
   };
   if('IntersectionObserver' in window) {
-    const io = new IntersectionObserver(es => { if(es[0].isIntersecting) { io.disconnect(); setTimeout(roll, 250); } }, { threshold: 0.4 });
+    const io = new IntersectionObserver(es => { if(es[0].isIntersecting) { io.disconnect(); setTimeout(roll, 500); } }, { threshold: 0.4 });
     io.observe(el);
   } else roll();
 })();
