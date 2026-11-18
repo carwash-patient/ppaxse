@@ -149,6 +149,9 @@ def page(path, title, desc, body, crumbs=(), jsonld=None, bnav=False):
 <meta property="og:image" content="{SITE}/icons/og.png?v=20261111">
 <meta name="theme-color" content="#04111e">
 <link rel="icon" href="{up}icons/icon.svg" type="image/svg+xml">
+<link rel="icon" href="{up}icons/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="{up}icons/icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="{up}icons/apple-touch-icon.png">
 <link rel="stylesheet" href="{up}css/seo.css?v=20261118">
 {ld}
 </head>
