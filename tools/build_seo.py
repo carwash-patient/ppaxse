@@ -341,6 +341,10 @@ def guide_item(no, p, pinned):
             f'<div class="m">{tag}{new}{esc(md)}</div></div></a></li>')
 
 
+# 가이드 글 주소 → 마지막 수정일(updated 또는 date). 사이트맵 lastmod 에 씀
+GUIDE_LASTMOD = {}
+
+
 def build_guides():
     src = os.path.join(ROOT, 'guide-src')
     shutil.rmtree(os.path.join(ROOT, 'guide'), ignore_errors=True)
@@ -366,6 +370,7 @@ def build_guides():
 {cta('../../', '', equal=True)}</article>'''
         write(path, page(path, f'{title} | 빡세', desc, full, [('빡세', ''), ('세차 가이드', 'guide/'), (title, None)], jl, bnav=True))
         pin = meta.get('pin', '').strip()
+        GUIDE_LASTMOD[path] = meta.get('updated', date)
         posts.append({'date': date, 'slug': slug, 'title': title, 'category': meta.get('category', '').strip(),
                       'pin': int(pin) if pin.isdigit() else None})
         urls.append(path)
@@ -396,14 +401,20 @@ ul.hidden=!n;var h=ul.previousElementSibling;if(h&&h.classList.contains('gsec'))
     write('guide/', page('guide/', '세차 가이드 - 셀프세차 방법·순서·꿀팁 | 빡세',
                          '셀프세차 순서, 계절별 세차 방법, 세차장 고르는 법까지. 세차하는 사람들이 직접 쓰는 세차 가이드.',
                          body, [('빡세', ''), ('세차 가이드', None)], bnav=True))
+    if GUIDE_LASTMOD:
+        GUIDE_LASTMOD['guide/'] = max(GUIDE_LASTMOD.values())
     urls.append('guide/')
     return urls
 
 
 def build_sitemap(urls):
     base = ['', 'map.html', 'community.html', 'events.html', 'r/']
-    # 날짜(lastmod)는 넣지 않음 — 매일 바뀌면 데이터가 그대로여도 매일 커밋이 생김
-    items = ''.join(f'<url><loc>{esc(SITE + "/" + quote(u))}</loc></url>' for u in base + urls)
+    # 날짜(lastmod)는 가이드 글에만 넣음 — 글의 date/updated 라서 매일 바뀌지 않음.
+    # 지역 페이지 등은 넣지 않음 — 매일 바뀌면 데이터가 그대로여도 매일 커밋이 생김
+    def item(u):
+        lm = GUIDE_LASTMOD.get(u)
+        return f'<url><loc>{esc(SITE + "/" + quote(u))}</loc>' + (f'<lastmod>{lm}</lastmod>' if lm else '') + '</url>'
+    items = ''.join(item(u) for u in base + urls)
     open(os.path.join(ROOT, 'sitemap.xml'), 'w', encoding='utf-8').write(
         f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{items}</urlset>\n')
     open(os.path.join(ROOT, 'robots.txt'), 'w', encoding='utf-8').write(

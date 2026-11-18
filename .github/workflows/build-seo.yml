@@ -3,6 +3,7 @@
 # - guide-src/ 에 새 가이드 원고가 올라오면 바로 다시 만듦
 # - GitHub → Actions → "검색용 페이지 만들기" → Run workflow 로 직접 실행도 가능
 # 바뀐 게 있을 때만 main 에 커밋합니다.
+# 커밋 뒤 새로 공개·수정된 주소를 IndexNow 로 네이버(·빙 등)에 알립니다 (tools/indexnow.py).
 name: 검색용 페이지 만들기
 
 on:
@@ -10,7 +11,7 @@ on:
     - cron: '10 18 * * *'   # UTC 18:10 = 한국 03:10
   push:
     branches: [main]
-    paths: ['guide-src/**', 'tools/build_seo.py', 'css/seo.css']
+    paths: ['guide-src/**', 'tools/build_seo.py', 'tools/indexnow.py', 'css/seo.css']
   workflow_dispatch:
 
 permissions:
@@ -28,6 +29,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: 예전 사이트맵 보관 (새 주소 비교용)
+        run: cp sitemap.xml /tmp/sitemap_old.xml || true
       - name: 페이지 만들기
         run: python3 tools/build_seo.py
       - name: 바뀐 게 있으면 커밋
@@ -42,3 +45,6 @@ jobs:
             git pull --rebase
             git push
           fi
+      - name: 새 주소를 네이버에 알리기 (IndexNow)
+        run: python3 tools/indexnow.py /tmp/sitemap_old.xml sitemap.xml
+        continue-on-error: true
