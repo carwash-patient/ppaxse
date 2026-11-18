@@ -120,6 +120,16 @@ html,body{min-height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backg
 .ms-foot{display:flex;gap:8px;padding:10px 12px calc(12px + env(safe-area-inset-bottom))}
 .ms-foot a{flex:1;text-align:center;padding:13px 6px;border-radius:13px;font-size:13.5px;font-weight:900;text-decoration:none;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15)}
 .ms-foot a.main{background:linear-gradient(135deg,var(--sky),var(--aqua));border:none}
+/* 지도의 파란 점(근처 세차장)을 누르면 뜨는 정보 창 */
+.np{position:fixed;left:12px;right:12px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:90;max-width:520px;margin:0 auto;background:#0b2238;border:1px solid rgba(34,211,238,.45);border-radius:18px;padding:14px 14px 12px;box-shadow:0 10px 30px rgba(0,0,0,.55)}
+.np-row{display:flex;gap:10px;align-items:flex-start}
+.np-t{flex:1;min-width:0}
+.np-t b{display:block;font-size:16px;line-height:1.4}
+.np-t span{display:block;font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.5;word-break:keep-all}
+.np-x{width:38px;height:38px;border-radius:50%;border:none;background:rgba(255,255,255,.12);color:#fff;font-size:20px;line-height:1;cursor:pointer;flex-shrink:0}
+.np-btns{display:flex;gap:8px;margin-top:12px}
+.np-btns button,.np-btns a{flex:1;text-align:center;padding:12px 6px;border-radius:12px;font-family:inherit;font-size:13.5px;font-weight:900;text-decoration:none;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);cursor:pointer}
+.np-btns .main{background:linear-gradient(135deg,var(--sky),var(--aqua));border:none}
 </style>
 </head>
 <body>
@@ -139,6 +149,11 @@ html,body{min-height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backg
   </div>
   <div id="msMap"></div>
   <div class="ms-foot"><a id="msOpen" class="main" target="_blank" rel="noopener">🗺️ 빡세 지도에서 열기</a><a id="msEdit">✏️ 이 세차장 고치기</a></div>
+</div>
+<div class="np" id="np" role="dialog" aria-label="근처 세차장 정보" hidden>
+  <div class="np-row"><div class="np-t"><b id="npName"></b><span id="npInfo"></span></div>
+    <button class="np-x" id="npX" type="button" aria-label="닫기">×</button></div>
+  <div class="np-btns"><button class="main" id="npEdit" type="button">✏️ 이 세차장 고치기</button><a id="npOpen" target="_blank" rel="noopener">🗺️ 빡세 지도</a></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -244,6 +259,8 @@ async function init() {
     map = new naver.maps.Map('map', { center: new naver.maps.LatLng(37.5, 126.9), zoom: 15, zoomControl: true, mapDataControl: false });
     // 고치기·추가 요청 탭: 지도를 누르면 빨간 핀이 그 자리로 옮겨감
     naver.maps.Event.addListener(map, 'click', e => {
+      if(Date.now() - npAt < 400) return;   // 파란 점을 누른 것 — 핀을 옮기지 않음
+      if(npPlace) return closeNearPop();    // 정보 창이 떠 있으면 먼저 닫기만
       if(!locEdit || !LOC_TABS.includes(tab)) return;
       moveLoc(e.coord.lat(), e.coord.lng(), 'tap');
     });
@@ -639,15 +656,45 @@ function openPlaceSheet(p) {
   if(!msMap) msMap = new naver.maps.Map('msMap', { center: pos, zoom: 17, zoomControl: true, mapDataControl: false });
   msMarkers.forEach(m => m.setMap(null)); msMarkers = [];
   // 근처 세차장(파란 점) — 같은 곳이 두 번 올라가 있는지 보기 좋게
-  approved.filter(x => x.id !== p.id && Math.abs(x.lat - p.lat) < 0.006 && Math.abs(x.lng - p.lng) < 0.008).forEach(x => msMarkers.push(new naver.maps.Marker({
-    position: new naver.maps.LatLng(x.lat, x.lng), map: msMap,
-    icon: { content: `<div style="transform:translate(-50%,-50%);display:flex;align-items:center;gap:4px;white-space:nowrap"><span style="width:12px;height:12px;border-radius:50%;background:#0ea5e9;border:2px solid #fff;display:inline-block"></span><span style="font-size:11px;font-weight:700;color:#fff;background:rgba(4,17,30,.9);padding:2px 6px;border-radius:6px">${esc(x.name)}</span></div>`, anchor: new naver.maps.Point(0, 0) } })));
+  approved.filter(x => x.id !== p.id && Math.abs(x.lat - p.lat) < 0.006 && Math.abs(x.lng - p.lng) < 0.008).forEach(x => msMarkers.push(nearDot(x, msMap, p)));
+  if(!msMap.__npClose) msMap.__npClose = naver.maps.Event.addListener(msMap, 'click', () => { if(Date.now() - npAt > 400) closeNearPop(); });
   msMarkers.push(new naver.maps.Marker({ position: pos, map: msMap, zIndex: 100,
     icon: { content: '<div style="font-size:34px;transform:translate(-50%,-100%);filter:drop-shadow(0 4px 6px rgba(0,0,0,.5))">📍</div>', anchor: new naver.maps.Point(0, 0) } }));
   // 창이 다 올라온 뒤 크기를 다시 재고 가운데로
   setTimeout(() => { msMap.setSize(new naver.maps.Size(el.clientWidth, el.clientHeight)); msMap.setZoom(17); msMap.setCenter(pos); }, 260);
 }
+// ── 근처 세차장 파란 점: 누르면 아래 정보 창 (이름·주소·종류·전화·거리 + 고치기) ──
+function nearDot(x, onMap, base) {
+  const m = new naver.maps.Marker({ position: new naver.maps.LatLng(x.lat, x.lng), map: onMap, clickable: true,
+    icon: { content: `<div style="transform:translate(-11px,-50%);display:flex;align-items:center;gap:4px;white-space:nowrap;cursor:pointer;padding:4px 0"><span style="width:16px;height:16px;border-radius:50%;background:#0ea5e9;border:2px solid #fff;display:inline-block;box-shadow:0 0 0 3px rgba(14,165,233,.3)"></span><span style="font-size:11px;font-weight:700;color:#fff;background:rgba(4,17,30,.9);padding:2px 6px;border-radius:6px">${esc(x.name)}</span></div>`, anchor: new naver.maps.Point(0, 0) } });
+  naver.maps.Event.addListener(m, 'click', e => { npAt = Date.now(); if(e && e.domEvent) e.domEvent.stopPropagation(); openNearPop(x, base); });
+  return m;
+}
+let npPlace = null, npAt = 0;
+function openNearPop(x, base) {
+  npPlace = x;
+  const types = (typeof typesOf === 'function' ? typesOf(x) : [x.type]).map(t => typeLabel[t] || t).filter(Boolean).join(' · ');
+  const d = base && base.lat != null ? Math.round(distM(base, x)) : null;
+  document.getElementById('npName').textContent = x.name || '';
+  document.getElementById('npInfo').innerHTML = [
+    esc(x.addr || x.region || '주소 없음'),
+    [types && esc(types), x.tel && '☎ ' + esc(x.tel)].filter(Boolean).join(' · '),
+    d != null ? `📏 빨간 핀에서 ${d >= 1000 ? (d / 1000).toFixed(1) + 'km' : d + 'm'} · #${x.id}` : '#' + x.id
+  ].filter(Boolean).join('<br>');
+  document.getElementById('npOpen').href = 'map.html?p=' + x.id;
+  document.getElementById('np').hidden = false;
+}
+function closeNearPop() { document.getElementById('np').hidden = true; npPlace = null; }
+document.getElementById('npX').onclick = closeNearPop;
+document.getElementById('npEdit').onclick = () => {
+  if(!npPlace) return;
+  if(locMoved() && !confirm('옮긴 핀을 아직 저장하지 않았어요. 저장하지 않고 이 세차장으로 넘어갈까요?')) return;
+  const id = npPlace.id;
+  closeNearPop(); closePlaceSheet(); goEdit(id);
+};
+
 function closePlaceSheet() {
+  closeNearPop();
   const sheet = document.getElementById('msheet');
   sheet.classList.remove('open', 'drag'); sheet.style.transform = ''; sheet.setAttribute('aria-hidden', 'true');
   document.getElementById('msDim').classList.remove('open');
@@ -1111,6 +1158,7 @@ function render() {
 
 function showOnMap() {
   if(!map) return;
+  closeNearPop();
   if(reqMarker) reqMarker.setMap(null);
   nearMarkers.forEach(m => m.setMap(null)); nearMarkers = [];
   const it = items.find(x => x.id === selId);
@@ -1122,8 +1170,7 @@ function showOnMap() {
   reqMarker = new naver.maps.Marker({ position: ll, map, zIndex: 100, draggable: !!editing,
     icon: { content: '<div style="font-size:34px;transform:translate(-50%,-100%);filter:drop-shadow(0 4px 6px rgba(0,0,0,.5))">📍</div>', anchor: new naver.maps.Point(0,0) } });
   if(editing) naver.maps.Event.addListener(reqMarker, 'dragend', () => { const p = reqMarker.getPosition(); moveLoc(p.lat(), p.lng(), 'drag'); });
-  nearbyOf(loc, loc.id).forEach(({p}) => nearMarkers.push(new naver.maps.Marker({ position: new naver.maps.LatLng(p.lat, p.lng), map,
-    icon: { content: `<div style="transform:translate(-50%,-50%);display:flex;align-items:center;gap:4px;white-space:nowrap"><span style="width:14px;height:14px;border-radius:50%;background:#0ea5e9;border:2px solid #fff;display:inline-block"></span><span style="font-size:11px;font-weight:700;color:#fff;background:rgba(4,17,30,.9);padding:2px 6px;border-radius:6px">${esc(p.name)}</span></div>`, anchor: new naver.maps.Point(0,0) } })));
+  nearbyOf(loc, loc.id).forEach(({p}) => nearMarkers.push(nearDot(p, map, loc)));
 }
 
 // 확인을 마친 제보의 가격표 사진은 바로 지움 (개인정보처리방침 약속)

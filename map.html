@@ -515,6 +515,7 @@ function initNaverMap() {
 
   // 지도를 움직이거나 확대/축소가 끝나면 그 영역의 세차장으로 갱신
   naver.maps.Event.addListener(naverMap, 'idle', refreshArea);
+  naver.maps.Event.addListener(naverMap, 'idle', saveView);
 
   naver.maps.Event.addListener(naverMap, 'dragend', clearRegionLabel);
 
@@ -1725,10 +1726,34 @@ function startFromLink() {
   return '';
 }
 
+// 마지막으로 보던 지도 자리 기억 — 이벤트·가이드·내 정보에 다녀와도 그 자리로 돌아옴
+// 같은 창(탭)에서만, 마지막으로 움직인 지 1시간 안에만 (앱을 새로 열면 원래대로 기본 지역·내 위치)
+const VIEW_KEY = 'ppxMapView', VIEW_TTL = 60 * 60 * 1000;
+let viewReady = false;   // 시작 위치를 정하기 전(임시 서울시청)은 저장하지 않음
+function saveView() {
+  if(!viewReady || !naverMap) return;
+  const c = naverMap.getCenter();
+  try { sessionStorage.setItem(VIEW_KEY, JSON.stringify({ lat: c.lat(), lng: c.lng(), z: naverMap.getZoom(), t: Date.now() })); } catch(e) {}
+}
+function restoreView() {
+  if(!naverMap) return false;
+  let v = null;
+  try { v = JSON.parse(sessionStorage.getItem(VIEW_KEY) || 'null'); } catch(e) {}
+  if(!v || !(Date.now() - v.t < VIEW_TTL) || !(v.lat >= 33 && v.lat <= 39 && v.lng >= 124 && v.lng <= 132)) return false;
+  naverMap.setCenter(new naver.maps.LatLng(v.lat, v.lng));
+  if(v.z) naverMap.setZoom(v.z);
+  return true;
+}
+
 async function decideStart() {
+  try { return await decideStart0(); } finally { viewReady = true; }   // 이후 지도가 멈출 때마다(idle) 저장
+}
+async function decideStart0() {
   // 0) 검색 페이지의 '지도에서 보기'로 왔으면 그 세차장·지역 먼저
   const fromLink = startFromLink();
   if(fromLink) return fromLink;
+  // 0-1) 방금 보던 지도 자리가 있으면 그대로
+  if(restoreView()) return 'restore';
   try { homeRegion = PPX.getHome ? await PPX.getHome() : null; } catch(e) { homeRegion = null; }
   // ① 기본 지역을 정한 사람: 그 지역 먼저 (지금 위치는 📍 버튼으로)
   if(homeRegion) {
