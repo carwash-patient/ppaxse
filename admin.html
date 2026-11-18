@@ -812,7 +812,21 @@ async function loadSeoStats() {
     const clickLine = (t, k) => `<div style="font-size:12.5px;margin:2px 0">${t} 누른 사람 — 🗺️ 지도 <b>${(ck[k + '_cta_map'] || 0) + (ck[k + '_card_map'] || 0)}</b> · ✏️ 한마디 <b>${(ck[k + '_cta_review'] || 0) + (ck[k + '_card_review'] || 0)}</b></div>`;
     if(!pages.length) { box.innerHTML = '<div class="msg">아직 조회 기록이 없어요. 검색에 노출되기 시작하면 여기에 쌓여요.</div>'; return; }
     const guides = pages.filter(p => p.path.startsWith('/guide/')), wash = pages.filter(p => p.path.startsWith('/wash/'));
-    const name = p => esc(p.title || p.path);
+    // 제목은 이용자 화면이 보낸 값을 믿지 않고 우리 사이트에서 직접 만듦 (supabase/migrate_2026-11-18.sql)
+    //  · 가이드 글: 가이드 목록(/guide/)의 글 제목  · 지역 페이지: 주소의 시도·시군구
+    const gTitle = { '/guide/': '세차 가이드 목록' };
+    try {
+      const html = await (await fetch('guide/', { cache: 'no-store' })).text();
+      new DOMParser().parseFromString(html, 'text/html').querySelectorAll('a.gl[href]').forEach(a => {
+        const t = a.querySelector('.t');
+        if(t) gTitle['/guide/' + a.getAttribute('href').replace(/^\.?\//, '')] = t.textContent.trim();
+      });
+    } catch(e) {}
+    const name = p => {
+      if(p.path.startsWith('/guide/')) return esc(gTitle[p.path] || p.path);
+      const parts = p.path.split('/').filter(Boolean).slice(1);
+      return esc(parts.length ? parts.join(' ') + ' 세차장' : '전국 세차장');
+    };
     const row = p => `<tr><td style="padding:6px 4px"><a href="${esc(p.path)}" target="_blank" rel="noopener" style="color:#fff;text-decoration:none">${name(p)}</a></td>
       <td style="text-align:right">${p.today_visitors}</td><td style="text-align:right">${p.week_visitors}</td><td style="text-align:right;font-weight:900">${p.visitors}</td>
       <td style="text-align:right">${p.views}</td><td style="text-align:right;color:rgba(255,255,255,.6);white-space:nowrap">${p.google}·${p.naver}·${p.etc}</td>

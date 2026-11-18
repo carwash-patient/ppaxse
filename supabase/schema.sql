@@ -2768,3 +2768,57 @@ begin
 end $$;
 revoke all on function public.admin_page_stats(int) from public, anon;
 grant execute on function public.admin_page_stats(int) to authenticated;
+
+-- ═══ 2026-11-18: 조회수 기록은 실제 페이지 주소만, 화면이 보낸 제목은 저장 안 함 (migrate_2026-11-18.sql) ═══
+--  · 위 2026-11-17c·17d의 ppx_track_page / ppx_track_click 을 아래 정의로 바꿈
+-- 실제 페이지 주소인지 (내부용)
+create or replace function public.ppx_seo_path(pth text)
+returns text language sql immutable set search_path = pg_catalog, public, pg_temp as $$
+  select case
+    when p collate "C" ~ '^/guide/([a-z0-9-]{1,80}/)?$' then p
+    when p collate "C" ~ '^/wash/([가-힣]{1,20}/){0,2}$' then p
+  end
+  from (select regexp_replace(coalesce(pth, ''), 'index\.html$', '') as p) s
+  where char_length(coalesce(pth, '')) <= 200
+$$;
+revoke all on function public.ppx_seo_path(text) from public, anon, authenticated;
+
+create or replace function public.ppx_track_page(v uuid, pth text, s text default null, t text default null)
+returns void language plpgsql security definer set search_path = pg_catalog, public, pg_temp as $$
+declare d date := (now() at time zone 'Asia/Seoul')::date;
+begin
+  pth := public.ppx_seo_path(pth);
+  if v is null or pth is null then return; end if;
+  if s is null or s not in ('google','naver','daum','bing','ppaxse','direct','other') then s := 'other'; end if;
+  -- t(제목)는 받기만 하고 저장하지 않음
+
+  insert into public.ppx_page_views (day, path, visitor, src) values (d, pth, v, s)
+  on conflict (day, path, visitor) do update
+    set hits = least(public.ppx_page_views.hits + 1, 200), last_at = now();
+
+  -- 전체 방문자 수에도 '검색용 페이지'로 셈
+  insert into public.ppx_visits (day, visitor, page) values (d, v, 'seo')
+  on conflict (day, visitor, page) do update
+    set hits = least(public.ppx_visits.hits + 1, 200), last_at = now();
+
+  -- 검색엔진에서 처음 온 기기는 채널(꼬리표)로 한 번만 남김
+  if s in ('google','naver','daum','bing') then
+    insert into public.ppx_visitor_ref (visitor, ref) values (v, s) on conflict (visitor) do nothing;
+  end if;
+end $$;
+revoke all on function public.ppx_track_page(uuid, text, text, text) from public, anon, authenticated;
+grant execute on function public.ppx_track_page(uuid, text, text, text) to anon, authenticated;
+
+create or replace function public.ppx_track_click(v uuid, pth text, b text)
+returns void language plpgsql security definer set search_path = pg_catalog, public, pg_temp as $$
+declare d date := (now() at time zone 'Asia/Seoul')::date;
+begin
+  pth := public.ppx_seo_path(pth);
+  if v is null or pth is null then return; end if;
+  if b is null or b not in ('cta_map','cta_review','card_map','card_review') then return; end if;
+  insert into public.ppx_page_clicks (day, path, visitor, btn) values (d, pth, v, b)
+  on conflict (day, path, visitor, btn) do update
+    set hits = least(public.ppx_page_clicks.hits + 1, 200), last_at = now();
+end $$;
+revoke all on function public.ppx_track_click(uuid, text, text) from public, anon, authenticated;
+grant execute on function public.ppx_track_click(uuid, text, text) to anon, authenticated;
