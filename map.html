@@ -450,7 +450,7 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js?v=20261117"></script>
-<script src="js/ppx.js?v=20261117"></script>
+<script src="js/ppx.js?v=20261118m"></script>
 <script src="js/ev.js?v=20261117a"></script>
 <script>
 // 로그인 연결 파일을 못 불러와도 지도는 places.json 으로 계속 동작하도록
@@ -864,6 +864,21 @@ function openDetail(id) {
   if(!p) return;
   if(naverMap) naverMap.panTo(new naver.maps.LatLng(p.lat, p.lng));
   renderList(); renderNaverMarkers();
+
+  // 가벼운 목록에는 전화·운영시간·가격·시설 상세가 없음 → 그 한 곳만 받아서 다시 그림
+  if(p._lite && !p._noFull && PPX.ready) {
+    document.getElementById('dpBody').innerHTML = `
+      <div class="dp-type-tag">${esc(typeNames(p).join(' · '))}</div>
+      <div class="dp-name">${esc(p.name)}</div>
+      <div class="dp-addr">📍 ${esc(p.addr)}</div>
+      <div class="dp-more" style="margin:16px 0">정보를 불러오는 중…</div>`;
+    document.getElementById('detailPanel').classList.add('open');
+    if(sheetState !== 'hidden') sheetBeforeDetail = sheetState;
+    setSheet('hidden');
+    ensureFull(p).catch(() => { p._noFull = true; })
+      .then(() => { if(p._lite) p._noFull = true; if(activeId === id) openDetail(id); });
+    return;
+  }
 
   const i = p.info || {};
   const price = priceText(p);
@@ -1426,6 +1441,9 @@ async function startReport(id) {
   if(!PPX.ready) return toast('제보 기능을 준비 중이에요');
   const p = places.find(x => x.id === id);
   if(!p) return;
+  // 원래 값(전화·시설 등)을 채워 두고 제보 창을 염 — 못 받으면 빈칸으로 덮어쓰지 않게 열지 않음
+  try { await ensureFull(p); } catch(e) {}
+  if(p._lite) return toast('세차장 정보를 불러오지 못했어요. 잠시 뒤 다시 눌러 주세요', true);
   reportPlaceId = id;
   reportPhoto = null;
   const i = p.info || {};
@@ -1777,16 +1795,71 @@ async function decideStart0() {
 // ══════════════════════════════════════════════════
 //  시작: 세차장 데이터 불러오기 → 지도 그리기
 // ══════════════════════════════════════════════════
+// ── 세차장 목록: 가벼운 목록(필요한 칸만) + 휴대폰에 저장 ──
+//  처음: 가벼운 목록을 한 번에 받아 지도 그리고 휴대폰에 저장
+//  다음부터: 저장해 둔 목록으로 바로 그리고, 뒤에서 '바뀐 게 있는지'만 물어봐 바뀌었으면 새로 받음
+//  전화·운영시간·가격·시설 상세는 세차장을 눌렀을 때 그 한 곳만 받음 (ensureFull)
+const PLACES_CACHE = 'ppxPlaces1';
+const fullById = new Map();   // 상세까지 받은 세차장 (목록을 새로 받아도 다시 붙임)
+function readPlacesCache() {
+  try {
+    const c = JSON.parse(localStorage.getItem(PLACES_CACHE) || 'null');
+    if(c && c.v && Array.isArray(c.rows) && c.rows.length) return c;
+  } catch(e) {}
+  return null;
+}
+function writePlacesCache(d) {
+  try { localStorage.setItem(PLACES_CACHE, JSON.stringify(d)); }
+  catch(e) { try { localStorage.removeItem(PLACES_CACHE); } catch(_) {} }   // 저장 공간이 모자라면 저장 안 함
+}
+function usePlaces(list) {
+  fullById.forEach((full, id) => { const p = list.find(x => x.id === id); if(p) Object.assign(p, full, { _lite: false }); });
+  places = list;
+  buildRegionIndex();
+  refreshArea();
+}
+async function ensureFull(p) {
+  if(!p || !p._lite) return p;
+  if(!fullById.has(p.id)) {
+    const full = await PPX.placeById(p.id);
+    if(!full) return p;
+    fullById.set(p.id, full);
+  }
+  Object.assign(p, fullById.get(p.id), { _lite: false });
+  return p;
+}
+
 renderList();
 window.addEventListener('load', () => {
   initNaverMap();
   const fromFile = () => fetch('places.json').then(r => { if(!r.ok) throw new Error(r.status); return r.json(); });
-  (PPX.ready
-    ? PPX.approvedPlaces()
-        .then(rows => rows.length ? rows : fromFile())   // 표가 아직 비어 있으면 예비 데이터
-        .catch(e => { console.warn('Supabase 연결 실패, places.json 사용', e); return fromFile(); })
-    : fromFile())
-    .then(data => { places = data; buildRegionIndex(); refreshArea(); return decideStart(); })
+  const lite = PPX.ready && PPX.mapPlaces && PPX.mapRow;
+  const fresh = () => PPX.mapPlaces().then(d => {
+    if(!d || !Array.isArray(d.rows) || !d.rows.length) throw new Error('empty');
+    writePlacesCache(d);
+    return d.rows.map(PPX.mapRow);
+  });
+  const cached = lite ? readPlacesCache() : null;
+  if(cached) {
+    usePlaces(cached.rows.map(PPX.mapRow));
+    decideStart();
+    // 뒤에서: 바뀐 게 있을 때만 새 목록
+    PPX.mapPlacesVersion()
+      .then(v => { if(v && v !== cached.v) return fresh().then(usePlaces); })
+      .catch(e => console.warn('세차장 목록 새로 받기 실패 (저장해 둔 목록 사용)', e));
+    return;
+  }
+  (lite
+    ? fresh().catch(e => {
+        console.warn('가벼운 목록 실패, 예전 방식으로', e);
+        return PPX.approvedPlaces().then(rows => rows.length ? rows : fromFile());
+      }).catch(e => { console.warn('Supabase 연결 실패, places.json 사용', e); return fromFile(); })
+    : PPX.ready
+      ? PPX.approvedPlaces()
+          .then(rows => rows.length ? rows : fromFile())   // 표가 아직 비어 있으면 예비 데이터
+          .catch(e => { console.warn('Supabase 연결 실패, places.json 사용', e); return fromFile(); })
+      : fromFile())
+    .then(data => { usePlaces(data); return decideStart(); })
     .catch(() => {
       document.getElementById('sheetCount').textContent = '세차장 정보를 불러오지 못했어요';
       document.getElementById('placeList').innerHTML = '<div class="list-note">places.json 파일을 찾을 수 없어요.<br>map.html과 같은 폴더에 있는지 확인해 주세요.</div>';

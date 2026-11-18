@@ -523,6 +523,26 @@
       return data;
     },
 
+    // 지도용 가벼운 목록 (supabase/migrate_2026-11-18b.sql) — 필요한 칸만 배열 모양으로 한 번에
+    //  한 줄: [id, name, addr, region, type, types, lat, lng, 시설비트(foam1·under2·indoor4·h24 8), comment_count, check_count, checked_at]
+    //  전화·운영시간·가격·시설 상세는 placeById로 그 한 곳만 받음
+    async mapPlaces() {
+      const { data, error } = await db.rpc('map_places');
+      if (error) throw error;
+      return data;   // { v, rows }
+    },
+    async mapPlacesVersion() {
+      const { data, error } = await db.rpc('map_places_version');
+      if (error) throw error;
+      return data;
+    },
+    mapRow(r) {
+      const f = r[8] || 0;
+      return { id: r[0], name: r[1], addr: r[2], region: r[3], type: r[4], types: r[5], lat: +r[6], lng: +r[7],
+        foam: f & 1 ? true : null, under: f & 2 ? true : null, indoor: f & 4 ? true : null, h24: f & 8 ? true : null,
+        comment_count: r[9] || 0, check_count: r[10] || 0, checked_at: r[11] || null, _lite: true };
+    },
+
     async placeById(id) {
       const { data, error } = await db.from('places').select(PLACE_COLS).eq('id', id).eq('status', 'approved').maybeSingle();
       if (error) throw error;
