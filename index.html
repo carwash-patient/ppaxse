@@ -97,6 +97,17 @@ main{position:relative;z-index:5}
 .kpi-num{font-family:'Noto Sans KR',sans-serif;font-weight:900;font-size:30px;color:var(--white)}
 .kpi-num span{color:var(--aqua)}
 .kpi-label{font-size:11px;color:var(--muted);font-weight:700;margin-top:4px;letter-spacing:.5px}
+.odo-title{font-size:14px;color:var(--muted);font-weight:700;margin-bottom:12px}
+.odo{display:inline-flex;gap:4px;align-items:flex-end;min-height:48px}
+.odo-d{width:32px;height:48px;overflow:hidden;background:rgba(14,165,233,.08);border:1px solid var(--line);border-radius:7px}
+.odo-d>div{transition:transform 1.6s cubic-bezier(.2,.8,.2,1);will-change:transform}
+.odo-d span,.odo-c{display:block;height:48px;line-height:48px;font-family:'Noto Sans KR',sans-serif;font-size:30px;font-weight:900;color:var(--aqua);font-variant-numeric:tabular-nums}
+.odo-c{display:inline-block;padding:0 1px}
+.odo-live{font-size:12px;color:#4ade80;font-weight:700;margin-top:14px}
+.odo-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#4ade80;margin-right:6px;vertical-align:1px;animation:odoPulse 1.6s infinite}
+@keyframes odoPulse{0%{box-shadow:0 0 0 0 rgba(74,222,128,.6)}100%{box-shadow:0 0 0 8px rgba(74,222,128,0)}}
+@media (max-width:360px){.odo-d{width:28px;height:42px}.odo-d span,.odo-c{height:42px;line-height:42px;font-size:26px}}
+@media (prefers-reduced-motion:reduce){.odo-d>div{transition:none}.odo-dot{animation:none}}
 
 /* ── FEATURES ── */
 .section{padding:88px 20px;max-width:1000px;margin:0 auto}
@@ -178,7 +189,11 @@ footer{position:relative;z-index:5;padding:28px 20px;text-align:center;font-size
       <a href="map.html" class="cta-btn primary">🗺️ 내 주변 세차장 찾기</a>
     </div>
     <div class="hero-kpi">
-      <div class="kpi-item"><div class="kpi-num"><b id="placeCount">…</b><span>+</span></div><div class="kpi-label">지도에 있는 세차장</div></div>
+      <div class="kpi-item odo-wrap">
+        <div class="odo-title">🚗 빡세 누적 세차장</div>
+        <div class="odo" id="placeCount" role="img" aria-label="지도에 있는 세차장 수"></div>
+        <div class="odo-live" id="placeLive" hidden><span class="odo-dot"></span>실시간 업데이트 중</div>
+      </div>
     </div>
   </section>
 
@@ -226,10 +241,11 @@ footer{position:relative;z-index:5;padding:28px 20px;text-align:center;font-size
 <script src="js/ev.js?v=20261117a"></script>
 <script src="js/install.js?v=20261116e" defer></script>
 <script>
-// 등록 세차장 수 = 지도에 올라간(승인된) 세차장 수를 그대로 표시 (예: 11,602)
-// DB를 못 읽어 places.json(예전 사본)으로 대신할 때만 100단위 버림 + '+' 표시
+// 등록 세차장 수 = 지도에 올라간(승인된) 세차장 수를 계기판처럼 굴려서 표시 (예: 11,602)
+// DB에서 정확한 수를 읽었을 때만 '실시간 업데이트 중' 표시
+// DB를 못 읽어 places.json(예전 사본)으로 대신할 때는 100단위 버림 + '+' 붙이고 '실시간' 표시 안 함
 (async () => {
-  const el = document.getElementById('placeCount'), plus = el.nextElementSibling;
+  const el = document.getElementById('placeCount'), live = document.getElementById('placeLive');
   let n = 0, exact = false;
   try {
     if(window.PPX && PPX.ready) {
@@ -238,8 +254,29 @@ footer{position:relative;z-index:5;padding:28px 20px;text-align:center;font-size
     }
     if(!n) n = (await fetch('places.json').then(r => r.json())).length;
   } catch(e) {}
-  if(exact) { el.textContent = n.toLocaleString(); if(plus) plus.remove(); }
-  else if(n >= 100) el.textContent = (Math.floor(n / 100) * 100).toLocaleString();
+  if(!n) { el.textContent = '…'; return; }
+  if(!exact) n = Math.floor(n / 100) * 100;
+  const str = n.toLocaleString('ko-KR');
+  el.setAttribute('aria-label', '지도에 있는 세차장 ' + str + (exact ? '곳' : '곳 이상'));
+  const cols = [];
+  str.split('').forEach((ch, i) => {
+    if(ch === ',') { const c = document.createElement('span'); c.className = 'odo-c'; c.textContent = ','; el.appendChild(c); return; }
+    const box = document.createElement('div'); box.className = 'odo-d';
+    const col = document.createElement('div'); let h = '';
+    for(let r = 0; r < 2; r++) for(let k = 0; k < 10; k++) h += '<span>' + k + '</span>';
+    col.innerHTML = h; col.style.transitionDelay = (i * 120) + 'ms'; col.dataset.d = ch;
+    box.appendChild(col); el.appendChild(box); cols.push(col);
+  });
+  if(!exact) { const p = document.createElement('span'); p.className = 'odo-c'; p.textContent = '+'; el.appendChild(p); }
+  else if(live) live.hidden = false;
+  const roll = () => {
+    const H = el.querySelector('.odo-d span').offsetHeight || 48;
+    cols.forEach(c => c.style.transform = 'translateY(-' + ((10 + (+c.dataset.d)) * H) + 'px)');
+  };
+  if('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(es => { if(es[0].isIntersecting) { io.disconnect(); setTimeout(roll, 250); } }, { threshold: 0.4 });
+    io.observe(el);
+  } else roll();
 })();
 
 // 로그인한 사람에게는 '로그인 / 무료 가입' 대신 '지도 열기 / 마이페이지'
