@@ -113,7 +113,16 @@ def split_region(r):
 
 
 # ── 페이지 틀 ───────────────────────────────────────
-def page(path, title, desc, body, crumbs=(), jsonld=None):
+def bottom_nav(up):
+    """지도·이벤트·내 정보 화면과 같은 아래 메뉴 (세차 가이드 페이지용, '세차 가이드' 칸이 켜짐)"""
+    items = [('map.html', '🗺️', '지도', False), ('guide/', '📖', '세차 가이드', True),
+             ('events.html', '🎁', '이벤트', False), ('mypage.html', '👤', '내 정보', False)]
+    on_cls = ' class="on"'
+    return '<nav class="bnav">' + ''.join(
+        f'<a href="{up}{h}"{on_cls if on else ""}><i>{ic}</i><span>{t}</span></a>' for h, ic, t, on in items) + '</nav>'
+
+
+def page(path, title, desc, body, crumbs=(), jsonld=None, bnav=False):
     url = f"{SITE}/{quote(path)}"
     depth = path.count('/')  # 'wash/인천/' → 2
     up = '../' * depth
@@ -140,10 +149,10 @@ def page(path, title, desc, body, crumbs=(), jsonld=None):
 <meta property="og:image" content="{SITE}/icons/og.png?v=20261111">
 <meta name="theme-color" content="#04111e">
 <link rel="icon" href="{up}icons/icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="{up}css/seo.css?v=20261117">
+<link rel="stylesheet" href="{up}css/seo.css?v=20261118">
 {ld}
 </head>
-<body>
+<body{' class="has-bnav"' if bnav else ''}>
 <header class="top"><a class="brand" href="{up}">💧 빡<em>세</em></a><a class="go" href="{up}map.html">🗺️ 세차장 지도</a></header>
 <main>
 {crumb_html}
@@ -155,6 +164,7 @@ def page(path, title, desc, body, crumbs=(), jsonld=None):
 운영시간·시설은 바뀔 수 있어요. 가기 전에 전화로 확인해 주세요. 틀린 정보는 지도에서 알려주세요.<br>
 © 2026 빡세(Ppaxse)
 </footer>
+{bottom_nav(up) if bnav else ''}
 {track_script()}
 </body>
 </html>
@@ -311,6 +321,26 @@ def build_wash(places):
 META_RE = re.compile(r'<!--\s*(\w+)\s*:\s*(.*?)\s*-->')
 
 
+# 가이드 꼬리표 색 (원고의 <!-- category: … --> 값). 목록에 없는 값도 회색 꼬리표로 나옴
+CATEGORY_CLS = {'입문': 'c1', '차 상태별': 'c2', '계절': 'c3', '더 깔끔하게': 'c4'}
+NEW_DAYS = 3   # 올린 지 이 날수 안 된 글에 '새 글'
+
+
+def guide_item(no, p, pinned):
+    d = p['date']
+    md = f'{int(d[5:7])}/{int(d[8:10])}' if re.match(r'\d{4}-\d{2}-\d{2}$', d) else d
+    try:
+        age = (datetime.strptime(TODAY, '%Y-%m-%d') - datetime.strptime(d, '%Y-%m-%d')).days
+    except ValueError:
+        age = 99
+    cat = p['category']
+    tag = f'<span class="cat {CATEGORY_CLS.get(cat, "c0")}">{esc(cat)}</span>' if cat else ''
+    new = '<span class="new">새 글</span>· ' if 0 <= age < NEW_DAYS else ''
+    return (f'<li data-cat="{esc(cat)}"><a class="gl{" start" if pinned else ""}" href="{esc(p["slug"])}/">'
+            f'<span class="no">{no}</span><div><div class="t">{esc(p["title"])}</div>'
+            f'<div class="m">{tag}{new}{esc(md)}</div></div></a></li>')
+
+
 def build_guides():
     src = os.path.join(ROOT, 'guide-src')
     shutil.rmtree(os.path.join(ROOT, 'guide'), ignore_errors=True)
@@ -322,6 +352,9 @@ def build_guides():
         meta = dict(META_RE.findall(raw[:1500]))
         if meta.get('draft') == 'yes':
             continue
+        # 예약 공개: date 가 오늘(한국 시간)보다 뒤면 아직 숨김 → 그날 새벽 자동 실행 때 공개
+        if meta.get('date', '') > TODAY:
+            continue
         body = META_RE.sub('', raw).strip()
         slug, title, desc, date = meta['slug'], meta['title'], meta['description'], meta['date']
         path = f'guide/{slug}/'
@@ -331,16 +364,38 @@ def build_guides():
         full = f'''<article><h1>{esc(title)}</h1><div class="date">{esc(date)} · 빡세 세차 가이드</div>
 {body}
 {cta('../../', '', equal=True)}</article>'''
-        write(path, page(path, f'{title} | 빡세', desc, full, [('빡세', ''), ('세차 가이드', 'guide/'), (title, None)], jl))
-        posts.append((date, slug, title, desc))
+        write(path, page(path, f'{title} | 빡세', desc, full, [('빡세', ''), ('세차 가이드', 'guide/'), (title, None)], jl, bnav=True))
+        pin = meta.get('pin', '').strip()
+        posts.append({'date': date, 'slug': slug, 'title': title, 'category': meta.get('category', '').strip(),
+                      'pin': int(pin) if pin.isdigit() else None})
         urls.append(path)
-    posts.sort(reverse=True)
-    lis = ''.join(f'<li class="pl"><h3><a href="{esc(s)}/" style="color:#fff;text-decoration:none">{esc(t)}</a></h3><div class="meta">{esc(d)} · {esc(desc)}</div></li>'
-                  for d, s, t, desc in posts)
+    # 맨 위 '처음이라면 이것부터' = pin 숫자 순서, 나머지 = 최신순 (번호는 이어서)
+    pinned = sorted([p for p in posts if p['pin'] is not None], key=lambda p: (p['pin'], p['date']))
+    rest = sorted([p for p in posts if p['pin'] is None], key=lambda p: (p['date'], p['slug']), reverse=True)
+    body = '<h1>📖 세차 가이드</h1><p class="lead">세차하면서 궁금했던 것들을 하나씩 정리해요.</p>'
+    cats = [c for c in CATEGORY_CLS if any(p['category'] == c for p in posts)]
+    cats += sorted({p['category'] for p in posts if p['category'] and p['category'] not in CATEGORY_CLS})
+    if len(cats) > 1:
+        body += '<div class="chips" id="gChips"><button type="button" class="on" data-c="">전체</button>' + ''.join(
+            f'<button type="button" data-c="{esc(c)}">{esc(c)}</button>' for c in cats) + '</div>'
+    if pinned:
+        body += '<div class="gsec">🔰 처음이라면 이것부터</div><ul class="glist">' + ''.join(
+            guide_item(i + 1, p, True) for i, p in enumerate(pinned)) + '</ul>'
+    if rest:
+        body += '<div class="gsec">📚 전체 글 <small>최신순</small></div><ul class="glist">' + ''.join(
+            guide_item(len(pinned) + i + 1, p, False) for i, p in enumerate(rest)) + '</ul>'
+    if len(cats) > 1:
+        # 분류 버튼: 그 분류 글만 보이기 (글이 하나도 없는 묶음은 제목도 숨김)
+        body += '''<script>
+(function(){var box=document.getElementById('gChips');if(!box)return;
+box.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;var c=b.getAttribute('data-c');
+box.querySelectorAll('button').forEach(function(x){x.classList.toggle('on',x===b)});
+document.querySelectorAll('.glist').forEach(function(ul){var n=0;ul.querySelectorAll('li').forEach(function(li){var ok=!c||li.getAttribute('data-cat')===c;li.hidden=!ok;if(ok)n++});
+ul.hidden=!n;var h=ul.previousElementSibling;if(h&&h.classList.contains('gsec'))h.hidden=!n;});});})();
+</script>'''
     write('guide/', page('guide/', '세차 가이드 - 셀프세차 방법·순서·꿀팁 | 빡세',
                          '셀프세차 순서, 계절별 세차 방법, 세차장 고르는 법까지. 세차하는 사람들이 직접 쓰는 세차 가이드.',
-                         f'<h1>세차 가이드</h1><p class="lead">세차하면서 궁금했던 것들을 하나씩 정리해요.</p><ul class="list">{lis}</ul>',
-                         [('빡세', ''), ('세차 가이드', None)]))
+                         body, [('빡세', ''), ('세차 가이드', None)], bnav=True))
     urls.append('guide/')
     return urls
 
