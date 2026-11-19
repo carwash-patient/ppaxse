@@ -4,6 +4,7 @@
   python tools/guide_tools.py plan [일수] [최대]    앞으로 며칠(기본 7일) 동안 비어 있는 자리 → 오늘 써야 할 날짜 목록
   python tools/guide_tools.py check-links          공개 전 글로 걸린 링크·없는 글 링크 찾기
   python tools/guide_tools.py titles               지금까지 쓴 글 제목 목록(주제 겹침 확인용)
+  python tools/guide_tools.py check-length [slug]  글자 수(공백 제외 2,000자 이상)·검색어 반복 횟수 확인
 
 규칙(docs/seo-guide.md): 글이 60편이 될 때까지 하루 2편, 60편부터 하루 1편.
 이미 예약된 글은 뒤로 밀지 않음. 공개 전인 글로는 링크를 걸지 않음.
@@ -93,6 +94,42 @@ def check_links():
     return bad
 
 
+MIN_CHARS = 2000   # 본문 글자 수(공백 제외) 하한 — 운영자 결정 2026-11-19
+MAX_REPEAT = 10    # 한 검색어가 본문에 이보다 많이 나오면 '반복이 많다'고 알림(참고용 기준)
+
+
+def body_text(raw):
+    t = re.sub(r'<!--.*?-->', '', raw, flags=re.S)
+    t = re.sub(r'<[^>]+>', '', t)
+    for a, b in (('&amp;', '&'), ('&lt;', '<'), ('&gt;', '>'), ('&quot;', '"'), ('&nbsp;', ' ')):
+        t = t.replace(a, b)
+    return t
+
+
+def check_length(only=None):
+    """글자 수(공백 제외)와 검색어 반복 횟수. 검색어는 원고의 <!-- keywords: a, b --> 줄에서 읽음."""
+    bad = 0
+    for p in sorted(posts(), key=lambda x: x['date']):
+        if only and p['slug'] != only:
+            continue
+        t = body_text(p['raw'])
+        n = len(re.sub(r'\s', '', t))
+        m = dict(META.findall(p['raw'][:1500]))
+        kws = [k.strip() for k in m.get('keywords', '').split(',') if k.strip()]
+        compact = re.sub(r'\s', '', t)
+        reps = {k: compact.count(k.replace(' ', '')) for k in kws}
+        warn = []
+        if n < MIN_CHARS:
+            warn.append(f'글자 수 부족({MIN_CHARS}자 이상 필요)')
+        warn += [f"'{k}' {c}번 — 반복이 많아요" for k, c in reps.items() if c > MAX_REPEAT]
+        if not kws:
+            warn.append('keywords 줄 없음')
+        bad += bool(warn)
+        rep = ', '.join(f'{k} {c}번' for k, c in reps.items())
+        print(f"{p['date']} {p['slug']}: 공백 제외 {n:,}자" + (f' · {rep}' if rep else '') + (' ← ' + ' / '.join(warn) if warn else ''))
+    return bad
+
+
 def titles():
     for p in sorted(posts(), key=lambda x: x['date']):
         print(f"{p['date']}  {p['slug']}  {p['title']}")
@@ -107,6 +144,8 @@ if __name__ == '__main__':
         plan(int(a[1]) if len(a) > 1 else 7, int(a[2]) if len(a) > 2 else 10)
     elif cmd == 'check-links':
         sys.exit(1 if check_links() else 0)
+    elif cmd == 'check-length':
+        sys.exit(1 if check_length(a[1] if len(a) > 1 else None) else 0)
     elif cmd == 'titles':
         titles()
     else:
