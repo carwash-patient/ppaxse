@@ -155,7 +155,7 @@ def page(path, title, desc, body, crumbs=(), jsonld=None, bnav=False, og_image=N
 <link rel="icon" href="{up}icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="icon" href="{up}icons/icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="{up}icons/apple-touch-icon.png">
-<link rel="stylesheet" href="{up}css/seo.css?v=20261119">
+<link rel="stylesheet" href="{up}css/seo.css?v=20261119b">
 {ld}
 </head>
 <body{' class="has-bnav"' if bnav else ''}>
@@ -342,9 +342,20 @@ def guide_item(no, p, pinned):
     cat = p['category']
     tag = f'<span class="cat {CATEGORY_CLS.get(cat, "c0")}">{esc(cat)}</span>' if cat else ''
     new = '<span class="new">새 글</span>· ' if 0 <= age < NEW_DAYS else ''
+    no_html = '<span class="no pin" aria-label="추천">🔰</span>' if pinned else f'<span class="no">{no}</span>'
     return (f'<li data-cat="{esc(cat)}"><a class="gl{" start" if pinned else ""}" href="{esc(p["slug"])}/">'
-            f'<span class="no">{no}</span><div><div class="t">{esc(p["title"])}</div>'
+            f'{no_html}<div><div class="t">{esc(p["title"])}</div>'
             f'<div class="m">{tag}{new}{esc(md)}</div></div></a></li>')
+
+
+def guide_nav(prev, nxt):
+    """가이드 글 위·아래의 '이전 글 · 목록 · 다음 글' 버튼. 이전 = 먼저 쓴 글, 다음 = 나중에 쓴 글 (공개된 글끼리만)"""
+    def btn(p, label, cls):
+        if not p:
+            return f'<span class="gn-b {cls} off">{label}</span>'
+        return f'<a class="gn-b {cls}" href="../{esc(p["slug"])}/" title="{esc(p["title"])}">{label}</a>'
+    return (f'<nav class="gnav" aria-label="글 이동">{btn(prev, "‹ 이전 글", "prev")}'
+            f'<a class="gn-b list" href="../">☰ 목록</a>{btn(nxt, "다음 글 ›", "next")}</nav>')
 
 
 # 가이드 글 주소 → 마지막 수정일(updated 또는 date). 사이트맵 lastmod 에 씀
@@ -397,16 +408,23 @@ def build_guides():
         body, og = add_cards(slug, body)
         if og:
             jl['image'] = og
-        full = f'''<article><h1>{esc(title)}</h1><div class="date">{esc(date)} · 빡세 세차 가이드</div>
-{body}
-{cta('../../', '', equal=True)}</article>'''
-        write(path, page(path, f'{title} | 빡세', desc, full, [('빡세', ''), ('세차 가이드', 'guide/'), (title, None)], jl, bnav=True, og_image=og))
         pin = meta.get('pin', '').strip()
         GUIDE_LASTMOD[path] = meta.get('updated', date)
         posts.append({'date': date, 'slug': slug, 'title': title, 'category': meta.get('category', '').strip(),
-                      'pin': int(pin) if pin.isdigit() else None})
+                      'pin': int(pin) if pin.isdigit() else None,
+                      '_w': (path, desc, body, jl, og)})
         urls.append(path)
-    # 맨 위 '처음이라면 이것부터' = pin 숫자 순서, 나머지 = 최신순 (번호는 이어서)
+    # 쓴 순서(날짜 → 파일 이름)대로 줄 세워 이전 글·다음 글을 정한 뒤 글 페이지를 씀
+    order = sorted(posts, key=lambda p: (p['date'], p['slug']))
+    for k, p in enumerate(order):
+        path, desc, body, jl, og = p.pop('_w')
+        title, date = p['title'], p['date']
+        nav = guide_nav(order[k - 1] if k > 0 else None, order[k + 1] if k + 1 < len(order) else None)
+        full = f'''<article>{nav}<h1>{esc(title)}</h1><div class="date">{esc(date)} · 빡세 세차 가이드</div>
+{body}
+{cta('../../', '', equal=True)}{nav}</article>'''
+        write(path, page(path, f'{title} | 빡세', desc, full, [('빡세', ''), ('세차 가이드', 'guide/'), (title, None)], jl, bnav=True, og_image=og))
+    # 맨 위 '처음이라면 이것부터' = pin 숫자 순서, 나머지 = 최신순으로 보여 주되 번호는 먼저 쓴 글이 1번 (추천 글은 번호 없이 🔰)
     pinned = sorted([p for p in posts if p['pin'] is not None], key=lambda p: (p['pin'], p['date']))
     rest = sorted([p for p in posts if p['pin'] is None], key=lambda p: (p['date'], p['slug']), reverse=True)
     body = '<h1>📖 세차 가이드</h1><p class="lead">세차하면서 궁금했던 것들을 하나씩 정리해요.</p>'
@@ -420,7 +438,7 @@ def build_guides():
             guide_item(i + 1, p, True) for i, p in enumerate(pinned)) + '</ul>'
     if rest:
         body += '<div class="gsec">📚 전체 글 <small>최신순</small></div><ul class="glist">' + ''.join(
-            guide_item(len(pinned) + i + 1, p, False) for i, p in enumerate(rest)) + '</ul>'
+            guide_item(len(rest) - i, p, False) for i, p in enumerate(rest)) + '</ul>'
     if len(cats) > 1:
         # 분류 버튼: 그 분류 글만 보이기 (글이 하나도 없는 묶음은 제목도 숨김)
         body += '''<script>
