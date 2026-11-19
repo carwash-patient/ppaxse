@@ -440,7 +440,7 @@ ul.hidden=!n;var h=ul.previousElementSibling;if(h&&h.classList.contains('gsec'))
 
 
 def build_sitemap(urls):
-    base = ['', 'map.html', 'community.html', 'events.html', 'r/']
+    base = ['', 'map.html', 'events.html', 'r/']  # community.html은 noindex라 뺌
     # 날짜(lastmod)는 가이드 글에만 넣음 — 글의 date/updated 라서 매일 바뀌지 않음.
     # 지역 페이지 등은 넣지 않음 — 매일 바뀌면 데이터가 그대로여도 매일 커밋이 생김
     def item(u):
