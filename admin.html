@@ -30,9 +30,17 @@ html,body{min-height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backg
 #map{height:38vh;min-height:220px;border-radius:18px;overflow:hidden;border:1px solid var(--line);background:#0a1b2e}
 /* 지도 위: 로드뷰 버튼 · 세차장 전체 표시 안내 · 로드뷰 화면 */
 .map-wrap{position:relative;margin:0 16px}
-.rv-btn{position:absolute;left:10px;top:10px;z-index:5;padding:8px 12px;border-radius:999px;border:1px solid rgba(34,211,238,.45);background:rgba(7,24,40,.92);color:#fff;font-family:inherit;font-size:12.5px;font-weight:900;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+.rv-btn{position:absolute;right:10px;top:10px;z-index:5;padding:8px 12px;border-radius:999px;border:1px solid rgba(34,211,238,.45);background:rgba(7,24,40,.92);color:#fff;font-family:inherit;font-size:12.5px;font-weight:900;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.4)}
 .all-note{position:absolute;left:10px;bottom:10px;z-index:5;padding:4px 9px;border-radius:8px;background:rgba(4,17,30,.82);color:rgba(255,255,255,.75);font-size:11px;pointer-events:none}
 .all-note:empty{display:none}
+/* 지도 위 '세차장 찾아 이동' 검색칸 (등록된 세차장 이름·주소) */
+.map-find{position:absolute;left:58px;right:104px;top:10px;z-index:7}
+.map-find input{width:100%;height:36px;box-sizing:border-box;border-radius:999px;border:1px solid rgba(34,211,238,.45);background:rgba(7,24,40,.94);color:#fff;padding:0 14px;font-family:inherit;font-size:13px;outline:none;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+.mf-list{margin-top:6px;max-height:240px;overflow-y:auto;border-radius:14px;background:rgba(7,24,40,.97);border:1px solid rgba(34,211,238,.35);box-shadow:0 10px 26px rgba(0,0,0,.5)}
+.mf-list:empty{display:none}
+.mf-list button{display:block;width:100%;text-align:left;padding:9px 12px;border:none;border-bottom:1px solid rgba(255,255,255,.06);background:none;color:#fff;font-family:inherit;font-size:13px;cursor:pointer}
+.mf-list button span{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
+.mf-list .mf-none{padding:10px 12px;font-size:12.5px;color:var(--muted)}
 .rv{position:absolute;inset:0;z-index:6;border-radius:18px;overflow:hidden;background:#000;border:1px solid var(--line)}
 .rv[hidden]{display:none}
 #rvPano{position:absolute;inset:0}
@@ -299,6 +307,7 @@ async function init() {
     </div>
     <div id="searchBox"></div>
     <div class="map-wrap"><div id="map"></div>
+      <div class="map-find"><input id="mfQ" type="search" placeholder="🔍 세차장 이름·주소" aria-label="세차장 이름이나 주소로 찾아 지도 이동" autocomplete="off" enterkeyhint="search"><div class="mf-list" id="mfList"></div></div>
       <button class="rv-btn" id="rvBtn" type="button">🛣️ 로드뷰</button>
       <div class="all-note" id="allNote"></div>
       <div class="rv" id="rv" hidden><div id="rvPano"></div><div class="rv-info" id="rvInfo"></div><button class="rv-x" id="rvX" type="button">✕ 지도로</button></div>
@@ -322,7 +331,9 @@ async function init() {
     naver.maps.Event.addListener(map, 'idle', drawAll);   // 지도를 움직이면 그 자리의 세차장 점을 다시 그림
     document.getElementById('rvBtn').onclick = () => openRoadview(reqMarker ? reqMarker.getPosition() : map.getCenter(), reqMarker ? '빨간 핀 자리' : '지도 가운데');
     document.getElementById('rvX').onclick = closeRoadview;
+    setupMapFind();
   } else {
+    document.querySelector('.map-find').hidden = true;
     document.getElementById('rvBtn').hidden = true;
     document.getElementById('map').innerHTML = '<div class="msg" style="padding:40px 10px">지도를 불러올 수 없어요</div>';
   }
@@ -1365,6 +1376,31 @@ async function openRoadview(pos, label) {
   }, 1500);
 }
 function closeRoadview() { document.getElementById('rv').hidden = true; }
+
+// ── 지도 위 검색칸: 지도에 올라간 세차장을 이름·주소·지역으로 찾아 그 자리로 이동 (휴대폰에 받아 둔 목록에서 바로 찾음) ──
+function setupMapFind() {
+  const q = document.getElementById('mfQ'), box = document.getElementById('mfList');
+  let found = [];
+  const find = () => {
+    const words = q.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    if(!words.length) { found = []; box.innerHTML = ''; return; }
+    found = approved.filter(p => p.lat != null && words.every(w => `${p.name} ${p.addr || ''} ${p.region || ''}`.toLowerCase().includes(w)))
+      .sort((a, b) => (b.name.startsWith(words[0]) - a.name.startsWith(words[0])) || a.name.length - b.name.length).slice(0, 8);
+    box.innerHTML = found.length
+      ? found.map((p, i) => `<button type="button" data-i="${i}">${esc(p.name)}<span>${esc(p.addr || p.region || '')}</span></button>`).join('')
+      : '<div class="mf-none">지도에 올라간 세차장 중에 없어요 (숨긴 곳은 “세차장 고치기” 검색에서)</div>';
+  };
+  const go = p => {
+    if(!p) return;
+    q.value = ''; box.innerHTML = ''; q.blur(); closeRoadview();
+    map.setCenter(new naver.maps.LatLng(p.lat, p.lng)); map.setZoom(17);
+    const base = reqMarker ? { lat: reqMarker.getPosition().lat(), lng: reqMarker.getPosition().lng() } : null;
+    setTimeout(() => { npAt = Date.now(); openNearPop(p, base); }, 300);
+  };
+  q.oninput = find;
+  q.onkeydown = e => { if(e.key === 'Enter') { e.preventDefault(); go(found[0]); } else if(e.key === 'Escape') { q.value = ''; box.innerHTML = ''; } };
+  box.onclick = e => { const b = e.target.closest('button[data-i]'); if(b) go(found[+b.dataset.i]); };
+}
 
 // 확인을 마친 제보의 가격표 사진은 바로 지움 (개인정보처리방침 약속)
 async function dropPhoto(it) {
