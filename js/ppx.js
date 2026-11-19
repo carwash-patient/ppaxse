@@ -674,6 +674,47 @@
       return data;
     },
 
+    // 내 제보가 반영됐거나 내 추가 요청이 지도에 등록됐으면 '고마워요'를 한 번 보여 줌
+    // (이 기기에서 마지막으로 알려 준 시각 이후 것만. 무시·반려는 알리지 않음)
+    async thanks() {
+      try {
+        const uid = await PPX.myId();
+        if (!uid) return;
+        const KEY = 'ppxThanks:' + uid;
+        let since = null;
+        try { since = localStorage.getItem(KEY); } catch (e) {}
+        if (!since) since = new Date(Date.now() - 14 * 864e5).toISOString();   // 처음엔 최근 2주
+        const [rep, req] = await Promise.all([
+          db.from('place_reports').select('reviewed_at,place:places!place_reports_place_id_fkey(name)')
+            .eq('reporter', uid).eq('status', 'applied').gt('reviewed_at', since).order('reviewed_at', { ascending: false }).limit(20),
+          db.from('places').select('name,reviewed_at')
+            .eq('submitted_by', uid).eq('status', 'approved').neq('source', 'public_data').gt('reviewed_at', since).order('reviewed_at', { ascending: false }).limit(20)
+        ]);
+        const a = (rep.data || []).filter(r => r.place), b = req.data || [];
+        if (!a.length && !b.length) return;
+        const last = [...a, ...b].map(r => r.reviewed_at).sort().pop();
+        try { localStorage.setItem(KEY, last); } catch (e) {}
+        const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        const more = n => n > 1 ? ` 외 ${n - 1}곳` : '';
+        const lines = [];
+        const ga = s => { const c = s.charCodeAt(s.length - 1); return c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 === 0 ? '가' : '이'; };
+        if (b.length) lines.push(`📍 추가 요청하신 <b>${esc(b[0].name)}</b>${more(b.length)}${b.length > 1 ? '이' : ga(String(b[0].name || ''))} 지도에 등록됐어요.`);
+        if (a.length) lines.push(`🙌 제보해 주신 <b>${esc(a[0].place.name)}</b>${more(new Set(a.map(r => r.place.name)).size)} 정보가 반영됐어요.`);
+        const el = document.createElement('div');
+        el.setAttribute('role', 'status');
+        el.style.cssText = 'position:fixed;left:50%;top:max(14px,env(safe-area-inset-top));transform:translateX(-50%);z-index:9999;' +
+          'width:min(440px,calc(100% - 32px));box-sizing:border-box;padding:14px 40px 14px 16px;border-radius:16px;' +
+          'background:#0f2a24;border:1.5px solid #34d399;color:#fff;font:14px/1.5 inherit;font-family:inherit;' +
+          'box-shadow:0 10px 30px rgba(0,0,0,.45);cursor:pointer;transition:opacity .3s';
+        el.innerHTML = lines.join('<br>') + '<br><b style="color:#34d399">알려 주셔서 고마워요!</b>' +
+          '<span aria-hidden="true" style="position:absolute;right:14px;top:10px;font-size:20px;color:rgba(255,255,255,.6)">×</span>';
+        const close = () => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); };
+        el.onclick = close;
+        document.body.appendChild(el);
+        setTimeout(close, 9000);
+      } catch (e) {}
+    },
+
     // '정보가 맞아요' (한 세차장에 하루 한 번)
     async checkPlace(placeId) { return guarded('check', async () => {
       await PPX.ensureUser();

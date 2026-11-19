@@ -64,9 +64,21 @@ html,body{min-height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backg
 .search input{flex:1;height:46px;border:1.5px solid var(--line);border-radius:12px;background:rgba(255,255,255,.05);color:#fff;padding:0 14px;font-family:inherit;font-size:14px;outline:none}
 .search button{padding:0 18px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--sky),var(--aqua));color:#fff;font-family:inherit;font-weight:900;cursor:pointer}
 .diff{border:1px solid rgba(255,255,255,.08);border-radius:12px;overflow:hidden;margin-bottom:10px}
-.diff label{display:flex;align-items:center;gap:10px;padding:11px 12px;font-size:13px;cursor:pointer}
-.diff label+label{border-top:1px solid rgba(255,255,255,.06)}
-.diff input{width:18px;height:18px;accent-color:#22d3ee;flex-shrink:0}
+.diff>label,.diff .drow{display:flex;align-items:center;gap:10px;padding:11px 12px;font-size:13px;cursor:pointer}
+.diff>*+*{border-top:1px solid rgba(255,255,255,.06)}
+.diff>label>input,.diff .dchk>input{width:18px;height:18px;accent-color:#22d3ee;flex-shrink:0}
+/* 제보 값 고치기: 이용자가 보낸 값이 미리 들어 있고, 운영자가 바꿀 수 있음 */
+.diff .drow{flex-wrap:wrap;cursor:default;padding:9px 12px}
+.diff .dchk{display:flex;align-items:center;gap:10px;cursor:pointer}
+.diff .dval{display:flex;align-items:center;gap:8px;flex:1;min-width:220px;flex-wrap:wrap}
+.diff .arr{color:var(--muted)}
+.diff .ded{flex:1;min-width:130px;height:38px;border:1.5px solid rgba(52,211,153,.45);border-radius:10px;background:rgba(52,211,153,.08);color:#fff;padding:0 10px;font-family:inherit;font-size:14px;font-weight:700;outline:none}
+.diff .ded:focus{border-color:#34d399}
+.diff select.ded option{color:#000}
+.diff .tchips{flex:1}
+.diff .tchips label{padding:6px 10px;min-height:34px;font-size:12px}
+.rmore{border:1px dashed rgba(255,255,255,.15);border-radius:12px;padding:12px 12px 2px;margin-bottom:10px}
+.rmore-t{font-size:12px;color:var(--muted);margin-bottom:10px}
 .diff .k{color:var(--muted);min-width:64px}
 .diff .from{color:rgba(255,255,255,.5);text-decoration:line-through}
 .diff .to{color:#34d399;font-weight:900}
@@ -162,7 +174,7 @@ html,body{min-height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backg
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js?v=20261117"></script>
-<script src="js/ppx.js?v=20261118m"></script>
+<script src="js/ppx.js?v=20261119a"></script>
 <script>
 const typeLabel={self:'셀프세차',hand:'손세차',detail:'디테일링샵',notouch:'노터치',auto:'자동세차',wash:'종류 확인 중',etc:'정비·기타'};
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -538,6 +550,53 @@ function cardPending(it) {
     </div>`;
 }
 
+// ── 정보 제보: 이용자가 보낸 값을 고칠 수 있는 칸으로 ──
+const SEL_TYPES = ['self', 'hand', 'notouch', 'auto', 'detail'];
+const typesEd = ts => `<div class="tchips">${[...new Set([...SEL_TYPES, ...ts.filter(t => typeLabel[t])])].map(t =>
+  `<label><input type="checkbox" data-sv-type="${t}" ${ts.includes(t) ? 'checked' : ''}>${esc(typeLabel[t])}</label>`).join('')}</div>`;
+const facEd = (attr, v) => `<select class="ded" ${attr}>
+  <option value="null" ${v == null ? 'selected' : ''}>모름</option>
+  <option value="true" ${v === true ? 'selected' : ''}>있음</option>
+  <option value="false" ${v === false ? 'selected' : ''}>없음</option></select>`;
+const isInfoBool = k => FIELDS.some(f => f.k === k && !f.col);
+function infoEd(k, v) {
+  if(k === 'pay' || k === 'svc') {
+    const opts = k === 'pay' ? PAY : SVC, on = Array.isArray(v) ? v : [];
+    return `<div class="tchips">${Object.entries(opts).map(([x, l]) => `<label><input type="checkbox" data-iv-multi value="${esc(x)}" ${on.includes(x) ? 'checked' : ''}>${esc(l)}</label>`).join('')}</div>`;
+  }
+  if(isInfoBool(k) || typeof v === 'boolean') return facEd('data-iv', v ?? null);
+  const num = ['bays', 'pw', 'pm'].includes(k);
+  return `<input class="ded" data-iv value="${esc(v ?? '')}" ${num ? 'inputmode="numeric" maxlength="6"' : 'maxlength="30"'}>`;
+}
+// 고친 칸 값 읽기 (null = 비움/모름)
+function readInfoEd(row, k) {
+  const multi = row.querySelectorAll('[data-iv-multi]');
+  if(multi.length) { const v = [...multi].filter(x => x.checked).map(x => x.value); return v.length ? v : null; }
+  const el = row.querySelector('[data-iv]');
+  if(!el) return null;
+  if(el.tagName === 'SELECT') return el.value === 'null' ? null : el.value === 'true';
+  const raw = el.value.trim();
+  if(!raw) return null;
+  if(['bays', 'pw', 'pm'].includes(k)) { const n = parseInt(raw.replace(/[^0-9]/g, ''), 10); return n > 0 ? n : null; }
+  return raw.slice(0, 30);
+}
+// '다른 칸도 고치기': 이용자가 건드리지 않은 칸 (지금 값이 들어 있음, 바꾼 칸만 저장)
+function reportMore(p, sg) {
+  const txt = [['region','지역',30],['addr','주소',200],['tel','전화번호',30],['hours','운영시간',60],['price','요금 (짧게)',200]]
+    .filter(([k]) => !(k in sg))
+    .map(([k, l, max]) => `<div class="f"><label>${l}</label><input data-m="${k}" value="${esc(p[k] || '')}" maxlength="${max}"></div>`).join('');
+  // 시설은 이 세차장 종류(이용자가 고른 종류 우선)에 맞는 것만
+  const ts = Array.isArray(sg.types) && sg.types.length ? sg.types : typesOf(p);
+  let keep = null;
+  try { keep = new Set(PPX.fieldsFor(ts).map(f => f && f.k)); } catch(e) {}
+  const fac = FIELDS.filter(f => (!keep || !keep.size || keep.has(f.k)) && !(f.k in sg) && !((sg.info || {})[f.k] !== undefined))
+    .map(f => `<div class="f"><label>${esc(f.l)}</label><select class="f-fac" data-m-fac="${f.k}" data-col="${f.col ? 1 : ''}">
+      ${[['null','모름'],['true','있음'],['false','없음']].map(([v, l]) => { const cur = fieldVal(p, f); return `<option value="${v}" ${String(cur ?? null) === v ? 'selected' : ''}>${l}</option>`; }).join('')}</select></div>`).join('');
+  return `<div class="rmore" hidden>
+    <div class="rmore-t">이용자가 보내지 않은 칸이에요. 지금 값이 들어 있고, 바꾼 칸만 '반영'할 때 같이 저장돼요.</div>
+    ${txt}${fac ? `<div class="f-row">${fac}</div>` : ''}</div>`;
+}
+
 function cardReport(it) {
   const p = it.place;
   const who = whoOf(it.reporter_p, it.reporter);
@@ -545,14 +604,15 @@ function cardReport(it) {
     <div class="acts"><button class="no" type="button" data-act="dismiss">목록에서 지우기</button></div></div>`;
   const sg = it.suggest || {};
   const rows = [];
-  const row = (key, label, from, to, attr) => rows.push(`<label><input type="checkbox" ${attr || `data-s="${key}"`} checked><span class="k">${esc(label)}</span><span class="from">${esc(from)}</span>→<span class="to">${esc(to)}</span></label>`);
-  if(Array.isArray(sg.types) && sg.types.length) row('types', '종류', typesText(typesOf(p)), typesText(sg.types.filter(t => typeLabel[t])));
-  else if('type' in sg && typeLabel[sg.type]) row('type', '종류', typesText(typesOf(p)), typeLabel[sg.type]);
-  FIELDS.filter(f => f.col).forEach(f => { if(f.k in sg) row(f.k, f.l, facText(p[f.k] ?? null), facText(sg[f.k])); });
-  [['hours','운영시간'],['tel','전화'],['price','요금']].forEach(([k, l]) => { if(k in sg) row(k, l, p[k] || '없음', sg[k]); });
+  // 한 줄: [체크] 항목 이름 | 지금 값 → (이용자가 보낸 값이 들어 있는 고칠 수 있는 칸)
+  const row = (chk, label, from, editor) => rows.push(`<div class="drow"><label class="dchk"><input type="checkbox" ${chk} checked><span class="k">${esc(label)}</span></label><div class="dval"><span class="from">${esc(from)}</span><span class="arr">→</span>${editor}</div></div>`);
+  const sgTypes = Array.isArray(sg.types) && sg.types.length ? sg.types : ('type' in sg && typeLabel[sg.type] ? [sg.type] : null);
+  if(sgTypes) row('data-s="types"', '종류', typesText(typesOf(p)), typesEd(sgTypes));
+  FIELDS.filter(f => f.col).forEach(f => { if(f.k in sg) row(`data-s="${f.k}"`, f.l, facText(p[f.k] ?? null), facEd('data-sv', sg[f.k])); });
+  [['hours','운영시간',60],['tel','전화',30],['price','요금',200]].forEach(([k, l, max]) => { if(k in sg) row(`data-s="${k}"`, l, p[k] || '없음', `<input class="ded" data-sv value="${esc(sg[k] ?? '')}" maxlength="${max}">`); });
   Object.entries(sg.info || {}).forEach(([k, v]) => {
     if(!(k in INFO_LABEL)) return;
-    row(null, INFO_LABEL[k], infoText(k, (p.info || {})[k]), infoText(k, v), `data-info="${esc(k)}"`);
+    row(`data-info="${esc(k)}"`, INFO_LABEL[k], infoText(k, (p.info || {})[k]), infoEd(k, v));
   });
   if(sg.closed) rows.push(`<label><input type="checkbox" data-s="closed" checked><span class="k">상태</span><span class="warn">폐업·세차장 아님 → 지도에서 숨김</span></label>`);
   const blocked = it.reporter_p && it.reporter_p.blocked;
@@ -564,7 +624,8 @@ function cardReport(it) {
       ${rows.length ? `<div class="diff">${rows.join('')}</div>` : ''}
       ${it.memo ? `<div class="memo">💬 ${esc(it.memo)}</div>` : ''}
       <div class="f"><label>세차장 이름 (바꿀 때만 고치세요 · 체인·가맹점은 '학익점'처럼 지점명까지)</label><input data-rename value="${esc(p.name)}" maxlength="60"></div>
-      <div style="margin:-4px 0 10px"><button class="mini" type="button" data-act="goedit">📍 위치·주소가 틀렸으면: 이 세차장 고치기</button></div>
+      <div style="margin:-4px 0 10px;display:flex;gap:8px;flex-wrap:wrap"><button class="mini" type="button" data-act="rmore">✏️ 다른 칸도 고치기</button><button class="mini" type="button" data-act="goedit">📍 위치·주소가 틀렸으면: 이 세차장 고치기</button></div>
+      ${reportMore(p, sg)}
       ${it.photo ? `<div class="photo-box" data-photo="${esc(it.photo)}"><button type="button" data-act="photo">📷 가격표 사진 보기</button></div>` : ''}
       <div class="acts">
         <button class="no" type="button" data-act="dismiss">무시</button>
@@ -1175,6 +1236,12 @@ function render() {
     });
     card.querySelectorAll('button[data-act]').forEach(b => b.onclick = () => act(card, id, b.dataset.act, b));
     if(tab === 'edit') wireTypeVis(card);
+    // 제보 값을 고치면 그 줄은 자동으로 체크
+    card.querySelectorAll('.drow').forEach(r => {
+      const on = () => { const c = r.querySelector('.dchk input'); if(c) c.checked = true; };
+      r.querySelector('.dval').addEventListener('input', on);
+      r.querySelector('.dval').addEventListener('change', on);
+    });
   });
   updLocBox();
 }
@@ -1239,6 +1306,12 @@ function readFields(card) {
 async function act(card, id, what, btn) {
   if(what === 'reject') { card.querySelector('.reject-box').classList.add('open'); card.querySelector('.reject-box input').focus(); return; }
   if(what === 'goedit') { const r = items.find(x => x.id === id); if(r && r.place) goEdit(r.place.id); return; }
+  if(what === 'rmore') {
+    const box = card.querySelector('.rmore');
+    box.hidden = !box.hidden;
+    btn.textContent = box.hidden ? '✏️ 다른 칸도 고치기' : '▲ 다른 칸 접기';
+    return;
+  }
   if(what === 'save') {
     const it0 = items.find(x => x.id === id), addrIn = card.querySelector('[data-k="addr"]');
     if(it0 && addrIn && addrIn.value.trim() !== (it0.addr || '') && !locMoved()) {
@@ -1291,25 +1364,45 @@ async function act(card, id, what, btn) {
       await PPX.adminReview(id, 'rejected', { reject_reason: reason || null });
       toast('반려했어요');
     } else if(what === 'apply') {
-      const sg = it.suggest || {}, fields = {};
-      card.querySelectorAll('[data-s]').forEach(el => {
-        if(!el.checked) return;
-        const k = el.dataset.s;
-        if(k === 'closed') fields.status = 'closed';
-        else if(k === 'types') {
-          const ts = sg.types.filter(t => typeLabel[t]);
-          fields.types = ts;
-          if(!ts.includes(it.place.type)) fields.type = ts[0];   // 대표 종류가 빠졌으면 첫 번째로
+      // 체크한 줄은 '칸에 들어 있는 값'(이용자 값 또는 운영자가 고친 값)으로 반영
+      const p = it.place || {}, fields = {};
+      const info = { ...(p.info || {}) };
+      let infoChanged = false, bad = '';
+      card.querySelectorAll('[data-s]:checked').forEach(el => {
+        const k = el.dataset.s, r = el.closest('.drow');
+        if(k === 'closed') { fields.status = 'closed'; return; }
+        if(k === 'types') {
+          const ts = [...r.querySelectorAll('[data-sv-type]:checked')].map(x => x.dataset.svType);
+          if(!ts.length) { bad = '종류를 하나 이상 골라 주세요'; return; }
+          const main = ts.includes(p.type) ? p.type : ts[0];   // 대표 종류가 빠졌으면 첫 번째로
+          fields.type = main; fields.types = [main, ...ts.filter(t => t !== main)];
+          return;
         }
-        else if(k === 'type') { fields.type = sg.type; fields.types = [sg.type]; }   // 예전 형식 제보
-        else fields[k] = sg[k];
+        const ed = r && r.querySelector('[data-sv]');
+        if(!ed) return;
+        fields[k] = ed.tagName === 'SELECT' ? (ed.value === 'null' ? null : ed.value === 'true') : (ed.value.trim() || null);
       });
-      const pick = [...card.querySelectorAll('[data-info]:checked')].map(el => el.dataset.info);
-      if(pick.length) {
-        const info = { ...(it.place.info || {}) };
-        pick.forEach(k => { const v = sg.info[k]; if(v === null || (Array.isArray(v) && !v.length)) delete info[k]; else info[k] = v; });
-        fields.info = info;
-      }
+      card.querySelectorAll('[data-info]:checked').forEach(el => {
+        const k = el.dataset.info, v = readInfoEd(el.closest('.drow'), k);
+        if(v === null) delete info[k]; else info[k] = v;
+        infoChanged = true;
+      });
+      // '다른 칸도 고치기'에서 바꾼 칸만
+      card.querySelectorAll('[data-m]').forEach(el => {
+        const k = el.dataset.m, v = el.value.trim().replace(/\s+/g, ' ');
+        if(v === (p[k] || '')) return;
+        if(!v && (k === 'region' || k === 'addr')) return;   // 지역·주소는 비우지 않음
+        fields[k] = v || null;
+      });
+      card.querySelectorAll('[data-m-fac]').forEach(el => {
+        const k = el.dataset.mFac, v = el.value === 'null' ? null : el.value === 'true';
+        const col = el.dataset.col === '1', cur = col ? (p[k] ?? null) : (info[k] ?? null);
+        if(v === cur) return;
+        if(col) fields[k] = v;
+        else { if(v === null) delete info[k]; else info[k] = v; infoChanged = true; }
+      });
+      if(bad) { toast(bad, true); btns.forEach(b => b.disabled = false); return; }
+      if(infoChanged) fields.info = info;
       const rn = card.querySelector('[data-rename]');
       const newName = rn ? rn.value.trim().replace(/\s+/g, ' ') : '';
       if(newName && it.place && newName !== it.place.name) fields.name = newName;
