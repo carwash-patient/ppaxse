@@ -222,6 +222,30 @@ function typeFields(it) {
       `<label><input type="checkbox" data-type="${t}" ${has.includes(t)?'checked':''}>${typeLabel[t]}</label>`).join('')}</div></div>`;
 }
 
+// '종류 확인 중'은 혼자만: 다른 종류를 고르면 '종류 확인 중' 체크가 빠지고, '종류 확인 중'을 고르면 나머지가 빠짐
+document.addEventListener('change', e => {
+  const el = e.target;
+  if(el.matches && el.matches('select[data-k="type"]') && el.value !== 'wash') {
+    const w = el.closest('.card') && el.closest('.card').querySelector('[data-type="wash"]');
+    if(w) w.checked = false;
+    return;
+  }
+  const key = el.dataset && el.dataset.type !== undefined ? 'type' : el.dataset && el.dataset.svType !== undefined ? 'svType' : null;
+  if(!key || !el.checked) return;
+  const v = el.dataset[key], box = el.closest('.tchips');
+  if(!box) return;
+  box.querySelectorAll('input[type=checkbox]').forEach(x => {
+    const xv = x.dataset[key];
+    if(xv !== undefined && (v === 'wash' ? xv !== 'wash' : xv === 'wash')) x.checked = false;
+  });
+  // 대표 종류(지도 아이콘)도 맞춰 줌
+  const card = el.closest('.card'), main = key === 'type' && card && card.querySelector('select[data-k="type"]');
+  if(main && ((v !== 'wash' && main.value === 'wash') || v === 'wash') && main.value !== v) {
+    main.value = v;
+    main.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+});
+
 function toast(msg, warn) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.className = 'toast show' + (warn ? ' warn' : '');
@@ -1298,7 +1322,10 @@ function readFields(card) {
   if(locMoved() && locEdit.id === selId) { fields.lat = +locEdit.lat.toFixed(6); fields.lng = +locEdit.lng.toFixed(6); }
   if(card.querySelector('[data-type]')) {
     const checked = [...card.querySelectorAll('[data-type]:checked')].map(el => el.dataset.type);
-    fields.types = [fields.type, ...checked.filter(t => t !== fields.type)];   // 대표 종류가 맨 앞
+    let ts = [fields.type, ...checked.filter(t => t !== fields.type)];   // 대표 종류가 맨 앞
+    // '종류 확인 중'은 다른 종류와 같이 두지 않음
+    if(ts.some(t => t !== 'wash')) { ts = ts.filter(t => t !== 'wash'); if(fields.type === 'wash') fields.type = ts[0]; }
+    fields.types = ts;
   }
   return fields;
 }
