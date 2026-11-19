@@ -181,9 +181,9 @@
   // 세차장 종류별로 받는 항목 (이 순서대로 보여줌)
   const TYPE_FIELDS = {
     self:    ['foam','fbrush','wax','under','indoor','hotwater','airgun','vacuum','mat','dry','myitem','toilet','h24','lounge'],
-    notouch: ['under','airgun','vacuum','mat','dry','myitem','toilet','h24','lounge'],
+    notouch: ['under','airgun','vacuum','mat','dry','toilet','h24','lounge'],   // 개인 용품은 셀프세차에서만
     auto:    ['under','finisher','gasdisc','airgun','vacuum','mat','dry','toilet','h24'],
-    hand:    ['steam','under','inclean','reserve','toilet','h24','lounge'],
+    hand:    ['steam','under','inclean','reserve','toilet','lounge'],   // 24시간 운영은 손세차에서 묻지 않음
     detail:  ['steam','under','seatout','reserve','toilet','lounge']
   };
   const TYPE_ORDER = ['self','hand','notouch','auto','detail'];

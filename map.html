@@ -181,6 +181,12 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
 /* MAP */
 #mapArea{position:fixed;top:110px;left:0;right:0;bottom:0}
 #naverMap{width:100%;height:100%}
+/* 종류를 누르면 버튼 줄 바로 밑에 뜨는 '중요 포인트' 줄 (누를 수 없음, 정보 모이는 중) */
+.type-hint{position:absolute;top:10px;left:0;right:0;z-index:12;display:none;align-items:center;gap:8px;padding:7px 14px;background:rgba(4,17,30,.62);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line);font-size:12px;white-space:nowrap;overflow:hidden;pointer-events:none;user-select:none}
+#mapArea.has-hint .type-hint{display:flex}
+.type-hint .th-soon{flex-shrink:0;font-size:10.5px;font-weight:900;letter-spacing:.3px;padding:2px 8px;border-radius:6px;border:1px dashed rgba(253,230,138,.55);color:#fde68a;background:rgba(253,230,138,.08)}
+.type-hint .th-list{color:rgba(255,255,255,.42);font-weight:600;overflow:hidden;text-overflow:ellipsis}
+#mapArea.has-hint .add-btn,#mapArea.has-hint .research-btn,#mapArea.has-hint .start-hint,#mapArea.has-hint .pick-search,#mapArea.has-hint .pick-banner{top:48px}
 
 /* 네이버 지도 API 키 미설정 fallback */
 #mapFallback{display:none;width:100%;height:100%;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:linear-gradient(160deg,#071828,#04111e)}
@@ -374,6 +380,7 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
       Maps → Application → 인증 정보
     </div>
   </div>
+  <div class="type-hint" id="typeHint" aria-hidden="true"><span class="th-soon">📝 정보 모으는 중</span><span class="th-list" id="typeHintList"></span></div>
   <button class="research-btn" id="researchBtn" onclick="researchArea()">🔄 이 지역 재검색</button>
   <div class="locate-btn" id="locateBtn" role="button" aria-label="내 위치로 이동">📍</div>
   <div class="start-hint" id="startHint" role="dialog" aria-label="내 주변 세차장 보기">
@@ -447,7 +454,7 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js" integrity="sha384-uteMfOloLDGt042uDz+xHGF3ym63/WQ6rFq7murQRG8Ih7QrXGEGNtWd8688sb4O" crossorigin="anonymous"></script>
 <script src="js/config.js?v=20261117"></script>
-<script src="js/ppx.js?v=20261119b"></script>
+<script src="js/ppx.js?v=20261119c"></script>
 <script>setTimeout(() => { if(window.PPX && PPX.thanks) PPX.thanks(); }, 1500);</script>
 <script src="js/ev.js?v=20261117a"></script>
 <script>
@@ -676,6 +683,16 @@ function syncChips() {
     c.classList.toggle('on', f === 'all' ? !selTypes.size && !selFac.size : selTypes.has(f) || selFac.has(f));
   });
 }
+// 종류별 중요 포인트 (아직 정보가 모이는 중이라 '준비 중'으로 흐리게만 보여 줌, 누를 수 없음)
+const TYPE_HINT = { self: ['24시간', '개인 용품', '실내 베이'], hand: ['예약 필수', '실내 청소'], detail: ['시트 탈거', '예약 필요'],
+  auto: ['주유 할인', '마무리 직원'], notouch: ['드라잉 공간', '24시간'] };
+let hintType = null;   // 마지막으로 켠 종류
+function updateTypeHint() {
+  if(hintType && !selTypes.has(hintType)) hintType = [...selTypes].pop() || null;
+  const list = hintType && TYPE_HINT[hintType];
+  document.getElementById('typeHintList').textContent = list ? list.join(' · ') : '';
+  document.getElementById('mapArea').classList.toggle('has-hint', !!list);
+}
 document.querySelectorAll('.chip').forEach(chip => {
   chip.onclick = () => {
     const f = chip.dataset.f;
@@ -683,8 +700,10 @@ document.querySelectorAll('.chip').forEach(chip => {
     else {
       const set = typeLabel[f] ? selTypes : selFac;
       set.has(f) ? set.delete(f) : set.add(f);
+      if(set === selTypes && set.has(f)) hintType = f;
     }
     syncChips();
+    updateTypeHint();
     closeDetail();
   };
 });
