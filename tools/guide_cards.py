@@ -49,10 +49,12 @@ def short(s, n):
 
 
 def parse(slug):
-    f = next((x for x in glob.glob(os.path.join(SRC, '*.html')) if dict(META.findall(open(x, encoding='utf-8').read()[:1500])).get('slug') == slug), None)
+    # slug 대신 원고 파일 경로를 줘도 됨 (저장소 밖 블로그 원고 등)
+    f = slug if os.path.isfile(slug) else next((x for x in glob.glob(os.path.join(SRC, '*.html')) if dict(META.findall(open(x, encoding='utf-8').read()[:1500])).get('slug') == slug), None)
     if not f:
         raise SystemExit(f'그런 글이 없어요: {slug}')
     raw = open(f, encoding='utf-8').read()
+    raw = re.sub(r'<p>\s*\[[^\]]*\]\s*</p>', '', raw)  # [직접 경험 한 줄 …] 같은 자리 표시는 카드에 넣지 않음
     meta = dict(META.findall(raw[:1500]))
     body = re.sub(r'<!--.*?-->', '', raw, flags=re.S)
     first_p = re.search(r'<p>(.*?)</p>', body, re.S)
@@ -193,6 +195,7 @@ def one(slug, a):
         out = a[a.index('--out') + 1] if '--out' in a else (
             os.path.join(r'D:\AI_Team\reviews\guide-cards', slug + ('-wide' if wide else '')) if WIN else os.path.join('cards', slug + ('-wide' if wide else '')))
     meta, pages, z, kinds = cards(slug, wide)
+    slug = meta.get('slug') or os.path.splitext(os.path.basename(slug))[0]
     tmp = tempfile.mkdtemp(prefix='ppx_cards_')
     br = browser()
     pngs = []
