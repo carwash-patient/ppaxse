@@ -27,7 +27,18 @@ html,body{min-height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backg
 .tab{flex:1;padding:11px 0;border-radius:12px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(255,255,255,.65);font-family:inherit;font-size:14px;font-weight:900;cursor:pointer}
 .tab.on{border-color:var(--sky);background:rgba(14,165,233,.18);color:#fff}
 .tab b{color:var(--aqua);margin-left:4px}
-#map{height:38vh;min-height:220px;margin:0 16px;border-radius:18px;overflow:hidden;border:1px solid var(--line);background:#0a1b2e}
+#map{height:38vh;min-height:220px;border-radius:18px;overflow:hidden;border:1px solid var(--line);background:#0a1b2e}
+/* 지도 위: 로드뷰 버튼 · 세차장 전체 표시 안내 · 로드뷰 화면 */
+.map-wrap{position:relative;margin:0 16px}
+.rv-btn{position:absolute;left:10px;top:10px;z-index:5;padding:8px 12px;border-radius:999px;border:1px solid rgba(34,211,238,.45);background:rgba(7,24,40,.92);color:#fff;font-family:inherit;font-size:12.5px;font-weight:900;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+.all-note{position:absolute;left:10px;bottom:10px;z-index:5;padding:4px 9px;border-radius:8px;background:rgba(4,17,30,.82);color:rgba(255,255,255,.75);font-size:11px;pointer-events:none}
+.all-note:empty{display:none}
+.rv{position:absolute;inset:0;z-index:6;border-radius:18px;overflow:hidden;background:#000;border:1px solid var(--line)}
+.rv[hidden]{display:none}
+#rvPano{position:absolute;inset:0}
+.rv-x{position:absolute;right:10px;top:10px;z-index:3;padding:8px 12px;border-radius:999px;border:none;background:rgba(4,17,30,.9);color:#fff;font-family:inherit;font-size:12.5px;font-weight:900;cursor:pointer}
+.rv-info{position:absolute;left:10px;right:90px;top:10px;z-index:3;padding:6px 10px;border-radius:10px;background:rgba(4,17,30,.82);color:#fff;font-size:11.5px;line-height:1.5;pointer-events:none}
+.rv-info:empty{display:none}
 .map-note{font-size:11px;color:var(--muted);margin:6px 18px 0;line-height:1.6}
 .list{padding:14px 16px 60px}
 .card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px;margin-bottom:12px;cursor:pointer}
@@ -169,7 +180,7 @@ html,body{min-height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backg
 <div class="np" id="np" role="dialog" aria-label="근처 세차장 정보" hidden>
   <div class="np-row"><div class="np-t"><b id="npName"></b><span id="npInfo"></span></div>
     <button class="np-x" id="npX" type="button" aria-label="닫기">×</button></div>
-  <div class="np-btns"><button class="main" id="npEdit" type="button">✏️ 이 세차장 고치기</button><a id="npOpen" target="_blank" rel="noopener">🗺️ 빡세 지도</a></div>
+  <div class="np-btns"><button class="main" id="npEdit" type="button">✏️ 이 세차장 고치기</button><button id="npRv" type="button">🛣️ 로드뷰</button><a id="npOpen" target="_blank" rel="noopener">🗺️ 빡세 지도</a></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js" integrity="sha384-uteMfOloLDGt042uDz+xHGF3ym63/WQ6rFq7murQRG8Ih7QrXGEGNtWd8688sb4O" crossorigin="anonymous"></script>
@@ -287,7 +298,11 @@ async function init() {
       <button class="tab" data-t="done" type="button">처리 내역</button>
     </div>
     <div id="searchBox"></div>
-    <div id="map"></div>
+    <div class="map-wrap"><div id="map"></div>
+      <button class="rv-btn" id="rvBtn" type="button">🛣️ 로드뷰</button>
+      <div class="all-note" id="allNote"></div>
+      <div class="rv" id="rv" hidden><div id="rvPano"></div><div class="rv-info" id="rvInfo"></div><button class="rv-x" id="rvX" type="button">✕ 지도로</button></div>
+    </div>
     <div class="map-note" id="mapNote"></div>
     <div class="list" id="list"></div>`;
   document.querySelectorAll('.tab').forEach(b => b.onclick = () => {
@@ -304,10 +319,15 @@ async function init() {
       if(!locEdit || !LOC_TABS.includes(tab)) return;
       moveLoc(e.coord.lat(), e.coord.lng(), 'tap');
     });
+    naver.maps.Event.addListener(map, 'idle', drawAll);   // 지도를 움직이면 그 자리의 세차장 점을 다시 그림
+    document.getElementById('rvBtn').onclick = () => openRoadview(reqMarker ? reqMarker.getPosition() : map.getCenter(), reqMarker ? '빨간 핀 자리' : '지도 가운데');
+    document.getElementById('rvX').onclick = closeRoadview;
   } else {
+    document.getElementById('rvBtn').hidden = true;
     document.getElementById('map').innerHTML = '<div class="msg" style="padding:40px 10px">지도를 불러올 수 없어요</div>';
   }
   try { approved = await PPX.approvedPlaces(); } catch(e) { approved = []; }
+  drawAll();
   refreshCounts();
   load();
 }
@@ -793,6 +813,7 @@ function openNearPop(x, base) {
   document.getElementById('np').hidden = false;
 }
 function closeNearPop() { document.getElementById('np').hidden = true; npPlace = null; }
+document.getElementById('npRv').onclick = () => { if(npPlace) openRoadview({ lat: npPlace.lat, lng: npPlace.lng }, npPlace.name); };
 document.getElementById('npX').onclick = closeNearPop;
 document.getElementById('npEdit').onclick = () => {
   if(!npPlace) return;
@@ -1285,7 +1306,65 @@ function showOnMap() {
     icon: { content: '<div style="font-size:34px;transform:translate(-50%,-100%);filter:drop-shadow(0 4px 6px rgba(0,0,0,.5))">📍</div>', anchor: new naver.maps.Point(0,0) } });
   if(editing) naver.maps.Event.addListener(reqMarker, 'dragend', () => { const p = reqMarker.getPosition(); moveLoc(p.lat(), p.lng(), 'drag'); });
   nearbyOf(loc, loc.id).forEach(({p}) => nearMarkers.push(nearDot(p, map, loc)));
+  drawAll();
 }
+
+// ── 지도에 세차장 전체 표시: 지금 보이는 영역의 지도에 올라간 세차장을 작은 점으로 (누르면 정보 창 → 고치기) ──
+//  너무 축소하면 점이 수천 개라 버벅이므로 동네 크기(zoom 14)부터, 한 번에 가운데 가까운 400곳까지
+let allMarkers = [];
+const ALL_MIN_ZOOM = 14, ALL_MAX = 400;
+function drawAll() {
+  if(!map) return;
+  allMarkers.forEach(m => m.setMap(null)); allMarkers = [];
+  const note = document.getElementById('allNote');
+  if(!note) return;
+  const z = map.getZoom();
+  if(z < ALL_MIN_ZOOM) { note.textContent = '🔍 확대하면 세차장이 모두 점으로 보여요'; return; }
+  const b = map.getBounds(), sw = b.getSW(), ne = b.getNE(), c = map.getCenter();
+  const center = { lat: c.lat(), lng: c.lng() };
+  let list = approved.filter(p => p.lat != null &&
+    p.lat >= sw.lat() && p.lat <= ne.lat() && p.lng >= sw.lng() && p.lng <= ne.lng());
+  const total = list.length;
+  if(total > ALL_MAX) list = list.sort((a, b2) => distM(center, a) - distM(center, b2)).slice(0, ALL_MAX);
+  const base = () => locEdit && locEdit.id === selId ? locEdit : (reqMarker ? { lat: reqMarker.getPosition().lat(), lng: reqMarker.getPosition().lng() } : null);
+  list.forEach(p => {
+    if(z >= 17) { allMarkers.push(nearDot(p, map, base())); return; }   // 많이 확대하면 이름도
+    const m = new naver.maps.Marker({ position: new naver.maps.LatLng(p.lat, p.lng), map, clickable: true, zIndex: 0,
+      icon: { content: '<div style="width:11px;height:11px;border-radius:50%;background:#7dd3fc;border:1.5px solid #04111e;box-shadow:0 0 0 1px rgba(255,255,255,.5);transform:translate(-50%,-50%);cursor:pointer"></div>', anchor: new naver.maps.Point(0, 0) } });
+    naver.maps.Event.addListener(m, 'click', e => { npAt = Date.now(); if(e && e.domEvent) e.domEvent.stopPropagation(); openNearPop(p, base()); });
+    allMarkers.push(m);
+  });
+  note.textContent = total ? `세차장 ${total > ALL_MAX ? '가까운 ' + ALL_MAX + '곳 (전체 ' + total.toLocaleString() + '곳)' : total.toLocaleString() + '곳'} 표시 중` : '이 영역에 등록된 세차장이 없어요';
+}
+
+// ── 로드뷰: 버튼을 누를 때만 네이버 로드뷰 부품(약 25KB)을 받아 지도 자리에 띄움 ──
+let rvLoading = null, rvPano = null;
+function loadPanorama() {
+  if(naver.maps.Panorama) return Promise.resolve();
+  if(!rvLoading) rvLoading = new Promise((ok, no) => {
+    const s = document.createElement('script');
+    s.src = 'https://oapi.map.naver.com/openapi/v3/maps-panorama.js';
+    s.onload = () => ok(); s.onerror = () => { rvLoading = null; no(new Error('로드뷰를 불러오지 못했어요')); };
+    document.head.appendChild(s);
+  });
+  return rvLoading;
+}
+async function openRoadview(pos, label) {
+  if(!(window.naver && naver.maps)) return;
+  const ll = pos instanceof naver.maps.LatLng ? pos : new naver.maps.LatLng(pos.lat, pos.lng);
+  const box = document.getElementById('rv'), info = document.getElementById('rvInfo');
+  box.hidden = false; info.textContent = '로드뷰 불러오는 중…';
+  try { await loadPanorama(); } catch(e) { info.textContent = e.message; return; }
+  if(!rvPano) rvPano = new naver.maps.Panorama('rvPano', { position: ll, pov: { pan: 0, tilt: 0, fov: 100 } });
+  else rvPano.setPosition(ll);
+  setTimeout(() => {
+    const l = rvPano.getLocation && rvPano.getLocation();
+    info.textContent = l && l.panoId
+      ? `${label || ''} 근처 · ${l.title || l.address || ''}${l.photodate ? ' · 촬영 ' + String(l.photodate).slice(0, 7) : ''}`
+      : '이 근처에는 로드뷰가 없어요';
+  }, 1500);
+}
+function closeRoadview() { document.getElementById('rv').hidden = true; }
 
 // 확인을 마친 제보의 가격표 사진은 바로 지움 (개인정보처리방침 약속)
 async function dropPhoto(it) {
