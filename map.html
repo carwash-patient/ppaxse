@@ -211,7 +211,7 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
 .sheet-summary{padding:0 16px 12px;display:flex;align-items:center;justify-content:space-between}
 .sheet-count{font-size:16px;font-weight:900}
 .sheet-count span{color:var(--aqua)}
-.sheet-sort{font-size:12px;color:var(--muted);font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px}
+.sheet-sort{font-size:12px;color:var(--muted);font-weight:700;display:flex;align-items:center;gap:4px}
 .place-list{overflow-y:auto;max-height:calc(100vh - 200px);padding:0 14px 150px}
 .place-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:20px;padding:16px;margin-bottom:10px;cursor:pointer;transition:.2s;position:relative;overflow:hidden}
 .place-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--sky),var(--aqua));opacity:0;transition:.2s}
@@ -358,10 +358,6 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
   <div class="chip" data-f="detail">✨ 디테일링</div>
   <div class="chip" data-f="notouch">💦 노터치</div>
   <div class="chip" data-f="auto">⛽ 자동세차</div>
-  <div class="chip" data-f="under">⬇️ 하부세차</div>
-  <div class="chip" data-f="indoor">🏠 실내베이</div>
-  <div class="chip" data-f="h24">🕐 24시간</div>
-  <div class="chip" data-f="talk">💬 한마디</div>
 </div>
 
 <div id="mapArea">
@@ -429,7 +425,7 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
   <div class="sheet-handle-area" id="sheetHandle"><div class="sheet-handle"></div></div>
   <div class="sheet-summary">
     <div class="sheet-count" id="sheetCount">세차장 불러오는 중…</div>
-    <div class="sheet-sort" id="sortBtn">거리순 ▾</div>
+    <div class="sheet-sort" id="sortBtn">거리순</div>
   </div>
   <div class="place-list" id="placeList"></div>
 </div>
@@ -449,9 +445,9 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
   <a href="mypage.html" class="nav-item"><div class="nav-item-icon">👤</div><div class="nav-item-label">내 정보</div></a>
 </nav>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js" integrity="sha384-uteMfOloLDGt042uDz+xHGF3ym63/WQ6rFq7murQRG8Ih7QrXGEGNtWd8688sb4O" crossorigin="anonymous"></script>
 <script src="js/config.js?v=20261117"></script>
-<script src="js/ppx.js?v=20261119a"></script>
+<script src="js/ppx.js?v=20261119b"></script>
 <script>setTimeout(() => { if(window.PPX && PPX.thanks) PPX.thanks(); }, 1500);</script>
 <script src="js/ev.js?v=20261117a"></script>
 <script>
@@ -476,7 +472,7 @@ const selTypes = new Set(), selFac = new Set();
 const typesOf = p => (p.types && p.types.length) ? p.types : [p.type];
 const typeNames = p => typesOf(p).map(t => typeLabel[t] || t);
 
-let activeId=null, sheetState='hidden', sheetBeforeDetail='hidden', sortBy='dist';
+let activeId=null, sheetState='hidden', sheetBeforeDetail='hidden';
 let naverMap=null, naverMarkers=[], myPos=null;
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -752,12 +748,6 @@ swipeToClose(document.getElementById('detailPanel'), document.getElementById('de
   setTimeout(() => { closeDetail(); el.style.transition = ''; el.style.transform = ''; }, 220);
 });
 
-document.getElementById('sortBtn').onclick = () => {
-  sortBy = sortBy==='dist' ? 'rating' : 'dist';
-  document.getElementById('sortBtn').textContent = sortBy==='dist' ? '거리순 ▾' : '평점순 ▾';
-  renderList();
-};
-
 let searchTimer=null;
 document.getElementById('searchInput').addEventListener('input', () => {
   clearTimeout(searchTimer);
@@ -782,7 +772,7 @@ function filteredPlaces() {
 function sortedPlaces(list) {
   const o = originPoint();
   list.forEach(p => p._d = distKm(o, p));
-  return [...list].sort((a,b) => sortBy==='dist' ? a._d-b._d : ((b.rating||0)-(a.rating||0)) || a._d-b._d);
+  return [...list].sort((a,b) => a._d-b._d);   // 목록은 가까운 순 (평점은 넣지 않음)
 }
 
 function renderList() {

@@ -135,7 +135,8 @@ def page(path, title, desc, body, crumbs=(), jsonld=None, bnav=False, og_image=N
             f'<a href="{SITE}/{esc(h)}">{esc(t)}</a>' if h is not None else esc(t) for t, h in crumbs) + '</nav>'
     ld = ''
     if jsonld:
-        ld = '<script type="application/ld+json">' + json.dumps(jsonld, ensure_ascii=False) + '</script>'
+        # '<'를 <로: 세차장 이름에 </script> 같은 글자가 있어도 설명표가 중간에 끊기지 않게 (JSON 뜻은 그대로)
+        ld = '<script type="application/ld+json">' + json.dumps(jsonld, ensure_ascii=False).replace('<', '\\u003c') + '</script>'
     return f'''<!DOCTYPE html>
 <html lang="ko">
 <head>

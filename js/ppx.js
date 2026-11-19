@@ -310,7 +310,7 @@
     async signUp({ email, password, nickname, skill, cars, avatar_car, avatar_color, car_model, signup_source, signup_note, age14, marketing_email }) {
       // 인증 메일 링크를 누르면 로그인 화면 → 원래 보던 곳(?next=)으로
       const nx = new URLSearchParams(location.search).get('next');
-      const back = location.href.replace(/[^/]*$/, '') + 'login.html' +
+      const back = location.origin + location.pathname.replace(/[^/]*$/, '') + 'login.html' +   // 주소 뒤 ?next=r/ 의 '/'에 속지 않게 경로만 씀
         (nx && /^(r\/(\?[\w=&%-]*)?|[\w-]+\.html(\?[\w=&%-]*)?)$/.test(nx) ? '?next=' + encodeURIComponent(nx) : '');
       await prepareClaim();
       const captchaTk = await captchaToken();
@@ -778,9 +778,10 @@
   // 운영자 기기, 자동 프로그램은 세지 않음. 실패해도 화면에는 영향 없음.
   try {
     const path = location.pathname;
-    const name = /\/r\/(index\.html)?$/.test(path) ? 'review'
-      : ((path.match(/([\w-]+)\.html$/) || [, 'index'])[1]);
-    const PAGE = { index: 'home', map: 'map', review: 'review', login: 'login', join: 'join', mypage: 'mypage' };
+    // 화면 이름: map.html → map, 폴더 주소(r/, owner/)는 폴더 이름, 맨 앞(/)은 index
+    const dir = path.replace(/index\.html$/, '');
+    const name = dir.endsWith('/') ? (dir.split('/').slice(-2)[0] || 'index') : ((dir.match(/([\w-]+)(\.html)?$/) || [, 'other'])[1]);   // /map 처럼 .html 없이 와도 같은 이름
+    const PAGE = { index: 'home', map: 'map', r: 'review', login: 'login', join: 'join', mypage: 'mypage' };
     if (ready && name !== 'admin' && !navigator.webdriver && !localStorage.getItem('ppxNoTrack')) {
       let v = localStorage.getItem('ppxVisitor');
       if (!v || !/^[0-9a-f-]{36}$/.test(v)) {
