@@ -1613,8 +1613,10 @@ async function act(card, id, what, btn) {
       resetLoc();
       toast(saved.status === 'closed' ? '저장했어요. 지도에서 숨겨졌어요' : '저장했어요. 지도에 바로 적용돼요 ✅');
       btns.forEach(b => b.disabled = false);
-      try { approved = await PPX.approvedPlaces(); } catch(e) {}
+      // 저장하면 '정보 제보 → 반영'처럼 카드를 닫음 (검색 목록에는 고친 내용으로 남음)
+      selId = null;
       render(); showOnMap();
+      PPX.approvedPlaces().then(a => { approved = a; drawAll(); }).catch(() => {});
       return;
     }
     try { approved = await PPX.approvedPlaces(); } catch(e) {}
