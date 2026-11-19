@@ -28,6 +28,9 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITE = 'https://ppaxse.com'
 KST = timezone(timedelta(hours=9))
 TODAY = datetime.now(KST).strftime('%Y-%m-%d')
+# 미리보기 전용: --local 과 함께 PPX_PREVIEW_TODAY=2026-11-30 처럼 주면 그날까지의 예약 글도 보이게 만듦 (실제 배포에는 쓰지 않음)
+if '--local' in sys.argv and os.environ.get('PPX_PREVIEW_TODAY'):
+    TODAY = os.environ['PPX_PREVIEW_TODAY']
 
 # 검색에 쓰는 종류 이름 (주소에도 그대로 씀)
 TYPES = [  # (코드, 이름, 아이콘)
