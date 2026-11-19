@@ -1,0 +1,52 @@
+{
+ "slug": "winter-self-wash",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "winter-self-wash-01.jpg",
+   "kind": "cover",
+   "head": "겨울철 셀프세차 방법과 주의점 — 염화칼슘·결빙 걱정 줄이는 법"
+  },
+  {
+   "file": "winter-self-wash-02.jpg",
+   "kind": "section",
+   "head": "겨울 세차, 왜 더 신경 써야 할까요?"
+  },
+  {
+   "file": "winter-self-wash-03.jpg",
+   "kind": "section",
+   "head": "언제 세차하면 좋을까요?"
+  },
+  {
+   "file": "winter-self-wash-04.jpg",
+   "kind": "section",
+   "head": "셀프세차 순서, 이렇게 하는 분들이 많아요"
+  },
+  {
+   "file": "winter-self-wash-05.jpg",
+   "kind": "section",
+   "head": "물기 제거, 이렇게 하면 결빙 걱정이 줄어요"
+  },
+  {
+   "file": "winter-self-wash-06.jpg",
+   "kind": "section",
+   "head": "이것만은 피해 주세요"
+  },
+  {
+   "file": "winter-self-wash-07.jpg",
+   "kind": "section",
+   "head": "겨울에 가기 좋은 세차장 고르는 법"
+  },
+  {
+   "file": "winter-self-wash-08.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "winter-self-wash-09.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}

@@ -125,7 +125,7 @@ def bottom_nav(up):
         f'<a href="{up}{h}"{on_cls if on else ""}><i>{ic}</i><span>{t}</span></a>' for h, ic, t, on in items) + '</nav>'
 
 
-def page(path, title, desc, body, crumbs=(), jsonld=None, bnav=False):
+def page(path, title, desc, body, crumbs=(), jsonld=None, bnav=False, og_image=None):
     url = f"{SITE}/{quote(path)}"
     depth = path.count('/')  # 'wash/인천/' → 2
     up = '../' * depth
@@ -149,13 +149,13 @@ def page(path, title, desc, body, crumbs=(), jsonld=None, bnav=False):
 <meta property="og:title" content="{esc(title)}">
 <meta property="og:description" content="{esc(desc)}">
 <meta property="og:url" content="{esc(url)}">
-<meta property="og:image" content="{SITE}/icons/og.png?v=20261111">
+<meta property="og:image" content="{esc(og_image or SITE + '/icons/og.png?v=20261111')}">
 <meta name="theme-color" content="#04111e">
 <link rel="icon" href="{up}icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="{up}icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="icon" href="{up}icons/icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="{up}icons/apple-touch-icon.png">
-<link rel="stylesheet" href="{up}css/seo.css?v=20261118">
+<link rel="stylesheet" href="{up}css/seo.css?v=20261119">
 {ld}
 </head>
 <body{' class="has-bnav"' if bnav else ''}>
@@ -351,6 +351,29 @@ def guide_item(no, p, pinned):
 GUIDE_LASTMOD = {}
 
 
+def add_cards(slug, body):
+    """guide-img/<slug>/cards.json (tools/guide_cards.py --site 가 만듦)이 있으면 카드뉴스 이미지를 글 속에 넣음.
+    표지 = 첫 문단 뒤, 소제목 카드 = 같은 소제목(h2) 바로 뒤. 팁·마무리 카드는 글에 이미 있는 내용이라 넣지 않음."""
+    f = os.path.join(ROOT, 'guide-img', slug, 'cards.json')
+    if not os.path.exists(f):
+        return body, None
+    m = json.load(open(f, encoding='utf-8'))
+    w, h = m.get('width', 1080), m.get('height', 1080)
+    fig = lambda c: (f'<figure class="gcard"><img src="../../guide-img/{esc(slug)}/{esc(c["file"])}" alt="{esc(c["head"])} 요약 카드" '
+                     f'width="{w}" height="{h}" loading="lazy" decoding="async"></figure>')
+    og = None
+    for c in m.get('cards', []):
+        if c['kind'] == 'cover':
+            og = f'{SITE}/guide-img/{quote(slug)}/{quote(c["file"])}'
+            body = re.sub(r'(</p>)', lambda x: x.group(1) + '\n' + fig(c).replace(' loading="lazy"', ''), body, count=1)
+        elif c['kind'] == 'section':
+            pat = re.compile(r'(<h2>\s*' + re.escape(esc(c['head'])).replace('\\ ', r'\s+') + r'\s*</h2>)')
+            if not pat.search(body):  # 원고 속 h2 가 이스케이프 안 된 경우
+                pat = re.compile(r'(<h2>\s*' + re.escape(c['head']).replace('\\ ', r'\s+') + r'\s*</h2>)')
+            body = pat.sub(lambda x: x.group(1) + '\n' + fig(c), body, count=1)
+    return body, og
+
+
 def build_guides():
     src = os.path.join(ROOT, 'guide-src')
     shutil.rmtree(os.path.join(ROOT, 'guide'), ignore_errors=True)
@@ -371,10 +394,13 @@ def build_guides():
         jl = {'@context': 'https://schema.org', '@type': 'Article', 'headline': title, 'description': desc,
               'datePublished': date, 'dateModified': meta.get('updated', date),
               'author': {'@type': 'Organization', 'name': '빡세'}, 'publisher': {'@type': 'Organization', 'name': '빡세'}}
+        body, og = add_cards(slug, body)
+        if og:
+            jl['image'] = og
         full = f'''<article><h1>{esc(title)}</h1><div class="date">{esc(date)} · 빡세 세차 가이드</div>
 {body}
 {cta('../../', '', equal=True)}</article>'''
-        write(path, page(path, f'{title} | 빡세', desc, full, [('빡세', ''), ('세차 가이드', 'guide/'), (title, None)], jl, bnav=True))
+        write(path, page(path, f'{title} | 빡세', desc, full, [('빡세', ''), ('세차 가이드', 'guide/'), (title, None)], jl, bnav=True, og_image=og))
         pin = meta.get('pin', '').strip()
         GUIDE_LASTMOD[path] = meta.get('updated', date)
         posts.append({'date': date, 'slug': slug, 'title': title, 'category': meta.get('category', '').strip(),

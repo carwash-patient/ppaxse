@@ -27,6 +27,10 @@
 - `python3 tools/guide_tools.py check-length <slug>` 로 공백 제외 2,000자 이상인지, 한 검색어가 너무 많이 반복되지 않았는지 확인하고, 모자라거나 많으면 고친 뒤 다시 확인합니다. 운영자에게 보낼 때 글마다 글자 수를 함께 적습니다.
 - 다 쓴 뒤 스스로 점검: 근거가 약한데 단정한 문장은 없는지, 의견이 갈리는 부분에 다른 방법도 소개했는지, 그러면서도 기본 권장 방법이 분명한지, 지어낸 숫자·경험담이 없는지.
 
+## 4-1. 카드뉴스 이미지 만들기 (운영자 결정 2026-11-19)
+- 원고마다 `python3 tools/guide_cards.py <slug> --site` 를 실행합니다(Pillow가 없으면 `pip install pillow`). 저장소 `guide-img/<slug>/`에 정사각형 JPG 카드와 `cards.json`이 생기고, 빌드할 때 표지는 첫 문단 뒤, 소제목 카드는 그 소제목 바로 뒤에 자동으로 들어갑니다. 표지는 공유할 때 보이는 대표 이미지(og:image)도 됩니다.
+- 카드는 원고 내용에서만 뽑으므로, 원고를 고치면 카드도 다시 만듭니다. 운영자에게 보낼 때 카드도 몇 장 함께 보냅니다.
+
 ## 5. 미리보기 만들기
 - `PPX_PREVIEW_TODAY=<오늘 쓴 글 중 가장 늦은 날짜> python3 tools/build_seo.py --local` 로 페이지를 만들고(예약 글도 보이게 하는 미리보기 전용 설정), 글마다 휴대폰 화면(390px 폭) 전체 캡처 이미지를 만듭니다(playwright + /usr/bin/google-chrome). 미리보기 페이지에 조회수 기록 코드가 있어도 로컬 파일이라 실제 통계에는 남지 않게, 캡처할 때 네트워크 요청은 막습니다(playwright `page.route('**/*', ...)`로 file:// 외 요청 차단).
 - 이 명령은 wash/·guide/ 등을 시험 데이터로 덮어쓰므로, 캡처 후 반드시 `git checkout -- wash guide sitemap.xml robots.txt` 와 `git clean -fd wash guide` 로 되돌립니다.
@@ -44,7 +48,7 @@
   1. `git pull` 로 최신을 받습니다. **그사이 운영자 컴퓨터의 Claude가 같은 날짜에 글을 올렸을 수 있습니다.**
   2. `python3 tools/guide_tools.py next-date` 와 날짜별 편수를 다시 보고, 정원을 넘는 날짜가 생겼으면 그 원고의 `date`와 파일 이름을 다음 빈 날로 바꿉니다(이미 예약된 글은 밀지 않음). `check-links` 다시 확인.
   3. `docs/guide-topics.md`에서 승인된 주제의 상태를 `올림 <공개일 MM/DD> <slug>`로 바꾸고, 운영자가 순서를 바꾸라고 했으면 표 순서도 고칩니다.
-  4. 승인된 원고 파일과 `docs/guide-topics.md`만 `git add` → 커밋(예: "세차 가이드 글 추가: 제목 (11/26 공개)", 이 세션의 attribution 안내가 있으면 따름) → `git push origin main`. 거절되면 `git pull --rebase` 후 다시 push.
+  4. 승인된 원고 파일, 그 글의 `guide-img/<slug>/` 폴더, `docs/guide-topics.md`만 `git add` → 커밋(예: "세차 가이드 글 추가: 제목 (11/26 공개)", 이 세션의 attribution 안내가 있으면 따름) → `git push origin main`. 거절되면 `git pull --rebase` 후 다시 push.
   5. `gh run list`(또는 GitHub API)로 '검색용 페이지 만들기'와 pages 배포가 성공했는지 확인하고, 글마다 주소(`https://ppaxse.com/guide/slug/`)와 공개 일시를 알려 줍니다. 예약 글 주소는 공개일 새벽 3시 10분 전까지 404가 정상입니다.
 - "오늘은 안 올려" 등 거절: 아무것도 올리지 않습니다. 승인 안 된 자리는 다음 날 작업이 다시 채웁니다.
 

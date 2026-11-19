@@ -1,0 +1,47 @@
+{
+ "slug": "drying-towel",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "drying-towel-01.jpg",
+   "kind": "cover",
+   "head": "드라잉 타월 고르는 법과 세탁법"
+  },
+  {
+   "file": "drying-towel-02.jpg",
+   "kind": "section",
+   "head": "고를 때 이런 걸 봐요"
+  },
+  {
+   "file": "drying-towel-03.jpg",
+   "kind": "section",
+   "head": "용도별로 나눠 쓰세요"
+  },
+  {
+   "file": "drying-towel-04.jpg",
+   "kind": "section",
+   "head": "닦는 법"
+  },
+  {
+   "file": "drying-towel-05.jpg",
+   "kind": "section",
+   "head": "오래 쓰는 세탁 요령"
+  },
+  {
+   "file": "drying-towel-06.jpg",
+   "kind": "section",
+   "head": "드라잉존이 넉넉한 세차장"
+  },
+  {
+   "file": "drying-towel-07.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "drying-towel-08.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}

@@ -1,0 +1,52 @@
+{
+ "slug": "interior-cleaning",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "interior-cleaning-01.jpg",
+   "kind": "cover",
+   "head": "셀프세차장에서 실내 세차까지 — 청소기·에어건 쓰는 요령"
+  },
+  {
+   "file": "interior-cleaning-02.jpg",
+   "kind": "section",
+   "head": "시작 전에"
+  },
+  {
+   "file": "interior-cleaning-03.jpg",
+   "kind": "section",
+   "head": "순서: 위에서 아래로, 불고 나서 빨아들이기"
+  },
+  {
+   "file": "interior-cleaning-04.jpg",
+   "kind": "section",
+   "head": "매트 관리"
+  },
+  {
+   "file": "interior-cleaning-05.jpg",
+   "kind": "section",
+   "head": "소재별로 조심할 점"
+  },
+  {
+   "file": "interior-cleaning-06.jpg",
+   "kind": "section",
+   "head": "외부 세차와 함께라면"
+  },
+  {
+   "file": "interior-cleaning-07.jpg",
+   "kind": "section",
+   "head": "청소기 좋은 세차장, 함께 알려 주세요"
+  },
+  {
+   "file": "interior-cleaning-08.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "interior-cleaning-09.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}

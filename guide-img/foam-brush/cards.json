@@ -1,0 +1,47 @@
+{
+ "slug": "foam-brush",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "foam-brush-01.jpg",
+   "kind": "cover",
+   "head": "셀프세차장 폼브러시, 써도 될까요? — 흠집 걱정 줄이는 법"
+  },
+  {
+   "file": "foam-brush-02.jpg",
+   "kind": "section",
+   "head": "왜 흠집 이야기가 나올까요?"
+  },
+  {
+   "file": "foam-brush-03.jpg",
+   "kind": "section",
+   "head": "쓰기 전에 확인하면 좋은 것"
+  },
+  {
+   "file": "foam-brush-04.jpg",
+   "kind": "section",
+   "head": "이렇게 나눠 쓰는 분들이 많아요"
+  },
+  {
+   "file": "foam-brush-05.jpg",
+   "kind": "section",
+   "head": "쓰고 난 뒤에는"
+  },
+  {
+   "file": "foam-brush-06.jpg",
+   "kind": "section",
+   "head": "솔 관리 잘하는 세차장, 함께 알려 주세요"
+  },
+  {
+   "file": "foam-brush-07.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "foam-brush-08.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}

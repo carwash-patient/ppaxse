@@ -1,0 +1,52 @@
+{
+ "slug": "iron-tar-remover",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "iron-tar-remover-01.jpg",
+   "kind": "cover",
+   "head": "철분 제거·타르 제거, 언제 해야 할까요"
+  },
+  {
+   "file": "iron-tar-remover-02.jpg",
+   "kind": "section",
+   "head": "철분은 어디서 붙을까요?"
+  },
+  {
+   "file": "iron-tar-remover-03.jpg",
+   "kind": "section",
+   "head": "철분 제거제는 이렇게 써요"
+  },
+  {
+   "file": "iron-tar-remover-04.jpg",
+   "kind": "section",
+   "head": "타르는 어디서 붙을까요?"
+  },
+  {
+   "file": "iron-tar-remover-05.jpg",
+   "kind": "section",
+   "head": "타르 제거제는 이렇게 써요"
+  },
+  {
+   "file": "iron-tar-remover-06.jpg",
+   "kind": "section",
+   "head": "얼마나 자주 해야 할까요?"
+  },
+  {
+   "file": "iron-tar-remover-07.jpg",
+   "kind": "section",
+   "head": "쓰기 전에 확인할 것"
+  },
+  {
+   "file": "iron-tar-remover-08.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "iron-tar-remover-09.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}

@@ -1,0 +1,47 @@
+{
+ "slug": "self-wash-buttons",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "self-wash-buttons-01.jpg",
+   "kind": "cover",
+   "head": "셀프세차장 버튼 사용법 — 고압수·폼·왁스, 뭐가 다를까요"
+  },
+  {
+   "file": "self-wash-buttons-02.jpg",
+   "kind": "section",
+   "head": "먼저 알아 둘 것: 시간이 흘러가요"
+  },
+  {
+   "file": "self-wash-buttons-03.jpg",
+   "kind": "section",
+   "head": "자주 보이는 버튼과 하는 일"
+  },
+  {
+   "file": "self-wash-buttons-04.jpg",
+   "kind": "section",
+   "head": "많이 쓰는 순서 예시"
+  },
+  {
+   "file": "self-wash-buttons-05.jpg",
+   "kind": "section",
+   "head": "시간과 돈을 아끼는 요령"
+  },
+  {
+   "file": "self-wash-buttons-06.jpg",
+   "kind": "section",
+   "head": "내가 가는 세차장엔 어떤 기능이 있을까요?"
+  },
+  {
+   "file": "self-wash-buttons-07.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "self-wash-buttons-08.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}

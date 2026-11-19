@@ -1,0 +1,47 @@
+{
+ "slug": "self-wash-manners",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "self-wash-manners-01.jpg",
+   "kind": "cover",
+   "head": "셀프세차장 매너 — 개인 장비, 자리 비우기, 드라잉존"
+  },
+  {
+   "file": "self-wash-manners-02.jpg",
+   "kind": "section",
+   "head": "개인 장비, 써도 될까요?"
+  },
+  {
+   "file": "self-wash-manners-03.jpg",
+   "kind": "section",
+   "head": "세차 베이에서"
+  },
+  {
+   "file": "self-wash-manners-04.jpg",
+   "kind": "section",
+   "head": "드라잉존에서"
+  },
+  {
+   "file": "self-wash-manners-05.jpg",
+   "kind": "section",
+   "head": "주말 대기 줄이 있을 때"
+  },
+  {
+   "file": "self-wash-manners-06.jpg",
+   "kind": "section",
+   "head": "개인 장비 되는 세차장, 함께 모아요"
+  },
+  {
+   "file": "self-wash-manners-07.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "self-wash-manners-08.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}

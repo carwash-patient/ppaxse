@@ -1,0 +1,52 @@
+{
+ "slug": "touchless-automatic-wash",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "touchless-automatic-wash-01.jpg",
+   "kind": "cover",
+   "head": "노터치 자동세차 이용법 — 들어가기 전 확인할 것과 끝난 뒤 할 일"
+  },
+  {
+   "file": "touchless-automatic-wash-02.jpg",
+   "kind": "section",
+   "head": "노터치·노브러쉬·브러시 자동세차, 뭐가 다른가요?"
+  },
+  {
+   "file": "touchless-automatic-wash-03.jpg",
+   "kind": "section",
+   "head": "들어가기 전에 확인할 것"
+  },
+  {
+   "file": "touchless-automatic-wash-04.jpg",
+   "kind": "section",
+   "head": "기계 안에서는 이렇게 해요"
+  },
+  {
+   "file": "touchless-automatic-wash-05.jpg",
+   "kind": "section",
+   "head": "끝난 뒤 할 일 — 물자국 줄이기"
+  },
+  {
+   "file": "touchless-automatic-wash-06.jpg",
+   "kind": "section",
+   "head": "노터치 자동세차가 잘 맞는 때"
+  },
+  {
+   "file": "touchless-automatic-wash-07.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "touchless-automatic-wash-08.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "touchless-automatic-wash-09.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}

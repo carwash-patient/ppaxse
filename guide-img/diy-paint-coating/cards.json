@@ -1,0 +1,47 @@
+{
+ "slug": "diy-paint-coating",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "diy-paint-coating-01.jpg",
+   "kind": "cover",
+   "head": "셀프세차장에서 유리막코팅제 쓰는 법 — 자동차 유리막코팅, 직접 해도 될까요"
+  },
+  {
+   "file": "diy-paint-coating-02.jpg",
+   "kind": "section",
+   "head": "유리막코팅은 왁스와 뭐가 다른가요?"
+  },
+  {
+   "file": "diy-paint-coating-03.jpg",
+   "kind": "section",
+   "head": "셀프용 유리막코팅제와 습식코팅제"
+  },
+  {
+   "file": "diy-paint-coating-04.jpg",
+   "kind": "section",
+   "head": "셀프세차장에서 바르는 순서"
+  },
+  {
+   "file": "diy-paint-coating-05.jpg",
+   "kind": "section",
+   "head": "할 때 주의할 점"
+  },
+  {
+   "file": "diy-paint-coating-06.jpg",
+   "kind": "section",
+   "head": "업체에 맡긴다면 — 가격 물어볼 때 확인할 것"
+  },
+  {
+   "file": "diy-paint-coating-07.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "diy-paint-coating-08.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}

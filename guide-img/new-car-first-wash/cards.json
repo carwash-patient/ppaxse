@@ -1,0 +1,52 @@
+{
+ "slug": "new-car-first-wash",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "new-car-first-wash-01.jpg",
+   "kind": "cover",
+   "head": "새 차 출고 후 첫 세차 — 언제, 어떻게 하면 좋을까요"
+  },
+  {
+   "file": "new-car-first-wash-02.jpg",
+   "kind": "section",
+   "head": "출고 직후 바로 세차해도 될까요?"
+  },
+  {
+   "file": "new-car-first-wash-03.jpg",
+   "kind": "section",
+   "head": "첫 세차, 이렇게 하는 분들이 많아요"
+  },
+  {
+   "file": "new-car-first-wash-04.jpg",
+   "kind": "section",
+   "head": "첫 세차 때 함께 확인하면 좋은 것"
+  },
+  {
+   "file": "new-car-first-wash-05.jpg",
+   "kind": "section",
+   "head": "자동세차는 언제부터 써도 될까요?"
+  },
+  {
+   "file": "new-car-first-wash-06.jpg",
+   "kind": "section",
+   "head": "같은 차 타는 분들과 함께"
+  },
+  {
+   "file": "new-car-first-wash-07.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "new-car-first-wash-08.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "new-car-first-wash-09.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}

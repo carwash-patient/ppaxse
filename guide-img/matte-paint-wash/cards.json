@@ -1,0 +1,52 @@
+{
+ "slug": "matte-paint-wash",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "matte-paint-wash-01.jpg",
+   "kind": "cover",
+   "head": "무광 도장 차량 세차 방법 — 셀프세차 전에 꼭 알아 둘 것"
+  },
+  {
+   "file": "matte-paint-wash-02.jpg",
+   "kind": "section",
+   "head": "무광 도장은 뭐가 다를까요?"
+  },
+  {
+   "file": "matte-paint-wash-03.jpg",
+   "kind": "section",
+   "head": "피하는 게 좋은 것"
+  },
+  {
+   "file": "matte-paint-wash-04.jpg",
+   "kind": "section",
+   "head": "세제는 어떻게 고를까요?"
+  },
+  {
+   "file": "matte-paint-wash-05.jpg",
+   "kind": "section",
+   "head": "셀프세차장에서 이렇게 하는 분들이 많아요"
+  },
+  {
+   "file": "matte-paint-wash-06.jpg",
+   "kind": "section",
+   "head": "노터치 세차는 괜찮을까요?"
+  },
+  {
+   "file": "matte-paint-wash-07.jpg",
+   "kind": "section",
+   "head": "무광 차량에 맞는 세차장, 함께 찾아요"
+  },
+  {
+   "file": "matte-paint-wash-08.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "matte-paint-wash-09.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}

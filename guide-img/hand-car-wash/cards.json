@@ -1,0 +1,52 @@
+{
+ "slug": "hand-car-wash",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "hand-car-wash-01.jpg",
+   "kind": "cover",
+   "head": "손세차란? 셀프세차와 차이, 손세차장에 맡기기 전에 확인할 것"
+  },
+  {
+   "file": "hand-car-wash-02.jpg",
+   "kind": "section",
+   "head": "손세차, 셀프세차, 자동세차는 뭐가 다른가요?"
+  },
+  {
+   "file": "hand-car-wash-03.jpg",
+   "kind": "section",
+   "head": "손세차가 잘 맞는 때"
+  },
+  {
+   "file": "hand-car-wash-04.jpg",
+   "kind": "section",
+   "head": "손세차 가격, 물어볼 때 확인할 것"
+  },
+  {
+   "file": "hand-car-wash-05.jpg",
+   "kind": "section",
+   "head": "맡기기 전에 챙길 것"
+  },
+  {
+   "file": "hand-car-wash-06.jpg",
+   "kind": "section",
+   "head": "찾을 때 확인할 것"
+  },
+  {
+   "file": "hand-car-wash-07.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "hand-car-wash-08.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "hand-car-wash-09.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}

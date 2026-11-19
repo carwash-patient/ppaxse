@@ -1,0 +1,47 @@
+{
+ "slug": "water-spots",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "water-spots-01.jpg",
+   "kind": "cover",
+   "head": "세차 후 물자국(워터스팟), 왜 생기고 어떻게 줄일까요"
+  },
+  {
+   "file": "water-spots-02.jpg",
+   "kind": "section",
+   "head": "왜 생길까요?"
+  },
+  {
+   "file": "water-spots-03.jpg",
+   "kind": "section",
+   "head": "세차할 때 줄이는 요령"
+  },
+  {
+   "file": "water-spots-04.jpg",
+   "kind": "section",
+   "head": "이미 생긴 자국은?"
+  },
+  {
+   "file": "water-spots-05.jpg",
+   "kind": "section",
+   "head": "그늘진 베이, 마무리 헹굼이 있는 세차장"
+  },
+  {
+   "file": "water-spots-06.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "water-spots-07.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "water-spots-08.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}

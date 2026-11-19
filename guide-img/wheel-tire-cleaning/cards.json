@@ -1,0 +1,52 @@
+{
+ "slug": "wheel-tire-cleaning",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "wheel-tire-cleaning-01.jpg",
+   "kind": "cover",
+   "head": "휠 세척 방법과 순서 — 휠클리너 쓸 때 주의할 점"
+  },
+  {
+   "file": "wheel-tire-cleaning-02.jpg",
+   "kind": "section",
+   "head": "휠은 왜 이렇게 안 닦일까요?"
+  },
+  {
+   "file": "wheel-tire-cleaning-03.jpg",
+   "kind": "section",
+   "head": "먼저 꼭 지킬 것 세 가지"
+  },
+  {
+   "file": "wheel-tire-cleaning-04.jpg",
+   "kind": "section",
+   "head": "많이 쓰는 휠 세척 순서"
+  },
+  {
+   "file": "wheel-tire-cleaning-05.jpg",
+   "kind": "section",
+   "head": "휠을 먼저 닦을까, 나중에 닦을까"
+  },
+  {
+   "file": "wheel-tire-cleaning-06.jpg",
+   "kind": "section",
+   "head": "휠클리너 고를 때 주의할 점"
+  },
+  {
+   "file": "wheel-tire-cleaning-07.jpg",
+   "kind": "section",
+   "head": "마무리: 물기 제거와 타이어"
+  },
+  {
+   "file": "wheel-tire-cleaning-08.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "wheel-tire-cleaning-09.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}

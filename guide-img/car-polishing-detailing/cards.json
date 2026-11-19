@@ -1,0 +1,47 @@
+{
+ "slug": "car-polishing-detailing",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "car-polishing-detailing-01.jpg",
+   "kind": "cover",
+   "head": "자동차 광택이란? 디테일링샵에 맡기기 전에 알아 둘 것"
+  },
+  {
+   "file": "car-polishing-detailing-02.jpg",
+   "kind": "section",
+   "head": "광택은 뭘 하는 작업인가요?"
+  },
+  {
+   "file": "car-polishing-detailing-03.jpg",
+   "kind": "section",
+   "head": "광택과 코팅은 뭐가 다른가요?"
+  },
+  {
+   "file": "car-polishing-detailing-04.jpg",
+   "kind": "section",
+   "head": "디테일링샵은 손세차장과 뭐가 다른가요?"
+  },
+  {
+   "file": "car-polishing-detailing-05.jpg",
+   "kind": "section",
+   "head": "광택 비용, 물어볼 때 확인할 것"
+  },
+  {
+   "file": "car-polishing-detailing-06.jpg",
+   "kind": "section",
+   "head": "광택기로 직접 해도 될까요?"
+  },
+  {
+   "file": "car-polishing-detailing-07.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "car-polishing-detailing-08.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}

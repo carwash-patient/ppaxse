@@ -1,0 +1,52 @@
+{
+ "slug": "liquid-vs-paste-wax",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "liquid-vs-paste-wax-01.jpg",
+   "kind": "cover",
+   "head": "물왁스 vs 고체왁스 — 셀프세차에는 어떤 자동차 왁스가 맞을까요"
+  },
+  {
+   "file": "liquid-vs-paste-wax-02.jpg",
+   "kind": "section",
+   "head": "왁스는 왜 바르나요?"
+  },
+  {
+   "file": "liquid-vs-paste-wax-03.jpg",
+   "kind": "section",
+   "head": "물왁스와 고체왁스, 뭐가 다른가요?"
+  },
+  {
+   "file": "liquid-vs-paste-wax-04.jpg",
+   "kind": "section",
+   "head": "셀프세차장 왁스 버튼과는 뭐가 달라요?"
+  },
+  {
+   "file": "liquid-vs-paste-wax-05.jpg",
+   "kind": "section",
+   "head": "바르는 요령"
+  },
+  {
+   "file": "liquid-vs-paste-wax-06.jpg",
+   "kind": "section",
+   "head": "처음이라면 이렇게 골라 보세요"
+  },
+  {
+   "file": "liquid-vs-paste-wax-07.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "liquid-vs-paste-wax-08.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "liquid-vs-paste-wax-09.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}

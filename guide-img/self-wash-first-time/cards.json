@@ -1,0 +1,57 @@
+{
+ "slug": "self-wash-first-time",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "self-wash-first-time-01.jpg",
+   "kind": "cover",
+   "head": "셀프세차장 처음 가는 날 — 준비물과 기본 순서"
+  },
+  {
+   "file": "self-wash-first-time-02.jpg",
+   "kind": "section",
+   "head": "가기 전에 챙기면 좋은 것"
+  },
+  {
+   "file": "self-wash-first-time-03.jpg",
+   "kind": "section",
+   "head": "세차장에 도착하면"
+  },
+  {
+   "file": "self-wash-first-time-04.jpg",
+   "kind": "section",
+   "head": "베이에서 하는 기본 순서"
+  },
+  {
+   "file": "self-wash-first-time-05.jpg",
+   "kind": "section",
+   "head": "드라잉존에서 마무리"
+  },
+  {
+   "file": "self-wash-first-time-06.jpg",
+   "kind": "section",
+   "head": "처음이라면 이것만 기억하세요"
+  },
+  {
+   "file": "self-wash-first-time-07.jpg",
+   "kind": "section",
+   "head": "처음 갈 세차장은 어떻게 고를까요?"
+  },
+  {
+   "file": "self-wash-first-time-08.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "self-wash-first-time-09.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "self-wash-first-time-10.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}
