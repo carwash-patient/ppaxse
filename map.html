@@ -567,7 +567,7 @@ function initNaverMap() {
 
   // 지도를 움직이거나 확대/축소가 끝나면 그 영역의 세차장으로 갱신
   // 화면을 돌리거나 창 크기가 바뀌면(넓은 화면 배치로 바뀔 때 등) 지도 크기를 다시 맞춤
-  window.addEventListener('resize', () => { try { naverMap.setSize(new naver.maps.Size(container.clientWidth, container.clientHeight)); } catch(e) {} });
+  window.addEventListener('resize', () => { try { const a = document.getElementById('mapArea'); naverMap.setSize(new naver.maps.Size(a.clientWidth, a.clientHeight)); } catch(e) {} });   // 지도 칸(mapArea) 크기로 맞춤 — 지도 자체 크기는 setSize 뒤 고정값이 되므로 재면 안 됨
   naver.maps.Event.addListener(naverMap, 'idle', refreshArea);
   naver.maps.Event.addListener(naverMap, 'idle', saveView);
 
@@ -769,7 +769,7 @@ function setSheet(state) {
     try { c = naverMap && naverMap.getCenter ? naverMap.getCenter() : null; } catch(e) {}   // 지도가 아직 안 떴어도 목록 열고 닫기는 되게
     document.body.classList.toggle('side-open', open);
     if(c && window.matchMedia('(min-width:720px)').matches) requestAnimationFrame(() => {
-      try { const el = document.getElementById('naverMap'); naverMap.setSize(new naver.maps.Size(el.clientWidth, el.clientHeight)); naverMap.setCenter(c); } catch(e) {}
+      try { const a = document.getElementById('mapArea'); naverMap.setSize(new naver.maps.Size(a.clientWidth, a.clientHeight)); naverMap.setCenter(c); } catch(e) {}
     });
   }
 }
