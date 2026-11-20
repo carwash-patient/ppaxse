@@ -10,6 +10,10 @@ a{color:var(--aqua)}
 main{max-width:760px;margin:0 auto;padding:20px 18px 60px}
 .crumb{font-size:12px;color:var(--muted);margin-bottom:10px}
 .crumb a{color:var(--muted);text-decoration:none}
+/* 한글 줄바꿈: 낱말 중간에서 끊지 않기 + 제목 줄 길이 고르게 + 문단 끝에 한두 글자만 남지 않게 (2026-11-21) */
+body{word-break:keep-all;overflow-wrap:break-word}
+h1,h2,h3,.cta b{text-wrap:balance}
+p,li{text-wrap:pretty}
 h1{font-size:24px;line-height:1.35;font-weight:900;letter-spacing:-.5px;margin-bottom:10px}
 h2{font-size:19px;font-weight:900;margin:30px 0 12px;letter-spacing:-.3px}
 h3{font-size:16px;font-weight:700;margin:20px 0 8px}

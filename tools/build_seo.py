@@ -156,7 +156,7 @@ def page(path, title, desc, body, crumbs=(), jsonld=None, bnav=False, og_image=N
 <link rel="icon" href="{up}icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="icon" href="{up}icons/icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="{up}icons/apple-touch-icon.png">
-<link rel="stylesheet" href="{up}css/seo.css?v=20261119b">
+<link rel="stylesheet" href="{up}css/seo.css?v=20261121a">
 {ld}
 </head>
 <body{' class="has-bnav"' if bnav else ''}>
@@ -217,7 +217,7 @@ def cta(up, where, equal=False):
 def ww_line(up):
     """가이드 글 끝 '세차하기 좋은 날' 한 줄 상자. 지역은 홈 달력에서 고른 곳(없으면 서울 중구)
     날씨 받기·판정은 js/ww-core.js (홈 달력·지도 띠와 같은 기준). 글을 못 불러와도 링크는 그대로 보임"""
-    return f'''<link rel="stylesheet" href="{up}css/ww.css?v=20261120a">
+    return f'''<link rel="stylesheet" href="{up}css/ww.css?v=20261121a">
 <a class="ww-guide" id="wwGuide" href="{up}#washWeather"><span class="ww-gq">☀️ 오늘 세차하기 좋은 날일까요?</span>
 <span class="ww-gl" id="wwGuideLine">날씨 보고 세차할 날 고르기</span><span class="ww-gb">10일 달력 보기 ›</span></a>
 <script src="{up}js/ww-regions.js?v=20261120a" defer></script>
@@ -229,7 +229,7 @@ def ww_box(up, where):
     """지역 페이지의 '세차하기 좋은 날' 10일 달력 (그 지역으로 고정). 그리는 일은 js/wash-weather.js
     지역 대표 좌표는 js/ww-regions.js — 거기 없는 새 지역이면 상자가 저절로 숨음"""
     short = where.split(' ', 1)[-1]
-    return f'''<link rel="stylesheet" href="{up}css/ww.css?v=20261120a">
+    return f'''<link rel="stylesheet" href="{up}css/ww.css?v=20261121a">
 <section class="ww ww-in" id="washWeather" data-region="{esc(where)}" aria-label="{esc(short)} 세차하기 좋은 날">
 <div class="ww-head"><h2 class="ww-title">☀️ {esc(short)} 세차하기 좋은 날</h2></div>
 <div class="ww-sum" id="wwSum"></div><div class="ww-grid" id="wwGrid"></div><div class="ww-dust" id="wwDust"></div>

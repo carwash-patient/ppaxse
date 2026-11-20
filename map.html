@@ -347,6 +347,29 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
 .nav-item{position:relative}
 .nav-item.has-dot::after{content:'';position:absolute;top:8px;left:calc(50% + 8px);width:8px;height:8px;border-radius:50%;background:#f43f5e}
 .nav-item.dim{opacity:.35;pointer-events:none}
+
+/* ── 넓은 화면(가로로 든 휴대폰, 폴드 펼침, 태블릿, PC): 네이버 지도처럼 목록을 늘 펼쳐 둠 ──
+   오른손잡이가 많아 목록은 오른쪽, 지도는 왼쪽 (운영자 결정 2026-11-21). 좁은 휴대폰(720px 미만)은 그대로 */
+@media (min-width:720px){
+  :root{--side:clamp(330px,34vw,420px);--bn:62px}
+  #mapArea{right:var(--side);bottom:calc(var(--bn) + env(safe-area-inset-bottom))}
+  .sheet,.sheet.hidden,.sheet.full{top:var(--ftop,122px);left:auto;right:0;bottom:calc(var(--bn) + env(safe-area-inset-bottom));width:var(--side);transform:none !important;border-radius:0;border-top:0;border-left:1px solid var(--line);box-shadow:none;display:flex;flex-direction:column}
+  .sheet-handle-area{display:none}
+  .dp-handle::before{display:none}
+  .dp-handle{padding:8px 0 4px}
+  .sheet-summary{padding:14px 16px 10px}
+  .place-list{flex:1;max-height:none;padding:0 14px 20px}
+  .list-toggle{display:none !important}
+  .detail-panel{top:var(--ftop,122px);left:auto;right:0;bottom:calc(var(--bn) + env(safe-area-inset-bottom));width:var(--side);max-height:none;border-radius:0;border-top:0;border-left:1px solid var(--line);padding-bottom:20px;animation:none;box-shadow:-12px 0 40px rgba(0,0,0,.35)}
+  .pick-bar{right:calc(var(--side) + 14px)}
+  .locate-btn{bottom:24px}
+  .region-panel{left:0;right:0;margin:0 auto;max-width:560px}
+}
+/* 가로로 든 휴대폰처럼 키가 낮은 화면: 아래 메뉴를 한 줄(그림+글자 옆으로)로 낮춰 지도 자리를 넓힘 */
+@media (min-width:720px) and (max-height:520px){
+  :root{--bn:44px}
+  .nav-item{flex-direction:row;gap:6px;padding:7px 0}
+}
 </style>
 </head>
 <body>
@@ -530,6 +553,8 @@ function initNaverMap() {
   }
 
   // 지도를 움직이거나 확대/축소가 끝나면 그 영역의 세차장으로 갱신
+  // 화면을 돌리거나 창 크기가 바뀌면(넓은 화면 배치로 바뀔 때 등) 지도 크기를 다시 맞춤
+  window.addEventListener('resize', () => { try { naverMap.setSize(new naver.maps.Size(container.clientWidth, container.clientHeight)); } catch(e) {} });
   naver.maps.Event.addListener(naverMap, 'idle', refreshArea);
   naver.maps.Event.addListener(naverMap, 'idle', saveView);
 
@@ -1914,6 +1939,13 @@ window.addEventListener('load', () => {
     if(me.role === 'admin') window.ppxAdmin = true;   // 세차장 상세에 '운영자: 고치기' 버튼 (실제 권한은 서버에서 검사)
     document.querySelectorAll('a.my-btn').forEach(b => { b.innerHTML = PPX.carAvatar(me.avatar_car || (me.cars||[])[0] || 'sedan', me.avatar_color, 30); b.setAttribute('aria-label', '내 정보'); b.style.padding = '0'; });
   } catch(e) {}
+})();
+</script>
+<script>
+// 넓은 화면 오른쪽 목록·상세는 종류 버튼 줄 바로 밑에서 시작 (버튼 줄 높이는 글자 크기에 따라 달라서 실제로 재서 맞춤)
+(function(){
+  const fitTop = () => { const f = document.getElementById('filterBar'); if(f) document.documentElement.style.setProperty('--ftop', Math.round(f.getBoundingClientRect().bottom) + 'px'); };
+  fitTop(); window.addEventListener('resize', fitTop); window.addEventListener('load', fitTop);
 })();
 </script>
 <script src="js/ww-regions.js?v=20261120a" defer></script>

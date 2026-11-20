@@ -1,5 +1,5 @@
 /* 세차하기 좋은 날 상자 (홈·지역 페이지 등). 색 이름은 화면마다 달라서 여기서 따로 정함 */
-.ww{--ww-line:rgba(14,165,233,.18);--ww-muted:rgba(186,230,253,.6);--ww-aqua:#22d3ee;--ww-sky:#0ea5e9;color:#fff;font-family:'Noto Sans KR',sans-serif;text-align:left}
+.ww{--ww-line:rgba(14,165,233,.18);--ww-muted:rgba(186,230,253,.6);--ww-aqua:#22d3ee;--ww-sky:#0ea5e9;color:#fff;font-family:'Noto Sans KR',sans-serif;text-align:left;word-break:keep-all}
 .ww{max-width:560px;margin:0 auto;padding:24px 18px 22px;border-radius:24px;background:rgba(7,24,40,.78);border:1px solid var(--ww-line);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
 @media(max-width:600px){.ww{margin:0 16px}}
 .ww-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
