@@ -473,10 +473,32 @@ def build_sitemap(urls):
         f'Sitemap: {SITE}/sitemap.xml\n')
 
 
+def check_place_count(n):
+    """안전장치 (2026-11-20): 받아 온 세차장 수가 갑자기 크게 줄면 지역 페이지를 지우기 전에 멈춤.
+    DB 장애·권한 변경으로 목록이 비거나 일부만 오면, wash/를 통째로 지우고 그대로 올려 버리는 사고를 막음.
+    기준: 지난번 지역 페이지(wash/index.html)에 적힌 세차장 수의 80% 미만이거나 1,000곳 미만이면 중단.
+    정말로 많이 줄어든 게 맞다면(대량 정리 등) 환경변수 PPX_ALLOW_DROP=1 로 한 번 실행하면 됨."""
+    if os.environ.get('PPX_ALLOW_DROP') == '1':
+        return
+    prev = 0
+    try:
+        with open(os.path.join(ROOT, 'wash', 'index.html'), encoding='utf-8') as f:
+            m = re.search(r'([\d,]+)곳', f.read())
+        if m:
+            prev = int(m.group(1).replace(',', ''))
+    except OSError:
+        pass
+    if n < 1000 or (prev and n < prev * 0.8):
+        sys.exit(f'중단: 세차장이 {n:,}곳만 받아졌어요 (지난번 {prev:,}곳). '
+                 f'DB나 연결 문제일 수 있어 지역 페이지를 지우지 않고 멈춥니다.')
+
+
 def main():
     local = '--local' in sys.argv
     places = load_local() if local else load_supabase()
     print(f'세차장 {len(places):,}곳 ({"places.json 시험용" if local else "Supabase 승인된 곳"})')
+    if not local:
+        check_place_count(len(places))
     urls = build_wash(places) + build_guides()
     build_sitemap(urls)
     print(f'페이지 {len(urls):,}개 만듦, sitemap.xml·robots.txt 갱신')

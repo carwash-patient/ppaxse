@@ -454,7 +454,7 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js" integrity="sha384-uteMfOloLDGt042uDz+xHGF3ym63/WQ6rFq7murQRG8Ih7QrXGEGNtWd8688sb4O" crossorigin="anonymous"></script>
 <script src="js/config.js?v=20261117"></script>
-<script src="js/ppx.js?v=20261119c"></script>
+<script src="js/ppx.js?v=20261120a"></script>
 <script>setTimeout(() => { if(window.PPX && PPX.thanks) PPX.thanks(); }, 1500);</script>
 <script src="js/ev.js?v=20261117a"></script>
 <script>
@@ -1756,6 +1756,19 @@ function startFromLink() {
   return '';
 }
 
+// 링크로 가리킨 세차장·지역이 지금 목록에 없는지 (휴대폰에 저장해 둔 옛 목록일 때 확인용)
+function linkNotInList() {
+  let q;
+  try { q = new URLSearchParams(location.search); } catch(e) { return false; }
+  const id = Number(q.get('p'));
+  if(id) return !places.some(x => x.id === id);
+  const r = (q.get('r') || '').trim();
+  if(!r) return false;
+  const [sido, ...rest] = r.split(' ');
+  const sgg = rest.join(' ');
+  return !(sgg ? (regionIndex[sido] || {})[sgg] : regionIndex[sido]);
+}
+
 // 마지막으로 보던 지도 자리 기억 — 이벤트·가이드·내 정보에 다녀와도 그 자리로 돌아옴
 // 같은 창(탭)에서만, 마지막으로 움직인 지 1시간 안에만 (앱을 새로 열면 원래대로 기본 지역·내 위치)
 const VIEW_KEY = 'ppxMapView', VIEW_TTL = 60 * 60 * 1000;
@@ -1853,6 +1866,12 @@ window.addEventListener('load', () => {
   const cached = lite ? readPlacesCache() : null;
   if(cached) {
     usePlaces(cached.rows.map(PPX.mapRow));
+    // 링크(?p= / ?r=)로 온 세차장·지역이 저장해 둔 목록에 없으면 (새로 승인된 곳) 새 목록을 받은 뒤 시작
+    if(linkNotInList()) {
+      fresh().then(rows => { usePlaces(rows); decideStart(); })
+        .catch(e => { console.warn('세차장 목록 새로 받기 실패 (저장해 둔 목록 사용)', e); decideStart(); });
+      return;
+    }
     decideStart();
     // 뒤에서: 바뀐 게 있을 때만 새 목록
     PPX.mapPlacesVersion()

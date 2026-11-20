@@ -193,7 +193,7 @@ html,body{min-height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backg
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js" integrity="sha384-uteMfOloLDGt042uDz+xHGF3ym63/WQ6rFq7murQRG8Ih7QrXGEGNtWd8688sb4O" crossorigin="anonymous"></script>
 <script src="js/config.js?v=20261117"></script>
-<script src="js/ppx.js?v=20261119c"></script>
+<script src="js/ppx.js?v=20261120a"></script>
 <script>
 const typeLabel={self:'셀프세차',hand:'손세차',detail:'디테일링샵',notouch:'노터치',auto:'자동세차',wash:'종류 확인 중',etc:'정비·기타'};
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1124,7 +1124,7 @@ async function loadEvent() {
 }
 function evAnnounce() {
   const valid = evList.filter(x => x.valid), mem = valid.filter(x => x.is_member);
-  const mask = c => String(c).slice(0, 5) + '**';   // 발표 글에는 뒤 두 자리를 가림 (전체 번호는 당첨자만 앎)
+  const mask = c => String(c).slice(0, 4) + '***';   // 발표 글에는 뒤 세 자리를 가림 (전체 번호는 당첨자만 앎)
   const codes = pool => evWinners.filter(x => x.won === pool).map(x => mask(x.code)).join(', ') || '-';
   const next = evAdd(evWeek, 7);
   return `[빡세 한마디 기프티콘 추첨 결과] ${evMd(evWeek)} ~ ${evMd(evAdd(evWeek, 6))}
@@ -1132,7 +1132,7 @@ function evAnnounce() {
 🎁 회원 추첨 (${mem.length}명 참여 중 2명): ${codes('member')}
 🎁 누구나 추첨 (${valid.length}명 참여 중 2명): ${codes('all')}
 
-당첨번호는 뒤 두 자리를 가려서 공개해요. 응모한 기기(또는 계정)로 https://ppaxse.com/r/ 에 들어가면 내 번호의 당첨 여부와 전체 번호를 볼 수 있어요.
+당첨번호는 뒤 세 자리를 가려서 공개해요. 응모한 기기(또는 계정)로 https://ppaxse.com/r/ 에 들어가면 내 번호의 당첨 여부와 전체 번호를 볼 수 있어요.
 당첨되신 분은 발표 후 7일 안에 전체 응모번호와 한마디를 남긴 세차장 이름을 ppaxse@gmail.com 으로 보내 주세요. 그 메일로 카카오톡 기프티콘 선물코드를 보내드려요.
 다음 회차: ${evMd(next)} ~ ${evMd(evAdd(next, 6))} 응모, ${evMd(evAdd(next, 9))} 17시 발표
 참여하기: https://ppaxse.com/r/`;

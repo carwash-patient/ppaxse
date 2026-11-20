@@ -433,24 +433,18 @@
     async myRequests() {
       const uid = await PPX.myId();
       if (!uid) return [];
-      const { data, error } = await db.from('places')
-        .select('id,name,addr,status,reject_reason,created_at')
-        .eq('submitted_by', uid).neq('source', 'public_data')
-        .order('created_at', { ascending: false }).limit(30);
+      // 제보자 칸(submitted_by)은 공개 조회에서 숨겨서, 내 요청은 서버 함수로 받음 (supabase/migrate_2026-11-20.sql)
+      const { data, error } = await db.rpc('my_place_requests');
       if (error) throw error;
-      return data;
+      return (data || []).slice(0, 30);
     },
 
     // ── 운영자 전용 (서버 권한 규칙으로도 막혀 있음) ──
+    // 제보 메모·제보자는 공개 조회에서 숨겨서, 운영자는 서버 함수로 받음 (함수 안에서 운영자인지 검사)
     async adminList(status) {
-      let q = db.from('places')
-        .select('id,name,addr,region,type,types,lat,lng,tel,memo,status,reject_reason,created_at,reviewed_at,submitted_by,submitter:profiles!places_submitted_by_fkey(nickname,blocked)');
-      q = status === 'pending'
-        ? q.eq('status', 'pending').order('created_at', { ascending: true })
-        : q.in('status', ['approved', 'rejected']).eq('source', 'user').order('reviewed_at', { ascending: false }).limit(50);
-      const { data, error } = await q;
+      const { data, error } = await db.rpc('admin_places', { p_status: status === 'pending' ? 'pending' : 'done' });
       if (error) throw error;
-      return data;
+      return data || [];
     },
 
     async adminReview(id, status, fields) {
@@ -687,8 +681,9 @@
         const [rep, req] = await Promise.all([
           db.from('place_reports').select('reviewed_at,place:places!place_reports_place_id_fkey(name)')
             .eq('reporter', uid).eq('status', 'applied').gt('reviewed_at', since).order('reviewed_at', { ascending: false }).limit(20),
-          db.from('places').select('name,reviewed_at')
-            .eq('submitted_by', uid).eq('status', 'approved').neq('source', 'public_data').gt('reviewed_at', since).order('reviewed_at', { ascending: false }).limit(20)
+          db.rpc('my_place_requests').then(r => r.error ? r : { data: (r.data || [])
+            .filter(x => x.status === 'approved' && x.reviewed_at && new Date(x.reviewed_at) > new Date(since))
+            .sort((x, y) => new Date(y.reviewed_at) - new Date(x.reviewed_at)).slice(0, 20) })
         ]);
         const a = (rep.data || []).filter(r => r.place), b = req.data || [];
         if (!a.length && !b.length) return;
