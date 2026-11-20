@@ -214,6 +214,33 @@ def cta(up, where, equal=False):
 <p style="font-size:12.5px;margin:8px 0 0;color:var(--muted)">🎁 한마디를 남기면 가입 없이도 매주 기프티콘 추첨에 응모돼요.</p></div>'''
 
 
+def ww_line(up):
+    """가이드 글 끝 '세차하기 좋은 날' 한 줄 상자. 지역은 홈 달력에서 고른 곳(없으면 서울 중구)
+    날씨 받기·판정은 js/ww-core.js (홈 달력·지도 띠와 같은 기준). 글을 못 불러와도 링크는 그대로 보임"""
+    return f'''<link rel="stylesheet" href="{up}css/ww.css?v=20261120a">
+<a class="ww-guide" id="wwGuide" href="{up}#washWeather"><span class="ww-gq">☀️ 오늘 세차하기 좋은 날일까요?</span>
+<span class="ww-gl" id="wwGuideLine">날씨 보고 세차할 날 고르기</span><span class="ww-gb">10일 달력 보기 ›</span></a>
+<script src="{up}js/ww-regions.js?v=20261120a" defer></script>
+<script src="{up}js/ww-core.js?v=20261120a" defer></script>
+<script>window.addEventListener('load',async function(){{if(!window.WW)return;var r=WW.savedRegion()||WW.find('서울 중구');if(!r)return;var w=await WW.load(r,false);if(!w)return;var s=WW.todayLine(w.d),el=document.getElementById('wwGuide');el.className='ww-guide '+s.j.k;document.getElementById('wwGuideLine').textContent=s.j.icon+' '+r[0]+' · '+s.text}})</script>'''
+
+
+def ww_box(up, where):
+    """지역 페이지의 '세차하기 좋은 날' 10일 달력 (그 지역으로 고정). 그리는 일은 js/wash-weather.js
+    지역 대표 좌표는 js/ww-regions.js — 거기 없는 새 지역이면 상자가 저절로 숨음"""
+    short = where.split(' ', 1)[-1]
+    return f'''<link rel="stylesheet" href="{up}css/ww.css?v=20261120a">
+<section class="ww ww-in" id="washWeather" data-region="{esc(where)}" aria-label="{esc(short)} 세차하기 좋은 날">
+<div class="ww-head"><h2 class="ww-title">☀️ {esc(short)} 세차하기 좋은 날</h2></div>
+<div class="ww-sum" id="wwSum"></div><div class="ww-grid" id="wwGrid"></div><div class="ww-dust" id="wwDust"></div>
+<div class="ww-legend"><span class="good">✨ 추천: 7일 안에 비 없음</span><span>⛅ 보통: 4~7일 뒤 비</span><span>🙅 비추: 1~3일 뒤 비</span><span>☔ 비·눈</span><span>🥶 영하 5도 이하</span><span><i class="ww-lo">최저</i>/<i class="ww-hi">최고</i> 기온(℃)</span></div>
+<p class="ww-note">예보 기준이라 바뀔 수 있어요 · 날씨 정보: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a></p>
+</section>
+<script src="{up}js/ww-regions.js?v=20261120a" defer></script>
+<script src="{up}js/ww-core.js?v=20261120a" defer></script>
+<script src="{up}js/wash-weather.js?v=20261120h" defer></script>'''
+
+
 def type_summary(ps):
     c = Counter()
     for p in ps:
@@ -262,6 +289,7 @@ def build_wash(places):
             body = f'''<h1>{esc(where)} 세차장 {len(ps)}곳 · 셀프세차·노터치·손세차</h1>
 <p class="lead">{lead}</p><div class="stats">{stats}</div>
 <p class="lead" style="font-size:12px">※ 종류별 숫자는 두 가지를 함께 하는 곳(예: 노터치+셀프)도 각각 셉니다. 아래 목록은 대표 종류로 나눴어요.</p>
+{ww_box('../../../', where)}
 {cta('../../../', where)}
 {groups}
 {cta('../../../', where)}
@@ -423,7 +451,7 @@ def build_guides():
         nav = guide_nav(order[k - 1] if k > 0 else None, order[k + 1] if k + 1 < len(order) else None)
         full = f'''<article>{nav}<h1>{esc(title)}</h1><div class="date">{esc(date)} · 빡세 세차 가이드</div>
 {body}
-{cta('../../', '', equal=True)}{nav}</article>'''
+{cta('../../', '', equal=True)}{ww_line('../../')}{nav}</article>'''
         write(path, page(path, f'{title} | 빡세', desc, full, [('빡세', ''), ('세차 가이드', 'guide/'), (title, None)], jl, bnav=True, og_image=og))
     # 맨 위 '처음이라면 이것부터' = pin 숫자 순서, 나머지 = 최신순으로 보여 주되 번호는 먼저 쓴 글이 1번 (추천 글은 번호 없이 🔰)
     pinned = sorted([p for p in posts if p['pin'] is not None], key=lambda p: (p['pin'], p['date']))
