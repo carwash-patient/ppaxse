@@ -348,23 +348,35 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
 .nav-item.has-dot::after{content:'';position:absolute;top:8px;left:calc(50% + 8px);width:8px;height:8px;border-radius:50%;background:#f43f5e}
 .nav-item.dim{opacity:.35;pointer-events:none}
 
-/* ── 넓은 화면(가로로 든 휴대폰, 폴드 펼침, 태블릿, PC): 네이버 지도처럼 목록을 늘 펼쳐 둠 ──
-   오른손잡이가 많아 목록은 오른쪽, 지도는 왼쪽 (운영자 결정 2026-11-21). 좁은 휴대폰(720px 미만)은 그대로 */
+/* ── 넓은 화면(가로로 든 휴대폰, 폴드 펼침, 태블릿, PC): 네이버 지도처럼 목록을 오른쪽에 펼쳐 둠 ──
+   오른손잡이가 많아 목록은 오른쪽, 지도는 왼쪽 (운영자 결정 2026-11-21). 좁은 휴대폰(720px 미만)은 그대로
+   - 목록 열림/닫힘은 휴대폰과 같은 sheetState('full'/'hidden')를 씀. 목록 맨 위 × 로 닫고, 지도 아래 '목록보기'로 다시 엶
+   - 목록이나 세차장 정보가 열려 있으면 body.side-open → 지도 폭을 줄임 (닫으면 지도가 화면 끝까지)
+   - 오른쪽에서 밀려 들어오는 움직임: transform만 써서 휴대폰에서도 가벼움. '움직임 줄이기' 설정이면 끔 */
+.sheet-close{display:none}
 @media (min-width:720px){
   :root{--side:clamp(330px,34vw,420px);--bn:62px}
-  #mapArea{right:var(--side);bottom:calc(var(--bn) + env(safe-area-inset-bottom))}
-  .sheet,.sheet.hidden,.sheet.full{top:var(--ftop,122px);left:auto;right:0;bottom:calc(var(--bn) + env(safe-area-inset-bottom));width:var(--side);transform:none !important;border-radius:0;border-top:0;border-left:1px solid var(--line);box-shadow:none;display:flex;flex-direction:column}
+  #mapArea{bottom:calc(var(--bn) + env(safe-area-inset-bottom))}
+  body.side-open #mapArea{right:var(--side)}
+  .sheet{top:var(--ftop,122px);left:auto;right:0;bottom:calc(var(--bn) + env(safe-area-inset-bottom));width:var(--side);border-radius:0;border-top:0;border-left:1px solid var(--line);box-shadow:none;display:flex;flex-direction:column;transition:transform .26s cubic-bezier(.2,.8,.2,1)}
+  .sheet.full{transform:translateX(0)}
+  .sheet.hidden{transform:translateX(100%)}
   .sheet-handle-area{display:none}
   .dp-handle::before{display:none}
   .dp-handle{padding:8px 0 4px}
-  .sheet-summary{padding:14px 16px 10px}
+  .sheet-summary{padding:14px 12px 10px 16px;gap:10px}
+  .sheet-count{flex:1;min-width:0}
+  .sheet-close{display:flex;flex:none;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);color:#fff;font-size:16px;cursor:pointer;align-items:center;justify-content:center;font-family:inherit}
   .place-list{flex:1;max-height:none;padding:0 14px 20px}
-  .list-toggle{display:none !important}
-  .detail-panel{top:var(--ftop,122px);left:auto;right:0;bottom:calc(var(--bn) + env(safe-area-inset-bottom));width:var(--side);max-height:none;border-radius:0;border-top:0;border-left:1px solid var(--line);padding-bottom:20px;animation:none;box-shadow:-12px 0 40px rgba(0,0,0,.35)}
-  .pick-bar{right:calc(var(--side) + 14px)}
+  .list-toggle{bottom:calc(var(--bn) + 20px + env(safe-area-inset-bottom))}
+  body.side-open .list-toggle{display:none}
+  .detail-panel{top:var(--ftop,122px);left:auto;right:0;bottom:calc(var(--bn) + env(safe-area-inset-bottom));width:var(--side);max-height:none;border-radius:0;border-top:0;border-left:1px solid var(--line);padding-bottom:20px;animation:ppxSideIn .26s cubic-bezier(.2,.8,.2,1);box-shadow:-12px 0 40px rgba(0,0,0,.35)}
+  body.side-open .pick-bar{right:calc(var(--side) + 14px)}
   .locate-btn{bottom:24px}
   .region-panel{left:0;right:0;margin:0 auto;max-width:560px}
 }
+@keyframes ppxSideIn{from{transform:translateX(100%)}to{transform:none}}
+@media (min-width:720px) and (prefers-reduced-motion:reduce){.sheet{transition:none}.detail-panel{animation:none}}
 /* 가로로 든 휴대폰처럼 키가 낮은 화면: 아래 메뉴를 한 줄(그림+글자 옆으로)로 낮춰 지도 자리를 넓힘 */
 @media (min-width:720px) and (max-height:520px){
   :root{--bn:44px}
@@ -466,6 +478,7 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
   <div class="sheet-summary">
     <div class="sheet-count" id="sheetCount">세차장 불러오는 중…</div>
     <div class="sheet-sort" id="sortBtn">거리순</div>
+    <button class="sheet-close" type="button" onclick="setSheet('hidden')" aria-label="목록 닫기">×</button>
   </div>
   <div class="place-list" id="placeList"></div>
 </div>
@@ -749,6 +762,16 @@ function setSheet(state) {
   sheetState = state;
   sheet.className = 'sheet ' + state;
   updateListToggle();
+  // 넓은 화면: 목록이나 세차장 정보가 열려 있으면 지도 폭을 줄이고, 닫히면 다시 넓힘 (지도 가운데는 그대로)
+  const open = state === 'full' || !!activeId;
+  if(document.body.classList.contains('side-open') !== open) {
+    let c = null;
+    try { c = naverMap && naverMap.getCenter ? naverMap.getCenter() : null; } catch(e) {}   // 지도가 아직 안 떴어도 목록 열고 닫기는 되게
+    document.body.classList.toggle('side-open', open);
+    if(c && window.matchMedia('(min-width:720px)').matches) requestAnimationFrame(() => {
+      try { const el = document.getElementById('naverMap'); naverMap.setSize(new naver.maps.Size(el.clientWidth, el.clientHeight)); naverMap.setCenter(c); } catch(e) {}
+    });
+  }
 }
 function updateListToggle() {
   const btn = document.getElementById('listToggle');
@@ -765,6 +788,7 @@ function updateListToggle() {
 }
 document.getElementById('listToggle').onclick = () => setSheet(sheetState==='full' ? 'hidden' : 'full');
 document.getElementById('sheetHandle').onclick = () => setSheet('hidden');
+if(window.matchMedia('(min-width:720px)').matches) setSheet('full');   // 넓은 화면은 목록을 펼친 채로 시작
 
 // 손가락으로 아래로 쓸어내리면 닫힘 (목록·상세 공통). 위쪽 손잡이에서 시작하거나, 내용이 맨 위일 때만
 function swipeToClose(panel, scroller, onClose) {
