@@ -313,6 +313,18 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
 /* 정보 확인 · 출처 */
 .dp-check{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:-4px 0 14px;font-size:12px;color:var(--muted)}
 .dp-check b{color:#34d399;font-weight:900}
+.dp-head{position:sticky;top:0;z-index:6;margin:0 -20px 12px;padding:8px 60px 10px 20px;background:#0d1e35;transition:box-shadow .2s}
+.detail-panel.stuck .dp-head{box-shadow:0 10px 18px -10px rgba(0,0,0,.7);border-bottom:1px solid var(--line)}
+.dp-head .dp-close{top:8px;right:16px}
+.dp-head .dp-addr{margin-bottom:0}
+/* '아직 확인한 사람이 없어요' 강조: 노란 안내 상자(운영자 선택 A안, 2026-11-21). 누르면 '정보가 맞아요' 버튼으로 내려감 */
+.dp-check{margin:0 0 14px}
+.dp-unchecked{display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px;width:100%;text-align:left;font-family:inherit;font-size:13px;line-height:1.5;cursor:pointer;color:var(--muted);background:none;border:0;padding:0}
+.dp-unchecked b{font-weight:900}
+.uc1 .dp-unchecked{padding:11px 14px;border-radius:14px;background:rgba(251,191,36,.10);border:1px solid rgba(251,191,36,.45);color:#fde68a}
+.uc1 .dp-unchecked b{color:#fcd34d}
+.uc1 .dp-unchecked b::before{content:'🙋 '}
+
 .dp-more{font-size:12px;color:var(--muted);text-align:center;margin:10px 0 0;line-height:1.6}
 .dp-src{font-size:11px;color:rgba(255,255,255,.3);text-align:center;margin-top:8px;line-height:1.6}
 .dp-two{display:flex;gap:8px;margin-top:10px}
@@ -483,9 +495,8 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
   <div class="place-list" id="placeList"></div>
 </div>
 
-<div class="detail-panel" id="detailPanel">
+<div class="detail-panel uc1" id="detailPanel">
   <div class="dp-handle" onclick="closeDetail()"></div>
-  <button class="dp-close" onclick="closeDetail()">×</button>
   <div class="dp-body" id="dpBody"></div>
 </div>
 
@@ -820,6 +831,7 @@ function swipeToClose(panel, scroller, onClose) {
   panel.addEventListener('touchcancel', () => { drag = false; panel.style.transition = ''; panel.style.transform = ''; });
 }
 swipeToClose(sheet, document.getElementById('placeList'), el => { el.style.transform = ''; setSheet('hidden'); });
+document.getElementById('detailPanel').addEventListener('scroll', e => e.currentTarget.classList.toggle('stuck', e.currentTarget.scrollTop > 6), {passive:true});
 swipeToClose(document.getElementById('detailPanel'), document.getElementById('detailPanel'), el => {
   el.style.transition = 'transform .22s ease';
   el.style.transform = 'translateY(100%)';
@@ -928,6 +940,15 @@ function priceText(p) {
   return p.price || '';
 }
 
+// 세차장 정보 맨 위(종류·이름·주소·닫기): 아래로 내려도 위에 붙어 있음 (.dp-head, position:sticky)
+function dpHead(p) {
+  return `<div class="dp-head">
+    <button class="dp-close" type="button" onclick="closeDetail()" aria-label="닫기">×</button>
+    <div class="dp-type-tag">${esc(typeNames(p).join(' · '))}</div>
+    <div class="dp-name">${esc(p.name)}</div>
+    <div class="dp-addr">📍 ${esc(p.addr)}</div>
+  </div>`;
+}
 function openDetail(id) {
   activeId = id;
   const p = places.find(x => x.id===id);
@@ -938,9 +959,7 @@ function openDetail(id) {
   // 가벼운 목록에는 전화·운영시간·가격·시설 상세가 없음 → 그 한 곳만 받아서 다시 그림
   if(p._lite && !p._noFull && PPX.ready) {
     document.getElementById('dpBody').innerHTML = `
-      <div class="dp-type-tag">${esc(typeNames(p).join(' · '))}</div>
-      <div class="dp-name">${esc(p.name)}</div>
-      <div class="dp-addr">📍 ${esc(p.addr)}</div>
+      ${dpHead(p)}
       <div class="dp-more" style="margin:16px 0">정보를 불러오는 중…</div>`;
     document.getElementById('detailPanel').classList.add('open');
     if(sheetState !== 'hidden') sheetBeforeDetail = sheetState;
@@ -979,12 +998,10 @@ function openDetail(id) {
 
   const checked = p.check_count
     ? `<b>✅ 최근 확인 ${daysAgo(p.checked_at)}</b><span>· 지금까지 ${p.check_count}번 확인됐어요</span>`
-    : `<span>아직 확인한 사람이 없어요. 다녀오셨다면 알려주세요 🙌</span>`;
+    : `<button type="button" class="dp-unchecked" onclick="document.getElementById('checkBtn')?.scrollIntoView({behavior:'smooth',block:'center'})"><b>아직 확인한 사람이 없어요</b><span>다녀오셨다면 알려주세요 🙌</span></button>`;
 
   document.getElementById('dpBody').innerHTML = `
-    <div class="dp-type-tag">${esc(typeNames(p).join(' · '))}</div>
-    <div class="dp-name">${esc(p.name)}</div>
-    <div class="dp-addr">📍 ${esc(p.addr)}</div>
+    ${dpHead(p)}
     ${typesOf(p).every(t => t === 'wash') ? `<div class="dp-more" style="margin:-4px 0 12px;text-align:left;color:#fde68a">🔍 어떤 세차장인지 확인하고 있어요. 곧 구분될 예정이에요.<br>다녀오셨다면 <b>정보 추가하기</b>에서 종류를 골라 주세요!</div>` : ''}
     <div class="dp-check" id="dpCheck">${checked}</div>
     <div class="dp-badges">
