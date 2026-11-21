@@ -1,0 +1,57 @@
+{
+ "slug": "glass-mineral-stains",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "glass-mineral-stains-01.jpg",
+   "kind": "cover",
+   "head": "자동차 유리 물때·백화 제거 — 오래된 얼룩이 안 지워질 때"
+  },
+  {
+   "file": "glass-mineral-stains-02.jpg",
+   "kind": "section",
+   "head": "유리 물때·백화는 왜 생길까요?"
+  },
+  {
+   "file": "glass-mineral-stains-03.jpg",
+   "kind": "section",
+   "head": "먼저 얼룩 상태 확인하기"
+  },
+  {
+   "file": "glass-mineral-stains-04.jpg",
+   "kind": "section",
+   "head": "순한 방법부터 차례로"
+  },
+  {
+   "file": "glass-mineral-stains-05.jpg",
+   "kind": "section",
+   "head": "백화제거제(산성 약제) 쓸 때 꼭 지킬 것"
+  },
+  {
+   "file": "glass-mineral-stains-06.jpg",
+   "kind": "section",
+   "head": "유리 복원(연마), 직접 해도 될까요?"
+  },
+  {
+   "file": "glass-mineral-stains-07.jpg",
+   "kind": "section",
+   "head": "자주 하는 실수"
+  },
+  {
+   "file": "glass-mineral-stains-08.jpg",
+   "kind": "section",
+   "head": "지운 뒤 다시 안 생기게 하려면"
+  },
+  {
+   "file": "glass-mineral-stains-09.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "glass-mineral-stains-10.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}
