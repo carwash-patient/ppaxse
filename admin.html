@@ -1059,7 +1059,7 @@ function postForm(p) {
     <div class="f"><label>대상 (추첨 없는 이벤트 등, 80자)</label><input name="target" maxlength="80" value="${v('target')}" placeholder="예) 첫 방문 손님 누구나 (추첨 없음)"></div>
     <div class="f"><label>내용 (4000자)</label><textarea name="body" rows="7" maxlength="4000" placeholder="참여 방법, 경품, 발표 방법 등">${v('body')}</textarea></div>
     <div class="f-row"><div class="f"><label>아이콘 (이모지 1개)</label><input name="icon" maxlength="8" value="${v('icon')}" placeholder="🎁"></div><div class="f"><label>버튼 글자</label><input name="btn_label" maxlength="30" value="${v('btn_label')}" placeholder="신청하기"></div></div>
-    <div class="f"><label>버튼 링크 (https://… 또는 r/ · map.html 같은 빡세 안 주소)</label><input name="btn_url" maxlength="500" value="${v('btn_url')}"></div>
+    <div class="f"><label>버튼 링크 (https://… · r/ · map.html 같은 빡세 안 주소 · 메일은 mailto:ppaxse@gmail.com)</label><input name="btn_url" maxlength="500" value="${v('btn_url')}"></div>
     <div class="f-row"><label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" name="pinned" style="width:18px;height:18px"${p.pinned ? ' checked' : ''}> 📌 위에 고정</label>
       <label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" name="hidden" style="width:18px;height:18px"${p.hidden ? ' checked' : ''}> 🙈 숨기기 (운영자만 보임)</label></div>
     <div class="acts"><button type="button" class="no" id="evCancel">취소</button><button type="submit" class="ok" id="evSave">${p.id ? '고친 내용 저장' : '올리기'}</button></div>
@@ -1091,8 +1091,9 @@ function renderPosts() {
       btn_label: g('btn_label') || null, btn_url: g('btn_url') || null, pinned: fd.has('pinned'), hidden: fd.has('hidden'),
     };
     if(row.btn_url && /^https:\/\//i.test(row.btn_url)) row.btn_url = 'https://' + row.btn_url.slice(8);   // HTTPS:// 처럼 대문자로 써도 저장되게
+    if(row.btn_url && /^mailto:/i.test(row.btn_url)) row.btn_url = 'mailto:' + row.btn_url.slice(7);
     // DB 검사(events_btn_url_check, 2026-11-21)와 같은 규칙: https 주소 안 따옴표·빈칸·역슬래시는 막음
-    if(row.btn_url && !/^https:\/\/[^\/\\\s"'<>]+[^\s"'<>\\]*$/.test(row.btn_url) && !/^[a-z0-9_.?=&#-][a-z0-9_./?=&#-]*$/.test(row.btn_url)) return toast('버튼 링크는 https://로 시작하거나 r/, map.html 같은 빡세 안 주소만 돼요 (빈칸·따옴표는 안 돼요)', true);
+    if(row.btn_url && !/^https:\/\/[^\/\\\s"'<>]+[^\s"'<>\\]*$/.test(row.btn_url) && !/^[a-z0-9_.?=&#-][a-z0-9_./?=&#-]*$/.test(row.btn_url) && !/^mailto:[^\s"'<>\\/]+$/.test(row.btn_url)) return toast('버튼 링크는 https://, mailto:(메일), 또는 r/, map.html 같은 빡세 안 주소만 돼요 (빈칸·따옴표는 안 돼요)', true);
     const btn = document.getElementById('evSave'); btn.disabled = true;
     const q = evEditId === 'new' ? PPX.db.from('events').insert(row) : PPX.db.from('events').update(row).eq('id', evEditId);
     const { error } = await q;

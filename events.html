@@ -256,7 +256,7 @@ function renderPost(id) {
   if(p.draw_date || p.winners != null) lines.push(`추첨 일자, 당첨자 : ${p.draw_date ? md(p.draw_date) : '-'}${p.winners != null ? `, ${p.winners}명` : ''}`);
   if(p.target) lines.push(`대상 : ${esc(p.target)}`);
   // 링크 검사: 운영자 화면·DB(events_btn_url_check)와 같은 규칙 (2026-11-21)
-  const safeUrl = p.btn_url && (/^https:\/\/[^\/\\\s"'<>]+[^\s"'<>\\]*$/.test(p.btn_url) || /^[a-z0-9_.?=&#-][a-z0-9_./?=&#-]*$/.test(p.btn_url)) ? p.btn_url : '';
+  const safeUrl = p.btn_url && (/^https:\/\/[^\/\\\s"'<>]+[^\s"'<>\\]*$/.test(p.btn_url) || /^[a-z0-9_.?=&#-][a-z0-9_./?=&#-]*$/.test(p.btn_url) || /^mailto:[^\s"'<>\\/]+$/.test(p.btn_url)) ? p.btn_url : '';
   document.getElementById('content').innerHTML = `
     <div class="hero ${p.status === 'win' ? 'win' : p.kind === 'sponsor' ? 'sp' : ''}"><span class="st ${p.status}">${STL[p.status] || ''}</span>${KIND[p.kind] || ''}${p.hidden ? '<span class="tag hid">숨김</span>' : ''}
       <h1>${esc(p.icon || '')} ${esc(p.title)}</h1>

@@ -3231,3 +3231,11 @@ begin
 end $$;
 revoke all on function public.admin_orphan_photos() from public, anon, authenticated;
 grant execute on function public.admin_orphan_photos() to authenticated;
+
+-- (2026-11-21 추가) 이벤트 버튼에 메일 링크(mailto:) 허용 — 운영자 결정
+alter table public.events drop constraint events_btn_url_check;
+alter table public.events add constraint events_btn_url_check check (
+  btn_url is null or (char_length(btn_url) <= 500 and (
+       btn_url ~ '^https://[^/\[:space:]"''<>]+[^[:space:]"''<>\]*$'
+    or btn_url ~ '^[a-z0-9_.?=&#-][a-z0-9_./?=&#-]*$'
+    or btn_url ~ '^mailto:[^[:space:]"''<>\/]+$')));
