@@ -1,0 +1,57 @@
+{
+ "slug": "evaporator-cleaning",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "evaporator-cleaning-01.jpg",
+   "kind": "cover",
+   "head": "에바크리닝이란? 자동차 에어컨 냄새 줄이는 법"
+  },
+  {
+   "file": "evaporator-cleaning-02.jpg",
+   "kind": "section",
+   "head": "에바포레이터가 뭐길래 냄새가 날까요?"
+  },
+  {
+   "file": "evaporator-cleaning-03.jpg",
+   "kind": "section",
+   "head": "먼저 해 볼 것: 에어컨 필터 확인"
+  },
+  {
+   "file": "evaporator-cleaning-04.jpg",
+   "kind": "section",
+   "head": "평소 습관으로 냄새 줄이는 법"
+  },
+  {
+   "file": "evaporator-cleaning-05.jpg",
+   "kind": "section",
+   "head": "자동차 에바크리닝은 어떻게 할까요?"
+  },
+  {
+   "file": "evaporator-cleaning-06.jpg",
+   "kind": "section",
+   "head": "냄새 종류로 짐작해 보기"
+  },
+  {
+   "file": "evaporator-cleaning-07.jpg",
+   "kind": "section",
+   "head": "업체에 맡기기 전 확인할 것"
+  },
+  {
+   "file": "evaporator-cleaning-08.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "evaporator-cleaning-09.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "evaporator-cleaning-10.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}
