@@ -1,0 +1,57 @@
+{
+ "slug": "car-wash-supplies",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "car-wash-supplies-01.jpg",
+   "kind": "cover",
+   "head": "셀프세차용품 처음 살 때 기본 구성 — 무엇이 왜 필요한지"
+  },
+  {
+   "file": "car-wash-supplies-02.jpg",
+   "kind": "section",
+   "head": "세차용품, 왜 따로 챙길까요?"
+  },
+  {
+   "file": "car-wash-supplies-03.jpg",
+   "kind": "section",
+   "head": "처음 살 때 기본 구성 세 가지"
+  },
+  {
+   "file": "car-wash-supplies-04.jpg",
+   "kind": "section",
+   "head": "그다음에 있으면 편한 것"
+  },
+  {
+   "file": "car-wash-supplies-05.jpg",
+   "kind": "section",
+   "head": "더 깔끔하게 하고 싶을 때 더하는 것"
+  },
+  {
+   "file": "car-wash-supplies-06.jpg",
+   "kind": "section",
+   "head": "세차용품세트, 사도 될까요?"
+  },
+  {
+   "file": "car-wash-supplies-07.jpg",
+   "kind": "section",
+   "head": "처음 살 때 자주 하는 실수"
+  },
+  {
+   "file": "car-wash-supplies-08.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "car-wash-supplies-09.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "car-wash-supplies-10.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}
