@@ -123,5 +123,6 @@
 - GitHub Actions(`.github/workflows/build-seo.yml`)가 매일 새벽 Supabase의 승인된 세차장으로 다시 만들고, `guide-src/`가 바뀌면 바로 다시 만듭니다.
 - 가이드 글은 **60편이 될 때까지 하루 2편, 60편부터 하루 1편**(예외: 2026-11-18 첫 묶음. 예약 글은 뒤로 밀지 않음, 공개 전 글로 링크 금지), 지어낸 숫자·후기 금지. 글 규칙은 `docs/seo-guide.md` 하나가 기준이고, 날짜·링크는 `tools/guide_tools.py`, 글감은 `docs/guide-keywords.md`(운영자 컴퓨터가 자동 갱신)를 씀.
 - 가이드 목록(`guide/`): 맨 위 '처음이라면 이것부터'(원고 `pin` 값 순서)는 번호 없이 🔰 표시, 아래 '전체 글'은 최신순으로 보여 주되 **번호는 먼저 쓴 글이 1번**입니다.
+- 가이드 카드뉴스(`guide-img/<slug>/`)는 `tools/guide_cards.py --site`가 만듭니다. `guide-src/cards/<slug>.json`이 있으면 거기 적은 소제목 카드만 그림 위주 카드(흐름·비교표·해도 돼요/피해 주세요·아이콘 네 칸)로 바뀝니다 (2026-11-21 운영자 결정, 글마다 2~3장).
 - 가이드 글 맨 위·맨 아래에 '‹ 이전 글 · ☰ 목록 · 다음 글 ›' 버튼이 있습니다. 순서는 쓴 날짜(같은 날이면 파일 이름) 기준, 공개된 글끼리만 이어지고 예약 글은 공개일에 자동 연결됩니다 (`guide_nav()`).
 - 검색 색인: `index.html`, `map.html`, `events.html`, `r/index.html`에는 `<link rel="canonical">`(대표 주소)이 있습니다. 지역 페이지의 `map.html?p=`, `r/?p=` 링크가 중복 페이지로 잡히지 않게 하려는 것이니 지우지 마세요. `community.html`은 noindex라 사이트맵에 넣지 않습니다.
