@@ -455,6 +455,7 @@ async function load() {
   resetLoc();
   render();
   showOnMap();
+  orphanBanner();
 }
 
 // ── 핀 위치 고치기 ──
@@ -682,9 +683,10 @@ function cardReport(it) {
       <div style="margin:-4px 0 10px;display:flex;gap:8px;flex-wrap:wrap"><button class="mini" type="button" data-act="rmore">✏️ 다른 칸도 고치기</button><button class="mini" type="button" data-act="goedit">📍 위치·주소가 틀렸으면: 이 세차장 고치기</button></div>
       ${reportMore(p, sg)}
       ${it.photo ? `<div class="photo-box" data-photo="${esc(it.photo)}"><button type="button" data-act="photo">📷 가격표 사진 보기</button></div>` : ''}
+      ${it.via === 'owner' ? `<label style="display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:10px 12px;border-radius:12px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.4);color:#fde68a;font-size:13px;font-weight:700;cursor:pointer"><input type="checkbox" data-ownerok onchange="this.closest('.card').querySelector('[data-act=apply]').disabled=!this.checked">☎️ 매장에 전화해서 사장님 제보가 맞는지 확인했어요 (확인 전에는 반영 버튼이 잠겨요)</label>` : ''}
       <div class="acts">
         <button class="no" type="button" data-act="dismiss">무시</button>
-        <button class="ok" type="button" data-act="apply">${rows.length ? '✅ 체크한 내용 반영' : '✅ 확인함'}</button>
+        <button class="ok" type="button" data-act="apply"${it.via === 'owner' ? ' disabled' : ''}>${rows.length ? '✅ 체크한 내용 반영' : '✅ 확인함'}</button>
       </div>
       ${it.reporter ? `<div style="text-align:right;margin-top:8px"><button class="mini" type="button" data-act="${blocked ? 'unblock' : 'block'}">${blocked ? '이 사람 제보 다시 받기' : '🚫 장난 제보면: 이 사람 제보 막기'}</button></div>` : ''}
     </div>`;
@@ -1088,7 +1090,9 @@ function renderPosts() {
       winners: g('winners') === '' ? null : +g('winners'), target: g('target') || null, icon: g('icon') || null,
       btn_label: g('btn_label') || null, btn_url: g('btn_url') || null, pinned: fd.has('pinned'), hidden: fd.has('hidden'),
     };
-    if(row.btn_url && !/^https:\/\/[^/]/.test(row.btn_url) && !/^[a-z0-9_.?=&#-][a-z0-9_./?=&#-]*$/.test(row.btn_url)) return toast('버튼 링크는 https://로 시작하거나 r/, map.html 같은 빡세 안 주소만 돼요', true);
+    if(row.btn_url && /^https:\/\//i.test(row.btn_url)) row.btn_url = 'https://' + row.btn_url.slice(8);   // HTTPS:// 처럼 대문자로 써도 저장되게
+    // DB 검사(events_btn_url_check, 2026-11-21)와 같은 규칙: https 주소 안 따옴표·빈칸·역슬래시는 막음
+    if(row.btn_url && !/^https:\/\/[^\/\\\s"'<>]+[^\s"'<>\\]*$/.test(row.btn_url) && !/^[a-z0-9_.?=&#-][a-z0-9_./?=&#-]*$/.test(row.btn_url)) return toast('버튼 링크는 https://로 시작하거나 r/, map.html 같은 빡세 안 주소만 돼요 (빈칸·따옴표는 안 돼요)', true);
     const btn = document.getElementById('evSave'); btn.disabled = true;
     const q = evEditId === 'new' ? PPX.db.from('events').insert(row) : PPX.db.from('events').update(row).eq('id', evEditId);
     const { error } = await q;
@@ -1435,9 +1439,36 @@ function setupMapFind() {
 }
 
 // 확인을 마친 제보의 가격표 사진은 바로 지움 (개인정보처리방침 약속)
+// 지우지 못하면 false (처리 자체는 그대로 진행하고, 남은 사진은 '📷 남은 사진 정리'에서 다시 지움)
 async function dropPhoto(it) {
-  if(!it || !it.photo) return;
-  try { await PPX.db.storage.from('report-photos').remove([it.photo]); } catch(e) {}
+  if(!it || !it.photo) return true;
+  try {
+    const { data, error } = await PPX.db.storage.from('report-photos').remove([it.photo]);
+    if(!error && data && data.length) return true;
+  } catch(e) {}
+  return false;
+}
+const PHOTO_LEFT = ' · 사진은 지우지 못했어요. 제보 탭 위 📷 남은 사진 정리에서 다시 지워 주세요';
+
+// 처리 대기 제보에 붙어 있지 않은 사진(제보 저장 실패·지우기 실패로 남은 것)을 운영자가 정리 (DB 함수 admin_orphan_photos, 2026-11-21)
+async function orphanBanner() {
+  if(tab !== 'reports') return;
+  let rows = [];
+  try { const { data, error } = await PPX.db.rpc('admin_orphan_photos'); if(!error) rows = data || []; } catch(e) {}
+  if(!rows.length || tab !== 'reports') return;
+  const list = document.getElementById('list');
+  const b = document.createElement('div');
+  b.className = 'msg';
+  b.style.cssText = 'margin-bottom:10px;padding:12px;border-radius:14px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.4);color:#fde68a';
+  b.innerHTML = `📷 처리가 끝났거나 저장되지 못한 제보의 사진이 <b>${rows.length}장</b> 남아 있어요 <button class="mini" type="button" style="margin-left:6px">남은 사진 정리</button>`;
+  b.querySelector('button').onclick = async () => {
+    if(!(await PPX.ask(`남은 사진 ${rows.length}장을 지울까요? 되돌릴 수 없어요.`, { ok: '지우기', danger: true }))) return;
+    const { data, error } = await PPX.db.storage.from('report-photos').remove(rows.map(r => r.name));
+    if(error) return toast('지우지 못했어요: ' + PPX.koError(error), true);
+    toast(`${(data || []).length}장 지웠어요`);
+    b.remove();
+  };
+  list.prepend(b);
 }
 
 function readFields(card) {
@@ -1538,6 +1569,7 @@ async function act(card, id, what, btn) {
       await PPX.adminReview(id, 'rejected', { reject_reason: reason || null });
       toast('반려했어요');
     } else if(what === 'apply') {
+      if(it.via === 'owner' && !(card.querySelector('[data-ownerok]') || {}).checked) { toast('사장님 제보는 매장에 전화로 확인한 뒤 반영해 주세요', true); btns.forEach(b => b.disabled = false); return; }
       // 체크한 줄은 '칸에 들어 있는 값'(이용자 값 또는 운영자가 고친 값)으로 반영
       const p = it.place || {}, fields = {};
       const info = { ...(p.info || {}) };
@@ -1582,12 +1614,12 @@ async function act(card, id, what, btn) {
       if(newName && it.place && newName !== it.place.name) fields.name = newName;
       if(Object.keys(fields).length && it.place) await PPX.adminUpdate(it.place.id, fields);
       await PPX.adminResolveReport(id, 'applied');
-      await dropPhoto(it);
-      toast(Object.keys(fields).length ? '반영했어요. 지도에 바로 적용돼요 ✅' : '확인 처리했어요');
+      const photoOk = await dropPhoto(it);
+      toast((Object.keys(fields).length ? '반영했어요. 지도에 바로 적용돼요 ✅' : '확인 처리했어요') + (photoOk ? '' : PHOTO_LEFT), !photoOk);
     } else if(what === 'dismiss') {
       await PPX.adminResolveReport(id, 'dismissed');
-      await dropPhoto(it);
-      toast('무시했어요');
+      const photoOk = await dropPhoto(it);
+      toast('무시했어요' + (photoOk ? '' : PHOTO_LEFT), !photoOk);
     } else if(what === 'chide' || what === 'cshow') {
       await PPX.adminHideComment(it.cid, what === 'chide');
       toast(what === 'chide' ? '숨겼어요' : '다시 보이게 했어요');
