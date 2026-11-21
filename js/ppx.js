@@ -747,7 +747,7 @@
 
     async adminReports(status) {
       let q = db.from('place_reports')
-        .select('id,place_id,suggest,memo,visit,photo,via,reporter,status,created_at,reviewed_at,' +
+        .select('id,place_id,suggest,memo,visit,photo,via,reporter,status,created_at,reviewed_at,owner_checked_at,' +
                 'place:places!place_reports_place_id_fkey(' + PLACE_COLS + ',status),' +
                 'reporter_p:profiles!place_reports_reporter_fkey(nickname,blocked)');
       q = status === 'pending'

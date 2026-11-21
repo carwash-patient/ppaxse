@@ -193,7 +193,7 @@ html,body{min-height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backg
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js" integrity="sha384-uteMfOloLDGt042uDz+xHGF3ym63/WQ6rFq7murQRG8Ih7QrXGEGNtWd8688sb4O" crossorigin="anonymous"></script>
 <script src="js/config.js?v=20261117"></script>
-<script src="js/ppx.js?v=20261120a"></script>
+<script src="js/ppx.js?v=20261121a"></script>
 <script>
 const typeLabel={self:'셀프세차',hand:'손세차',detail:'디테일링샵',notouch:'노터치',auto:'자동세차',wash:'종류 확인 중',etc:'정비·기타'};
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1256,6 +1256,7 @@ function cardDone(it) {
         <div class="c-top"><span class="state ${it.status}">${it.status==='applied'?'제보 반영':'제보 무시'}</span>
           <b>${esc(p ? p.name : '(삭제된 세차장)')}</b><span class="c-when">${ago(it.reviewed_at)}</span></div>
         <div class="c-who">제보: ${whoOf(it.reporter_p, it.reporter)}${it.memo ? ' · ' + esc(it.memo) : ''}</div>
+        ${it.via === 'owner' ? `<div class="c-who" style="color:#fde68a">🏪 사장님 제보 · ${it.owner_checked_at ? '☎️ 전화 확인 ' + esc(new Date(it.owner_checked_at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })) : '전화 확인 기록 없음'}</div>` : ''}
       </div>`;
   }
   const who = whoOf(it.submitter, it.submitted_by);
@@ -1571,6 +1572,7 @@ async function act(card, id, what, btn) {
       toast('반려했어요');
     } else if(what === 'apply') {
       if(it.via === 'owner' && !(card.querySelector('[data-ownerok]') || {}).checked) { toast('사장님 제보는 매장에 전화로 확인한 뒤 반영해 주세요', true); btns.forEach(b => b.disabled = false); return; }
+      if(it.via === 'owner') await PPX.db.rpc('admin_owner_checked', { rid: id }).then(r => { if(r.error) throw r.error; });   // 전화 확인 기록(누가·언제)을 DB에 남김
       // 체크한 줄은 '칸에 들어 있는 값'(이용자 값 또는 운영자가 고친 값)으로 반영
       const p = it.place || {}, fields = {};
       const info = { ...(p.info || {}) };
