@@ -7,6 +7,9 @@
   python tools/guide_cards.py all --site             모든 원고의 사이트용 카드를 다시 만듦 (원고를 고쳤을 때)
 
 카드 구성: 표지(제목) → 소제목마다 1장(핵심 항목) → 팁 → 마무리(빡세 안내)
+그림 카드(2026-11-21 운영자 결정): guide-src/cards/<slug>.json 이 있으면, 거기 적은 소제목 카드만
+  글자 목록 대신 그림 위주 카드(흐름·비교표·해도 돼요/하지 마세요·아이콘 네 칸)로 바꿔 그림. 형식은 아래 VISUAL_HELP.
+  - 그림 카드 내용도 원고에 있는 내용만 씀(지어낸 숫자·사실 금지). 가로형(--wide)은 그림 카드 없이 글자 카드로 만듦
 - 글 내용에서만 뽑으므로 지어낸 숫자·사진이 들어가지 않음
 - JPG는 사진 정보(EXIF 등 메타데이터) 없이 저장
 - 브라우저: 윈도우는 Edge, 리눅스(클라우드)는 google-chrome/chromium. PPX_CHROME 환경변수로 바꿀 수 있음
@@ -110,14 +113,104 @@ h2{font-size:%(h)dpx;line-height:1.3;font-weight:900;letter-spacing:-1px;margin-
 '''
 
 
+VISUAL_HELP = """guide-src/cards/<slug>.json 형식 (head = 원고의 소제목(h2) 글자 그대로)
+{"cards": [
+ {"head": "언제 하면 좋을까요?", "type": "flow", "title": "하부세차, {언제} 하면 좋을까요?",
+  "steps": [{"icon": "🧂", "title": "제설제 길|달린 뒤", "sub": "너무 오래|미루지 않기"}, ... 2~4개],
+  "warn": {"icon": "🥶", "title": "영하인 날은 피하세요", "sub": "씻은 물이 얼 수 있어요"}},
+     ← 아래 상자: 주의는 "warn"(빨강), 덧붙임·권하는 방법은 "tip"(하늘색). 없어도 됨
+ {"head": "...", "type": "compare", "title": "셀프 vs {자동}", "cols": [{"icon": "🧽", "name": "셀프"}, {"icon": "🚿", "name": "자동"}],
+  "rows": [["휠하우스", "◎ 잘 돼요", "△ 기계마다"], ... 최대 5줄], "note": "💡 한 줄 덧붙임(없어도 됨)"},
+ {"head": "...", "type": "dodont", "title": "...", "do": ["짧게", ...최대 4], "dont": ["짧게", ...최대 4]},
+ {"head": "...", "type": "grid", "title": "...", "items": [{"icon": "📖", "title": "제목", "sub": "설명"}, ... 2~4개]}
+]}
+- {글자} = 하늘색 강조, | = 줄바꿈. 비교표 칸이 ◎로 시작하면 초록, △는 노랑, ✕는 빨강
+- 아이콘은 이모지 1개. 장난스러워 보이는 이모지(물총 등)는 피함"""
+
+VCSS = """
+.vt{font-size:58px;line-height:1.25;font-weight:900;letter-spacing:-1px;margin-bottom:40px}.vt em,.k{font-style:normal;color:#22d3ee}
+.flow{display:flex;align-items:stretch;gap:16px}
+.fb{flex:1;border-radius:28px;padding:34px 18px;text-align:center;background:rgba(255,255,255,.06);border:2px solid rgba(14,165,233,.35)}
+.fb .ic{font-size:%(fi)dpx;line-height:1}.fb b{display:block;font-size:%(fbt)dpx;line-height:1.35;margin-top:20px}
+.fb span{display:block;font-size:%(fbs)dpx;color:#bae6fd;margin-top:10px;line-height:1.4}
+.ar{display:flex;align-items:center;font-size:44px;color:#22d3ee;font-weight:900}
+.warn{margin-top:40px;display:flex;align-items:center;gap:26px;border-radius:28px;padding:28px 34px;background:rgba(248,113,113,.12);border:2px solid rgba(248,113,113,.55)}
+.warn.tipb{background:rgba(34,211,238,.10);border-color:rgba(34,211,238,.5)}.warn.tipb b{color:#a5f3fc}.warn.tipb span{color:#e0f2fe}
+.warn .ic{font-size:72px;line-height:1}.warn b{font-size:32px;color:#fecaca}.warn span{display:block;font-size:25px;color:#fde2e2;margin-top:6px;line-height:1.45}
+table.cmp{width:100%%;border-collapse:separate;border-spacing:0 14px;font-size:28px}
+.cmp th{font-size:30px;padding:6px 0;color:#cffafe}.cmp th .ic{display:block;font-size:64px;margin-bottom:8px}
+.cmp td{background:rgba(255,255,255,.055);padding:22px 16px;text-align:center;line-height:1.35}
+.cmp td:first-child{text-align:left;border-radius:20px 0 0 20px;color:#bae6fd;font-weight:700;width:30%%}
+.cmp td:last-child{border-radius:0 20px 20px 0}
+.g{color:#4ade80;font-weight:900}.m{color:#fbbf24;font-weight:900}.r{color:#f87171;font-weight:900}
+.note{margin-top:20px;font-size:26px;color:#bae6fd;line-height:1.5}
+.dd{display:flex;gap:22px}.dd>div{flex:1;border-radius:28px;padding:30px 28px}
+.dd .ok{background:rgba(74,222,128,.10);border:2px solid rgba(74,222,128,.5)}.dd .no{background:rgba(248,113,113,.10);border:2px solid rgba(248,113,113,.5)}
+.dd h3{font-size:34px;font-weight:900;margin-bottom:22px}.dd .ok h3{color:#86efac}.dd .no h3{color:#fca5a5}
+.dd p{font-size:28px;line-height:1.4;padding:14px 0;border-top:1.5px solid rgba(255,255,255,.1)}
+.gr{display:grid;grid-template-columns:1fr 1fr;gap:20px}.gi:nth-child(3):last-child{grid-column:span 2}
+.gi{border-radius:26px;padding:28px 26px;background:rgba(255,255,255,.06);border:2px solid rgba(14,165,233,.35)}
+.gi .ic{font-size:64px;line-height:1}.gi b{display:block;font-size:31px;margin-top:16px;line-height:1.3}.gi span{display:block;font-size:24px;color:#bae6fd;margin-top:8px;line-height:1.4}
+"""
+
+
+def load_visual(slug):
+    import json
+    f = os.path.join(SRC, 'cards', f'{slug}.json')
+    if not os.path.exists(f):
+        return {}
+    return {c['head']: c for c in json.load(open(f, encoding='utf-8')).get('cards', [])}
+
+
+def vtxt(t):
+    """{강조}·| 줄바꿈 처리 (그 외는 이스케이프)"""
+    t = html.escape(t or '')
+    return re.sub(r'\{(.*?)\}', r'<em>\1</em>', t).replace('|', '<br>')
+
+
+def visual(v):
+    t = v.get('type')
+    head = f'<div class="vt">{vtxt(v.get("title") or v["head"])}</div>'
+    if t == 'flow':
+        st = v['steps'][:4]
+        big = len(st) <= 3
+        box = [f'<div class="fb"><div class="ic">{html.escape(x.get("icon", ""))}</div><b>{vtxt(x.get("title"))}</b>'
+               + (f'<span>{vtxt(x["sub"])}</span>' if x.get('sub') else '') + '</div>' for x in st]
+        body = f'<div class="flow">{"<div class=ar>›</div>".join(box)}</div>'
+        w = v.get('warn') or v.get('tip')
+        if w:
+            body += (f'<div class="warn{"" if v.get("warn") else " tipb"}"><div class="ic">{html.escape(w.get("icon", "⚠️"))}</div><div><b>{vtxt(w.get("title"))}</b>'
+                     + (f'<span>{vtxt(w["sub"])}</span>' if w.get('sub') else '') + '</div></div>')
+        return head + body, ({'fi': 92, 'fbt': 31, 'fbs': 24} if big else {'fi': 70, 'fbt': 26, 'fbs': 21})
+    if t == 'compare':
+        def cell(c):
+            c = c or ''
+            k = 'g' if c.startswith('◎') else 'm' if c.startswith('△') else 'r' if c.startswith('✕') else ''
+            return f'<td class="{k}">{vtxt(c)}</td>'
+        th = '<tr><th></th>' + ''.join(f'<th><span class="ic">{html.escape(c.get("icon", ""))}</span>{vtxt(c.get("name"))}</th>' for c in v['cols']) + '</tr>'
+        rows = ''.join('<tr><td>' + vtxt(r[0]) + '</td>' + ''.join(cell(c) for c in r[1:]) + '</tr>' for r in v['rows'][:5])
+        note = f'<div class="note">{vtxt(v["note"])}</div>' if v.get('note') else ''
+        return head + f'<table class="cmp">{th}{rows}</table>' + note, {}
+    if t == 'dodont':
+        col = lambda k, cls, h: f'<div class="{cls}"><h3>{h}</h3>' + ''.join(f'<p>{vtxt(x)}</p>' for x in v.get(k, [])[:4]) + '</div>'
+        return head + '<div class="dd">' + col('do', 'ok', '⭕ 이렇게 해요') + col('dont', 'no', '❌ 피해 주세요') + '</div>', {}
+    if t == 'grid':
+        its = ''.join(f'<div class="gi"><div class="ic">{html.escape(x.get("icon", ""))}</div><b>{vtxt(x.get("title"))}</b>'
+                      + (f'<span>{vtxt(x["sub"])}</span>' if x.get('sub') else '') + '</div>' for x in v['items'][:4])
+        return head + f'<div class="gr">{its}</div>', {}
+    raise SystemExit(f'그림 카드 종류를 모르겠어요: {t} (flow / compare / dodont / grid)')
+
+
 def sizes(wide):
     if wide:  # 1200x675
         return dict(W=1200, H=675, P=56, s=20, b=26, k=24, g=14, g2=12, t=60, l=26, h=40, gi=12, ip=14, ip2=20, d=36, dn=18, ib=24, is_=19, tp=34, tf=30)
     return dict(W=1080, H=1080, P=80, s=24, b=32, k=30, g=24, g2=18, t=78, l=32, h=56, gi=18, ip=22, ip2=26, d=46, dn=22, ib=32, is_=24, tp=50, tf=38)
 
 
-def page(inner, z, cat, n, total):
+def page(inner, z, cat, n, total, vz=None):
     css = CSS % {**z, 'is': z['is_']}
+    if vz is not None:
+        css += VCSS % {'fi': 92, 'fbt': 31, 'fbs': 24, **vz}
     top = f'<div class="top"><div class="brand">💧 빡<em>세</em></div><div class="chip">{html.escape(cat or "세차 가이드")}</div></div>'
     foot = f'<div class="foot"><span>ppaxse.com 세차 가이드</span><span>{n} / {total}</span></div>'
     return f'<!doctype html><html><head><meta charset="utf-8"><style>{css}</style></head><body>{top}<div class="mid">{inner}</div>{foot}</body></html>'
@@ -127,12 +220,21 @@ def cards(slug, wide=False):
     meta, lead, sections, tips = parse(slug)
     z = sizes(wide)
     maxitems = 3 if wide else 4
+    vis = {} if wide else load_visual(meta.get('slug') or slug)
+    for h in set(vis) - {x['head'] for x in sections}:
+        print(f'  ※ 그림 카드 소제목이 원고에 없어요(글자가 똑같아야 해요): {h}')
+    vzs = {}
     out, kinds = [], [('cover', meta.get('title', ''))]
     kinds += [('section', s['head']) for s in sections] + [('tip', '')] * len(tips[:2]) + [('end', '')]
     out.append(f'<div class="kicker">빡세 세차 가이드</div><h1>{html.escape(meta.get("title", "").split(" — ")[0])}</h1>'
                + (f'<div class="lead">{html.escape(meta.get("title", "").split(" — ")[1])}</div>' if ' — ' in meta.get('title', '') else
                   f'<div class="lead">{html.escape(lead)}</div>'))
     for i, s in enumerate(sections, 1):
+        if s['head'] in vis:
+            inner, vz = visual(vis[s['head']])
+            vzs[len(out)] = vz
+            out.append(inner)
+            continue
         its = ''.join(f'<div class="it"><div class="dot">{j if s["ordered"] else "✓"}</div><div><b>{html.escape(a)}</b>'
                       + (f'<span>{html.escape(b)}</span>' if b and not wide else '') + '</div></div>'
                       for j, (a, b) in enumerate(s['items'][:maxitems], 1))
@@ -143,7 +245,7 @@ def cards(slug, wide=False):
         out.append(f'<div class="tipbox"><i>💡 알아 두면 좋아요</i>{html.escape(short(t, 120 if not wide else 90))}</div>')
     out.append('<h2>내 주변 세차장,<br>지도에서 찾아보세요</h2><div class="cta">셀프·손세차·노터치·자동세차·디테일링 종류와<br>'
                '<b>하부세차·폼건·온수</b> 같은 시설 정보를<br>이용자들이 함께 채워가고 있어요.</div><div><span class="url">ppaxse.com</span></div>')
-    return meta, [page(c, z, meta.get('category', ''), i, len(out)) for i, c in enumerate(out, 1)], z, kinds
+    return meta, [page(c, z, meta.get('category', ''), i, len(out), vzs.get(i - 1)) for i, c in enumerate(out, 1)], z, kinds
 
 
 def to_jpg(pngs, jpgs):
