@@ -1,0 +1,62 @@
+{
+ "slug": "interior-cleaning-service",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "interior-cleaning-service-01.jpg",
+   "kind": "cover",
+   "head": "차량 실내크리닝·스팀세차 맡기기 전 확인할 것"
+  },
+  {
+   "file": "interior-cleaning-service-02.jpg",
+   "kind": "section",
+   "head": "자동차실내세차, 이럴 때 맡기는 분들이 많아요"
+  },
+  {
+   "file": "interior-cleaning-service-03.jpg",
+   "kind": "section",
+   "head": "셀프로 할 때와 맡길 때, 무엇이 다를까요?"
+  },
+  {
+   "file": "interior-cleaning-service-04.jpg",
+   "kind": "section",
+   "head": "실내크리닝에서 흔히 하는 작업"
+  },
+  {
+   "file": "interior-cleaning-service-05.jpg",
+   "kind": "section",
+   "head": "스팀세차, 무엇이 다를까요?"
+  },
+  {
+   "file": "interior-cleaning-service-06.jpg",
+   "kind": "section",
+   "head": "실내세차가격이 업체마다 다른 이유"
+  },
+  {
+   "file": "interior-cleaning-service-07.jpg",
+   "kind": "section",
+   "head": "맡기기 전에 물어볼 것"
+  },
+  {
+   "file": "interior-cleaning-service-08.jpg",
+   "kind": "section",
+   "head": "맡기는 날 준비할 것"
+  },
+  {
+   "file": "interior-cleaning-service-09.jpg",
+   "kind": "section",
+   "head": "받은 뒤 확인할 것"
+  },
+  {
+   "file": "interior-cleaning-service-10.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "interior-cleaning-service-11.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}
