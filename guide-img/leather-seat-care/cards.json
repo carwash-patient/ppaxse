@@ -1,0 +1,57 @@
+{
+ "slug": "leather-seat-care",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "leather-seat-care-01.jpg",
+   "kind": "cover",
+   "head": "자동차 가죽 시트 관리 — 가죽클리너·코팅제 쓰는 법"
+  },
+  {
+   "file": "leather-seat-care-02.jpg",
+   "kind": "section",
+   "head": "내 시트 소재부터 확인하세요"
+  },
+  {
+   "file": "leather-seat-care-03.jpg",
+   "kind": "section",
+   "head": "평소 관리: 먼지 털기와 마른 닦기"
+  },
+  {
+   "file": "leather-seat-care-04.jpg",
+   "kind": "section",
+   "head": "가죽클리너 쓰는 법"
+  },
+  {
+   "file": "leather-seat-care-05.jpg",
+   "kind": "section",
+   "head": "가죽코팅제·보호제는 언제 바를까요?"
+  },
+  {
+   "file": "leather-seat-care-06.jpg",
+   "kind": "section",
+   "head": "자주 하는 실수"
+  },
+  {
+   "file": "leather-seat-care-07.jpg",
+   "kind": "section",
+   "head": "계절별로 신경 쓸 점"
+  },
+  {
+   "file": "leather-seat-care-08.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "leather-seat-care-09.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "leather-seat-care-10.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}
