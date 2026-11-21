@@ -1,0 +1,62 @@
+{
+ "slug": "underbody-wash",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "underbody-wash-01.jpg",
+   "kind": "cover",
+   "head": "하부세차, 겨울에 꼭 해야 할까요? — 제설제와 하부 관리"
+  },
+  {
+   "file": "underbody-wash-02.jpg",
+   "kind": "section",
+   "head": "하부세차가 겨울에 더 중요한 이유"
+  },
+  {
+   "file": "underbody-wash-03.jpg",
+   "kind": "section",
+   "head": "언제 하면 좋을까요?"
+  },
+  {
+   "file": "underbody-wash-04.jpg",
+   "kind": "section",
+   "head": "셀프세차장에서 하부세차하기"
+  },
+  {
+   "file": "underbody-wash-05.jpg",
+   "kind": "section",
+   "head": "노터치·자동세차에서 하부세차하기"
+  },
+  {
+   "file": "underbody-wash-06.jpg",
+   "kind": "section",
+   "head": "차 아래쪽 씻을 때 주의할 점"
+  },
+  {
+   "file": "underbody-wash-07.jpg",
+   "kind": "section",
+   "head": "하부세차만으로 충분할까요?"
+  },
+  {
+   "file": "underbody-wash-08.jpg",
+   "kind": "section",
+   "head": "자주 묻는 것"
+  },
+  {
+   "file": "underbody-wash-09.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "underbody-wash-10.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "underbody-wash-11.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}
