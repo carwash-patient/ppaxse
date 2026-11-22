@@ -1,0 +1,57 @@
+{
+ "slug": "car-odor-removal",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "car-odor-removal-01.jpg",
+   "kind": "cover",
+   "head": "차 냄새 제거 — 새 차 냄새·담배 냄새·히터 냄새, 원인별로 줄이는 법"
+  },
+  {
+   "file": "car-odor-removal-02.jpg",
+   "kind": "section",
+   "head": "냄새를 없애기 전에: 원인부터 찾아요"
+  },
+  {
+   "file": "car-odor-removal-03.jpg",
+   "kind": "section",
+   "head": "새차냄새제거, 환기가 기본이에요"
+  },
+  {
+   "file": "car-odor-removal-04.jpg",
+   "kind": "section",
+   "head": "차량담배냄새제거, 냄새가 밴 곳부터 닦아요"
+  },
+  {
+   "file": "car-odor-removal-05.jpg",
+   "kind": "section",
+   "head": "자동차히터냄새, 종류에 따라 다르게 봐요"
+  },
+  {
+   "file": "car-odor-removal-06.jpg",
+   "kind": "section",
+   "head": "평소에 차량 냄새 줄이는 습관"
+  },
+  {
+   "file": "car-odor-removal-07.jpg",
+   "kind": "section",
+   "head": "탈취제·방향제 쓸 때 주의할 것"
+  },
+  {
+   "file": "car-odor-removal-08.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "car-odor-removal-09.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "car-odor-removal-10.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}

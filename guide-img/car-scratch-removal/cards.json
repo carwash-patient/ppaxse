@@ -1,0 +1,62 @@
+{
+ "slug": "car-scratch-removal",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "car-scratch-removal-01.jpg",
+   "kind": "cover",
+   "head": "자동차 스크래치(기스) 제거 — 셀프로 되는 것과 맡겨야 하는 것"
+  },
+  {
+   "file": "car-scratch-removal-02.jpg",
+   "kind": "section",
+   "head": "자동차 도장은 여러 층으로 되어 있어요"
+  },
+  {
+   "file": "car-scratch-removal-03.jpg",
+   "kind": "section",
+   "head": "흠집 깊이 확인하는 법"
+  },
+  {
+   "file": "car-scratch-removal-04.jpg",
+   "kind": "section",
+   "head": "깊이별로 할 수 있는 것"
+  },
+  {
+   "file": "car-scratch-removal-05.jpg",
+   "kind": "section",
+   "head": "셀프로 자동차흠집제거 할 때 순서"
+  },
+  {
+   "file": "car-scratch-removal-06.jpg",
+   "kind": "section",
+   "head": "자동차스크래치복원, 이럴 땐 맡기는 게 나아요"
+  },
+  {
+   "file": "car-scratch-removal-07.jpg",
+   "kind": "section",
+   "head": "자주 하는 실수"
+  },
+  {
+   "file": "car-scratch-removal-08.jpg",
+   "kind": "section",
+   "head": "흠집 줄이는 세차 습관"
+  },
+  {
+   "file": "car-scratch-removal-09.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "car-scratch-removal-10.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "car-scratch-removal-11.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}
