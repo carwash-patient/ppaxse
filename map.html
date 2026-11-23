@@ -1617,7 +1617,7 @@ function renderReportForm() {
       <textarea class="af-input" data-in="memo" id="rfMemo" maxlength="500" placeholder="예: 노터치 기계 2대, 주말엔 대기 30분 (지도에는 안 보여요)" style="height:56px">${esc(reportForm.memo)}</textarea>
     </div>
     <button class="af-submit" id="rfSubmit" type="button">제보 보내기</button>
-    <div class="af-note">가입하지 않아도 보낼 수 있어요. 운영자가 확인한 뒤 반영돼요. 고마워요 💧<br><a href="privacy.html" target="_blank">개인정보처리방침</a></div>`);
+    <div class="af-note">가입하지 않아도 보낼 수 있어요. 운영자가 확인한 뒤 반영돼요. 고마워요 💧<br>한마디는 바로 공개돼요. 욕설·광고·개인정보는 숨겨질 수 있어요.<br><a href="privacy.html#community" target="_blank">커뮤니티 운영정책</a> · <a href="privacy.html" target="_blank">개인정보처리방침</a></div>`);
   document.querySelector('#addPanel .rp-title').textContent = '정보 알려주기';
   // 종류: 바꾸면 보여줄 항목이 달라지므로 다시 그림
   document.querySelectorAll('#addBody [data-kind="type"]').forEach(b => b.onclick = () => {

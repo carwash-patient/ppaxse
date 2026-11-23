@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#04111e">
+<title>계정·데이터 삭제 요청 · 빡세</title>
+<meta name="description" content="빡세(세차장지도 빡세) 계정과 데이터를 삭제하는 방법. 회원 탈퇴, 가입 없이 남긴 기록의 삭제 요청, 삭제되는 정보와 남는 정보를 안내합니다.">
+<link rel="canonical" href="https://ppaxse.com/delete-account.html">
+<style>
+:root{--deep:#04111e;--aqua:#22d3ee;--muted:rgba(186,230,253,.7);--line:rgba(14,165,233,.18)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--deep);color:#fff;line-height:1.75;font-size:14px;word-break:keep-all}
+.top{position:sticky;top:0;display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(4,17,30,.95);border-bottom:1px solid var(--line)}
+.top a{color:#fff;text-decoration:none;font-size:20px;min-width:32px}
+.top h1{font-size:16px;font-weight:900}
+main{max-width:760px;margin:0 auto;padding:20px 16px 60px}
+h2{font-size:18px;font-weight:900;margin:30px 0 10px;color:var(--aqua);text-wrap:balance}
+h2:first-of-type{margin-top:10px}
+p,li{color:var(--muted);text-wrap:pretty}
+ol,ul{padding-left:20px;margin:6px 0}
+li{margin:3px 0}
+b{color:#fff}
+a{color:var(--aqua)}
+table{width:100%;border-collapse:collapse;margin:8px 0;font-size:13px}
+th,td{border:1px solid var(--line);padding:8px;text-align:left;vertical-align:top;color:var(--muted)}
+th{color:#fff;background:rgba(14,165,233,.08)}
+.box{padding:14px;border-radius:12px;background:rgba(14,165,233,.07);border:1px solid var(--line);margin:10px 0}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 16px;border-radius:12px;background:var(--aqua);color:#04111e;font-weight:900;text-decoration:none;margin:6px 6px 0 0}
+.btn.g{background:transparent;color:var(--aqua);border:1px solid var(--aqua)}
+</style>
+</head>
+<body>
+<div class="top"><a href="javascript:history.length>1?history.back():location.href='./'" aria-label="뒤로">←</a><h1>계정·데이터 삭제 요청</h1></div>
+<main>
+<p>세차장지도 <b>빡세</b>(ppaxse.com, Android 앱 ‘빡세’)의 계정과 데이터를 지우는 방법이에요. 로그인하지 않아도 이 페이지를 볼 수 있어요.</p>
+
+<h2>1. 회원으로 가입하셨다면 — 바로 탈퇴</h2>
+<ol>
+  <li>빡세에 로그인해요.</li>
+  <li>아래 메뉴의 <b>내 정보</b>(마이페이지)로 가요.</li>
+  <li>맨 아래 <b>회원 탈퇴</b>를 누르고, 확인 칸에 ‘탈퇴’라고 입력해요.</li>
+</ol>
+<p>누르는 즉시 계정과 프로필이 삭제되고 되돌릴 수 없어요.</p>
+<a class="btn" href="mypage.html">내 정보로 가기</a>
+
+<h2>2. 로그인이 안 되거나, 가입 없이 쓰셨다면 — 메일로 요청</h2>
+<p>아래 내용을 적어 <a href="mailto:ppaxse@gmail.com?subject=%5B%EB%B9%A1%EC%84%B8%5D%20%EA%B3%84%EC%A0%95%C2%B7%EB%8D%B0%EC%9D%B4%ED%84%B0%20%EC%82%AD%EC%A0%9C%20%EC%9A%94%EC%B2%AD">ppaxse@gmail.com</a>으로 보내 주세요.</p>
+<ul>
+  <li><b>회원</b>: 가입한 이메일 주소(그 주소에서 보내 주시면 본인 확인이 빨라요)</li>
+  <li><b>가입 없이 쓴 기록</b>: 제보·한마디를 남긴 세차장 이름과 날짜, 한마디에 쓴 닉네임</li>
+  <li>지우고 싶은 것: 계정 전체 / 특정 한마디·제보만</li>
+</ul>
+<p>받은 날부터 <b>7일 안에</b> 처리하고 결과를 답장으로 알려드려요. 본인인지 확인하기 어려우면 추가 정보를 여쭤볼 수 있어요.</p>
+<a class="btn g" href="mailto:ppaxse@gmail.com?subject=%5B%EB%B9%A1%EC%84%B8%5D%20%EA%B3%84%EC%A0%95%C2%B7%EB%8D%B0%EC%9D%B4%ED%84%B0%20%EC%82%AD%EC%A0%9C%20%EC%9A%94%EC%B2%AD">삭제 요청 메일 쓰기</a>
+
+<h2>3. 지워지는 것과 남는 것</h2>
+<table>
+  <tr><th>정보</th><th>탈퇴·삭제 요청 후</th></tr>
+  <tr><td>이메일, 비밀번호, 닉네임, 차종·지역 등 프로필</td><td><b>바로 삭제</b></td></tr>
+  <tr><td>혜택·이벤트 소식 수신 동의 기록</td><td><b>바로 삭제</b></td></tr>
+  <tr><td>남긴 한마디</td><td>누가 썼는지 알 수 없는 형태로 남아요. 메일로 요청하시면 <b>본문도 삭제</b>해요.</td></tr>
+  <tr><td>세차장 정보 제보</td><td>누가 보냈는지 알 수 없는 형태로 남아요. 이미 지도에 반영된 세차장 정보(예: ‘폼건 가능’)는 공공 정보로 계속 보여요.</td></tr>
+  <tr><td>제보 사진(가격표 등)</td><td>운영자가 제보를 확인하면 바로 삭제해요. 아직 확인 전이면 요청 시 함께 삭제해요.</td></tr>
+  <tr><td>기프티콘 응모 기록·응모번호, 내가 한 한마디 신고</td><td><b>바로 삭제</b> (탈퇴 후에는 당첨 확인을 할 수 없어요)</td></tr>
+  <tr><td>방문자 수 통계</td><td>이름·이메일이 없는 임의 번호라 개인을 알 수 없어요. 브라우저의 사이트 데이터를 지우면 그 번호도 사라져요.</td></tr>
+  <tr><td>접속 기록(IP 등)</td><td>호스팅·서버 업체의 기록 보관 기준에 따라 자동으로 지워져요.</td></tr>
+</table>
+<p>법령에 따라 보관해야 하는 정보가 생기면 그 기간 동안만 따로 보관하고, 이 페이지에 알려드려요.</p>
+
+<h2>4. 더 알아보기</h2>
+<p>개인정보를 어떻게 다루는지는 <a href="privacy.html#privacy">개인정보처리방침</a>에, 한마디·제보 규칙은 <a href="privacy.html#community">커뮤니티 운영정책</a>에 있어요.</p>
+<div class="box">개인정보 보호책임자: 안수일 · <a href="mailto:ppaxse@gmail.com">ppaxse@gmail.com</a></div>
+</main>
+</body>
+</html>
