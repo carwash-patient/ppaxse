@@ -1,0 +1,57 @@
+{
+ "slug": "engine-bay-cleaning",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "engine-bay-cleaning-01.jpg",
+   "kind": "cover",
+   "head": "엔진룸 청소, 해도 될까요? — 셀프세차장에서 주의할 점"
+  },
+  {
+   "file": "engine-bay-cleaning-02.jpg",
+   "kind": "section",
+   "head": "엔진룸 청소, 꼭 해야 할까요?"
+  },
+  {
+   "file": "engine-bay-cleaning-03.jpg",
+   "kind": "section",
+   "head": "하기 전에 확인할 것"
+  },
+  {
+   "file": "engine-bay-cleaning-04.jpg",
+   "kind": "section",
+   "head": "엔진룸크리너 쓰는 순서"
+  },
+  {
+   "file": "engine-bay-cleaning-05.jpg",
+   "kind": "section",
+   "head": "셀프세차장 고압수, 써도 될까요?"
+  },
+  {
+   "file": "engine-bay-cleaning-06.jpg",
+   "kind": "section",
+   "head": "물 없이 닦는 방법도 있어요"
+  },
+  {
+   "file": "engine-bay-cleaning-07.jpg",
+   "kind": "section",
+   "head": "전기차·하이브리드는 더 조심하세요"
+  },
+  {
+   "file": "engine-bay-cleaning-08.jpg",
+   "kind": "section",
+   "head": "자주 하는 실수"
+  },
+  {
+   "file": "engine-bay-cleaning-09.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "engine-bay-cleaning-10.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}

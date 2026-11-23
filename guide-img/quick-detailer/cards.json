@@ -1,0 +1,52 @@
+{
+ "slug": "quick-detailer",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "quick-detailer-01.jpg",
+   "kind": "cover",
+   "head": "퀵디테일러(QD)란? 물 없이 가볍게 관리하는 법"
+  },
+  {
+   "file": "quick-detailer-02.jpg",
+   "kind": "section",
+   "head": "퀵디테일러(QD)는 무엇을 해 주나요?"
+  },
+  {
+   "file": "quick-detailer-03.jpg",
+   "kind": "section",
+   "head": "물없이세차 제품과는 무엇이 다른가요?"
+  },
+  {
+   "file": "quick-detailer-04.jpg",
+   "kind": "section",
+   "head": "쓰기 좋은 때, 피해야 할 때"
+  },
+  {
+   "file": "quick-detailer-05.jpg",
+   "kind": "section",
+   "head": "퀵디테일러 쓰는 순서"
+  },
+  {
+   "file": "quick-detailer-06.jpg",
+   "kind": "section",
+   "head": "코팅·왁스한 차, 무광 차에 써도 되나요?"
+  },
+  {
+   "file": "quick-detailer-07.jpg",
+   "kind": "section",
+   "head": "자주 하는 실수"
+  },
+  {
+   "file": "quick-detailer-08.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "quick-detailer-09.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}
