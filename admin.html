@@ -1151,7 +1151,7 @@ function renderEvent() {
   list.innerHTML = `
     <div class="card sel">
       <div class="c-top"><span class="c-name">응모 ${evList.length}명 · 추첨 대상 ${valid.length}명 (회원 ${mem.length}명)</span></div>
-      <div class="c-who">월요일 17시에 자동으로 추첨돼요. 회원 추첨 2명을 먼저 뽑고, 남은 사람 중에서 누구나 추첨 2명을 뽑아요. 응모권(하루 1장, 주 최대 3장)이 많을수록 당첨 확률이 높아요. 성의 없는 글은 그 전에 숨겨 두면 추첨에서 빠져요.</div>
+      <div class="c-who">토요일 17시에 자동으로 추첨돼요(1회차만 11/23 월요일). 17시 전에 미리 뽑아도 이용자 화면에는 17시부터 보여요. 회원 추첨 2명을 먼저 뽑고, 남은 사람 중에서 누구나 추첨 2명을 뽑아요. 응모권(하루 1장, 주 최대 3장)이 많을수록 당첨 확률이 높아요. 성의 없는 글은 그 전에 숨겨 두면 추첨에서 빠져요.</div>
       ${evWinners.length ? `<div class="diff" style="margin-top:10px">${evWinners.map(w => `<label><span class="k">🎉 ${POOL[w.won]}</span><span class="to" style="letter-spacing:1px">${esc(w.code)}</span><span style="margin-left:auto;color:#fff">${esc(w.is_member ? (w.email || '') : '비회원 · 메일 연락 대기')}</span></label>`).join('')}</div>
         <div class="acts"><button class="ok" type="button" id="evCopy">발표 글 복사</button><button class="no" type="button" id="evRedraw">다시 뽑기</button></div>`
       : (past

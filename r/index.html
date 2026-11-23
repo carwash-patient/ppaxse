@@ -298,7 +298,7 @@ textarea:focus,.in:focus{border-color:var(--aqua)}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js" integrity="sha384-uteMfOloLDGt042uDz+xHGF3ym63/WQ6rFq7murQRG8Ih7QrXGEGNtWd8688sb4O" crossorigin="anonymous"></script>
 <script src="../js/config.js?v=20261117"></script>
 <script src="../js/ppx.js?v=20261121a"></script>
-<script src="../js/ev.js?v=20261117a"></script>
+<script src="../js/ev.js?v=20261123a"></script>
 <script src="../js/install.js?v=20261116e" defer></script>
 <script>
 const $ = id => document.getElementById(id);
@@ -343,7 +343,7 @@ let me = null, evSt = null;
 const WD = ['일','월','화','수','목','금','토'];
 const md = s => { const d = new Date(s + 'T00:00:00'); return `${d.getMonth() + 1}/${d.getDate()}(${WD[d.getDay()]})`; };
 const RULES = `<details><summary>추첨 규칙 보기</summary><ul>
-  <li>응모 기간: 매주 토요일 0시 ~ 금요일 밤 12시, 당첨 발표는 다음 주 월요일 17시 (자동 추첨)</li>
+  <li>응모 기간: 매주 토요일 0시 ~ 금요일 밤 12시, 당첨 발표는 응모가 끝난 다음 날 토요일 17시 (자동 추첨)</li>
   <li>응모 방법: 다녀온 세차장 정보(어떤 세차장인지·다녀온 시기·시설 등)를 하나 이상 고르고 한마디를 10자 이상 남기기</li>
   <li>하루에 1번씩, 한 주에 최대 3번까지 응모돼요. 같은 세차장은 한 주에 1번만 인정돼요</li>
   <li>응모번호는 한 주에 1개예요. 응모할 때마다 그 번호의 응모권이 1장씩 늘고, 응모권이 많을수록 당첨 확률이 높아져요</li>

@@ -3284,3 +3284,9 @@ begin
 end $$;
 revoke all on function public.admin_owner_checked(bigint) from public, anon, authenticated;
 grant execute on function public.admin_owner_checked(bigint) to authenticated;
+
+-- ═══ 2026-11-23 발표를 토요일 17시로 변경 (migrate_2026-11-23.sql, 되돌리기 rollback_2026-11-23.sql) ═══
+-- ppx_event_draw_date(w): 11/14 주까지 w+9(월), 11/21 주부터 w+7(토). 연락 기한 = 발표일 + 7
+-- ppx_event_rounds / ppx_event_status: 발표 시각(발표일 17시) 전에는 당첨 결과를 내보내지 않음
+-- cron ppx-weekly-draw: '0 8 * * 6' (토 17:00 KST)
+-- 2026-11-23 11:41 KST 운영자 지시로 1회차(11/14 주)를 미리 추첨함(ppx_event_draw_run). 사이트에는 11/23 17:00부터 보임.

@@ -37,9 +37,11 @@
     if(isAdmin) return;
     let st; try { st = await P.eventStatus(); } catch(_) { return; }
     const t = today();
-    const m = (st && st.mine || []).find(x => x.won && t >= addDays(x.week, 9) && t <= addDays(x.week, 16) && !LS('ppxWinSeen_' + x.week));
+    // 발표일·연락 기한은 서버가 줌 (없으면 예전 계산). won은 발표 시각(17시) 전에는 서버가 비워서 줌
+    const dd = x => x.draw_date || addDays(x.week, 9), cu = x => x.claim_until || addDays(x.week, 16);
+    const m = (st && st.mine || []).find(x => x.won && t >= dd(x) && t <= cu(x) && !LS('ppxWinSeen_' + x.week));
     if(!m) return;
-    const until = addDays(m.week, 16);
+    const until = cu(m);
     const subj = encodeURIComponent(`[빡세 당첨] 응모번호 ${m.code}`);
     const body = encodeURIComponent(`응모번호: ${m.code}\n한마디를 남긴 세차장 이름: \n`);
     const css = document.createElement('style');

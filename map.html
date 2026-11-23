@@ -513,7 +513,7 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
 <script src="js/config.js?v=20261117"></script>
 <script src="js/ppx.js?v=20261121a"></script>
 <script>setTimeout(() => { if(window.PPX && PPX.thanks) PPX.thanks(); }, 1500);</script>
-<script src="js/ev.js?v=20261117a"></script>
+<script src="js/ev.js?v=20261123a"></script>
 <script>
 // 로그인 연결 파일을 못 불러와도 지도는 places.json 으로 계속 동작하도록
 if(!window.PPX) window.PPX = { ready:false, me: async () => null, koError: e => (e && e.message) || '문제가 생겼어요' };
@@ -1747,7 +1747,7 @@ function showEventResult(ev, sub) {
   let icon = '🎁', title, body;
   const tk = ev.tickets ? `이번 주 응모권 <b>${ev.tickets}/${ev.max || 3}장</b>` : '';
   if(ev.err) { icon = '🙏'; title = '추첨 응모는 안 됐어요'; body = esc2(ev.err); }
-  else if(!ev.already) { title = '추첨 응모 완료!'; body = `응모번호 <b class="er-code">${esc2(ev.code)}</b><br>${tk}<br><span class="er-dim">매주 월요일 17시 발표 · 응모권이 많을수록 당첨 확률이 올라가요</span>`; }
+  else if(!ev.already) { title = '추첨 응모 완료!'; body = `응모번호 <b class="er-code">${esc2(ev.code)}</b><br>${tk}<br><span class="er-dim">매주 토요일 17시 발표 · 응모권이 많을수록 당첨 확률이 올라가요</span>`; }
   else if(ev.reason === 'today') { icon = '✅'; title = '오늘은 이미 응모했어요'; body = `응모번호 <b class="er-code">${esc2(ev.code)}</b><br>${tk}<br><span class="er-dim">내일 다른 세차장 한마디로 응모권을 더 모을 수 있어요</span>`; }
   else if(ev.reason === 'place') { icon = '✅'; title = '이 세차장은 이번 주에 이미 응모했어요'; body = `응모번호 <b class="er-code">${esc2(ev.code)}</b><br>${tk}<br><span class="er-dim">다른 세차장 한마디로 응모권을 더 모을 수 있어요</span>`; }
   else { icon = '🎉'; title = '이번 주 응모권을 다 모았어요'; body = `응모번호 <b class="er-code">${esc2(ev.code)}</b><br>${tk}`; }

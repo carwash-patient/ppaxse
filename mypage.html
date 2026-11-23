@@ -145,7 +145,7 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
 <script src="js/config.js?v=20261117"></script>
 <script src="js/ppx.js?v=20261121a"></script>
 <script>setTimeout(() => { if(window.PPX && PPX.thanks) PPX.thanks(); }, 1500);</script>
-<script src="js/ev.js?v=20261117a"></script>
+<script src="js/ev.js?v=20261123a"></script>
 <script>
 const escHTML = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const skillLabel={beginner:'🌱 세린이',mid:'💨 폼건은 기본이죠',pro:'✨ 디테일링 직접 함',maniac:'🫧 3시간은 기본 아닌가?'};
@@ -309,12 +309,13 @@ async function loadMyEvents(isMember) {
   }
   sec.hidden = false;
   box.innerHTML = mine.map(m => {
-    const draw = add(m.week, 9), until = add(m.week, 16);
+    const draw = m.draw_date || add(m.week, 9), until = m.claim_until || add(m.week, 16);
+    const published = Date.now() >= Date.parse(draw + 'T08:00:00Z');   // 발표일 17시(한국)
     let state;
     if(m.won) state = today <= until
       ? `<a class="req-state approved" style="text-decoration:none;background:rgba(245,183,43,.18);color:#fbbf24" href="mailto:ppaxse@gmail.com?subject=${encodeURIComponent('[빡세 당첨] 응모번호 ' + m.code)}&body=${encodeURIComponent('응모번호: ' + m.code + '\n한마디를 남긴 세차장 이름: \n')}">🎉 당첨 · ${md(until)}까지 메일</a>`
       : '<span class="req-state rejected">🎉 당첨 · 연락 기한 지남</span>';
-    else if(today < draw) state = `<span class="req-state pending">응모 중 · ${md(draw)} 발표</span>`;
+    else if(!published) state = `<span class="req-state pending">응모 중 · ${md(draw)} 17시 발표</span>`;
     else state = '<span class="req-state" style="background:rgba(255,255,255,.08);color:rgba(255,255,255,.6)">당첨 안 됨</span>';
     return `<div class="req-item"><div><div class="req-name" style="letter-spacing:1px">${escHTML(m.code)}</div>
       <div class="req-sub">${md(m.week)}~${md(add(m.week, 6))} 회차 · 응모권 ${m.tickets || 0}/${mx}장${m.valid === false ? ' · 추첨 제외' : ''}</div></div>${state}</div>`;
