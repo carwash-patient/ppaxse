@@ -23,7 +23,10 @@
 | `login.html`, `join.html`, `mypage.html` | 로그인·가입·마이페이지 |
 | `events.html` | 이벤트(주간 기프티콘). 탭은 **진행 중 · 마감 · 당첨자 발표** 3개, 처음엔 '진행 중' ('전체' 탭 없음, 2026-11-21 운영자 결정). 발표 후 7일(`claim_until`)까지는 '당첨자 발표', 그 뒤는 '마감'. **'마감'에는 가장 최근 회차 1개만** 보이고, 지난주 응모가 끝났는데 아직 추첨 전이면 그 회차가 '응모가 마감됐어요' 카드(`#closed=<주>`, `renderClosed`: 발표 날짜·내 응모번호·이번 회차 응모 버튼)로 그 자리에 들어감. 추첨이 끝나면 저절로 발표 화면으로 넘어감 |
 | `admin.html` | 운영자 화면 (세차장 추가 요청·제보 승인/거절, 정보 수정) |
-| `privacy.html` | 개인정보처리방침 |
+| `privacy.html` | 개인정보처리방침 + **커뮤니티 운영정책** 절(한마디 입력칸·동의 체크의 링크가 이 절로 옴). 수집 항목·위탁 업체(네이버 지도·Open-Meteo·jsDelivr 등)를 바꾸면 여기도 고칠 것 |
+| `delete-account.html` | 계정 삭제 안내 (탈퇴 방법, 메일로 삭제 요청, 지워지는 것/남는 것). 홈 맨 아래에 링크. 앱 스토어에 내는 주소라 지우지 말 것 |
+| `.well-known/assetlinks.json` | 안드로이드 앱(`com.ppaxse.app`)이 주소줄 없이 사이트를 여는 데 필요한 연결 파일(키 지문). Play 앱 서명 키 지문은 첫 업로드 후 추가 예정 |
+| `.nojekyll` | GitHub Pages가 `.well-known` 폴더를 숨기지 않게 하는 빈 파일. 지우면 앱 연결이 끊김 |
 | `landing.html` | 예전 랜딩 (참고용) |
 | `js/config.js` | Supabase 주소와 공개용 키 |
 | `js/ppx.js` | 공통 기능: Supabase 연결, 로그인, 세차장 데이터 |
@@ -79,6 +82,14 @@
 - **발표 시각 전에는 당첨 결과가 이용자 화면에 안 나옵니다**: `ppx_event_rounds()`·`ppx_event_status()`가 17시 전 회차의 당첨·내 `won`을 비워서 줍니다. 운영자 화면은 미리 보이고, 운영자 수동 추첨(`admin_event_draw`)은 발표 시각 이후에만 됩니다.
 - 화면 쪽: `events.html`의 `drawDay(w)`(마감 카드·`renderClosed` 발표 날짜)와 `js/ev.js`의 당첨 알림(서버가 준 `draw_date`·`claim_until`을 쓰고, 없을 때만 예전 +9/+16일 계산)이 같은 규칙입니다. **발표 요일을 또 바꾸면** DB 함수와 `drawDay` 두 곳을 같이 고치고, `admin.html`·`mypage.html`·`privacy.html` 등 안내 문구도 맞추세요. 되돌리기는 `rollback_2026-11-23.sql`.
 - 당첨 발표 화면의 '📮 당첨자 행동요령'은 4단계(내 정보에서 전체 번호 확인 → ppaxse@gmail.com으로 메일 → 기한 → 카카오톡 기프티콘 선물코드 회신)이고, 내 당첨이면 번호가 적힌 메일 쓰기 버튼(`mailto:`)이 뜹니다. 휴대폰 번호는 받지 않습니다.
+
+### 한마디 숨기기·작성자 신고·운영정책 동의 (앱 출시 준비, 2026-11-24, `migrate_2026-11-24b.sql`)
+
+- **🙈 이 사람 글 숨기기**(map.html, r/index.html): 그 작성자의 한마디가 **나에게만** 안 보입니다. 화면은 한마디 번호만 보내고(`PPX.hideAuthor` → `hide_author(cid)`), 서버가 작성자를 찾아 `user_hides`에 저장합니다. 작성자 번호는 화면에 나가지 않습니다. 표는 직접 읽기·쓰기 불가, 함수(`hide_author`·`unhide_author`·`my_hides`)로만. 한 사람당 최대 300개.
+- 숨긴 작성자는 한마디 조회 규칙(RLS `comments: 조회`의 `ppx_hidden_for_me`)이 빼고 주므로 **한마디 불러오는 화면 코드는 따로 거르지 않습니다**. 이 기기에서 숨긴 적이 있으면(localStorage `ppxHid`) 목록 아래 '숨긴 작성자 보기'(`PPX.renderHides`)에서 '다시 보기'로 풀 수 있습니다. 운영자의 글쓰기 막기(`admin_block_commenter`)와는 별개입니다.
+- 한마디 신고 사유에 `author`('이 작성자 신고 (반복·악성)')가 있습니다. 사유를 더 늘리면 DB 검사(`place_comment_reports_reason_check`)와 운영자 화면 이름표를 같이 고치세요.
+- **운영정책 동의**: 처음 한마디를 쓸 때 동의 체크칸(`PPX.ugcConsentHtml`·`ugcConsentOk`, 이 기기에 `ppxUgcOk` 기억)이 뜨고, 보낼 때 `ppx_agree_ugc()`로 `profiles.ugc_agreed_at`에 남깁니다. 서버(`place_comments_before_insert`)도 동의 기록이 없으면 한마디를 거절합니다(운영자 제외). 한마디 쓰는 곳을 새로 만들면 이 체크칸과 `PPX.addComment`를 그대로 쓰세요.
+- **탈퇴(`delete_my_account`)** 때: 그 회원의 한마디 닉네임은 '익명 세차러'로 바뀌고(`migrate_2026-11-24.sql`), 그 사람을 숨긴 이용자에게는 계속 숨겨지도록 '작성자 숨김'을 한마디 단위로 옮겨 둡니다. 세차장 종류 투표는 회원 정보에 묶여 함께 지워지고, 제보 사진은 회원 정보(프로필)가 있는 이용자만 올릴 수 있습니다(탈퇴 후 남은 토큰으로 투표·업로드 불가). 되돌리기는 `rollback_2026-11-24.sql`, `rollback_2026-11-24b.sql`.
 
 ## 3. 꼭 지켜야 할 서비스 원칙
 
