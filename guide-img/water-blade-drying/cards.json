@@ -1,0 +1,52 @@
+{
+ "slug": "water-blade-drying",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "water-blade-drying-01.jpg",
+   "kind": "cover",
+   "head": "세차밀대(물기 제거 밀대) 써도 될까요? — 흠집 걱정과 쓰는 요령"
+  },
+  {
+   "file": "water-blade-drying-02.jpg",
+   "kind": "section",
+   "head": "세차밀대는 어떤 도구인가요?"
+  },
+  {
+   "file": "water-blade-drying-03.jpg",
+   "kind": "section",
+   "head": "쓰는 분들과 피하는 분들, 이유가 뭘까요?"
+  },
+  {
+   "file": "water-blade-drying-04.jpg",
+   "kind": "section",
+   "head": "빡세가 생각하는 해답"
+  },
+  {
+   "file": "water-blade-drying-05.jpg",
+   "kind": "section",
+   "head": "세차밀대를 쓴다면 이렇게"
+  },
+  {
+   "file": "water-blade-drying-06.jpg",
+   "kind": "section",
+   "head": "쓰지 않는 게 좋은 때"
+  },
+  {
+   "file": "water-blade-drying-07.jpg",
+   "kind": "section",
+   "head": "자주 하는 실수"
+  },
+  {
+   "file": "water-blade-drying-08.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "water-blade-drying-09.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}

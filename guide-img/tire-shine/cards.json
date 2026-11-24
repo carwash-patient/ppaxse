@@ -1,0 +1,52 @@
+{
+ "slug": "tire-shine",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "tire-shine-01.jpg",
+   "kind": "cover",
+   "head": "타이어광택제 쓰는 법 — 끈적임·튐 없이 깔끔하게 바르기"
+  },
+  {
+   "file": "tire-shine-02.jpg",
+   "kind": "section",
+   "head": "타이어광택제는 무엇을 해 주나요?"
+  },
+  {
+   "file": "tire-shine-03.jpg",
+   "kind": "section",
+   "head": "수성과 유성, 무엇이 다른가요?"
+  },
+  {
+   "file": "tire-shine-04.jpg",
+   "kind": "section",
+   "head": "타이어광택제 바르는 순서"
+  },
+  {
+   "file": "tire-shine-05.jpg",
+   "kind": "section",
+   "head": "접지면에 묻으면 안 되는 이유"
+  },
+  {
+   "file": "tire-shine-06.jpg",
+   "kind": "section",
+   "head": "끈적임·차체 튐 줄이는 요령"
+  },
+  {
+   "file": "tire-shine-07.jpg",
+   "kind": "section",
+   "head": "자주 하는 실수"
+  },
+  {
+   "file": "tire-shine-08.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "tire-shine-09.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}
