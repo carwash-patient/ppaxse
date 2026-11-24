@@ -551,7 +551,10 @@
       return data;
     },
     async addComment(placeId, body, nickname) { return guarded('comment', async () => {
+      if (!PPX.ugcAgreed()) throw new Error('한마디를 남기려면 커뮤니티 운영정책에 동의해 주세요.');
       await PPX.ensureUser();
+      // 이 기기에서 동의한 기록을 지금 로그인(익명 포함)에 남김. 서버는 동의 기록이 없으면 한마디를 받지 않음 (migrate_2026-11-24b)
+      { const { error: e2 } = await db.rpc('ppx_agree_ugc'); if (e2) throw e2; }
       const { data, error } = await db.from('place_comments')
         .insert({ place_id: placeId, body: String(body).trim().slice(0, 200), nickname: nickname ? String(nickname).trim().slice(0, 20) : null })
         .select('id,nickname,body,created_at').single();
@@ -603,6 +606,64 @@
       const { error } = await db.from('place_comment_reports').insert({ comment_id: commentId, reason });
       if (error) throw error;
     }); },
+
+    // ── 커뮤니티 운영정책 동의 (처음 한마디 전에 한 번, 이 기기에 기억) ──
+    ugcAgreed() { try { return localStorage.getItem('ppxUgcOk') === '1'; } catch (e) { return false; } },
+    agreeUgc() { try { localStorage.setItem('ppxUgcOk', '1'); } catch (e) {} },
+    // 동의 체크칸 (이미 동의했으면 빈 문자열). policyHref: 운영정책 주소
+    ugcConsentHtml(id, policyHref) {
+      if (PPX.ugcAgreed()) return '';
+      return `<label for="${id}" style="display:flex;gap:8px;align-items:flex-start;margin-top:8px;font-size:13px;line-height:1.5;cursor:pointer">`
+        + `<input type="checkbox" id="${id}" onchange="if(this.checked)PPX.agreeUgc()" style="width:18px;height:18px;margin-top:2px;flex:none">`
+        + `<span><a href="${policyHref}" target="_blank" style="color:inherit;text-decoration:underline">커뮤니티 운영정책</a>에 동의하고 한마디를 남겨요 (처음 한 번)</span></label>`;
+    },
+    // 한마디를 보내기 전에 호출: 동의했으면 true (체크칸을 눌렀으면 기억함)
+    ugcConsentOk(id) {
+      if (PPX.ugcAgreed()) return true;
+      const el = document.getElementById(id);
+      if (el && el.checked) { PPX.agreeUgc(); return true; }
+      return false;
+    },
+
+    // ── 이용자 숨기기: 이 작성자의 한마디를 나에게만 안 보이게 (작성자 번호는 서버만 앎) ──
+    async hideAuthor(commentId) { return guarded('hide', async () => {
+      await PPX.ensureUser();
+      const { data, error } = await db.rpc('hide_author', { cid: commentId });
+      if (error) throw error;
+      try { localStorage.setItem('ppxHid', '1'); } catch (e) {}
+      return data;
+    }); },
+    // 이 기기에서 숨긴 적이 있으면 목록 아래에 '숨긴 작성자 보기'를 보여 줌 (다 숨겨도 되돌릴 수 있게)
+    hasHides() { try { return localStorage.getItem('ppxHid') === '1'; } catch (e) { return false; } },
+    async myHides() {
+      const { data: s } = await db.auth.getSession();
+      if (!s || !s.session) return [];
+      const { data, error } = await db.rpc('my_hides');
+      if (error) throw error;
+      return data || [];
+    },
+    async unhideAuthor(id) {
+      const { data, error } = await db.rpc('unhide_author', { hid: id });
+      if (error) throw error;
+      return data;
+    },
+    // 숨긴 작성자 목록을 box 안에 그림. 해제하면 onChange() 호출
+    async renderHides(box, onChange) {
+      const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      box.innerHTML = '<div style="font-size:13px;opacity:.7;padding:8px 0">불러오는 중…</div>';
+      let list = [];
+      try { list = await PPX.myHides(); } catch (e) { box.innerHTML = `<div style="font-size:13px;padding:8px 0">${esc(PPX.koError(e))}</div>`; return; }
+      if (!list.length) { box.innerHTML = '<div style="font-size:13px;opacity:.7;padding:8px 0">숨긴 작성자가 없어요.</div>'; return; }
+      box.innerHTML = '<div style="font-size:13px;font-weight:700;margin:6px 0">내가 숨긴 작성자</div>' + list.map(h =>
+        `<div data-hid="${h.id}" style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-top:1px solid rgba(127,127,127,.2);font-size:13px">`
+        + `<span>${esc(h.label)}${h.scope === 'comment' ? ' (한마디 1개)' : ''}</span>`
+        + `<button type="button" class="hd-undo" style="min-height:36px;padding:0 12px;border-radius:8px;border:1px solid rgba(127,127,127,.4);background:none;color:inherit;font-size:12px;cursor:pointer">다시 보기</button></div>`).join('');
+      box.querySelectorAll('.hd-undo').forEach(b => b.onclick = async () => {
+        const row = b.closest('[data-hid]'); b.disabled = true;
+        try { await PPX.unhideAuthor(Number(row.dataset.hid)); row.remove(); if (onChange) onChange(); }
+        catch (e) { b.disabled = false; alert(PPX.koError(e)); }
+      });
+    },
 
     // 운영자: 접수된 한마디 신고
     async adminCommentReports(status) {

@@ -221,6 +221,7 @@ textarea:focus,.in:focus{border-color:var(--aqua)}
       <p>다른 분들께 바로 보여요. <b style="color:#fde68a">10자 이상</b> 남기고 위에서 하나라도 골라 주시면 기프티콘 추첨에 응모돼요 🎁</p>
       <textarea id="comment" maxlength="200" placeholder="예) 수압 최고 💦 주말 오후엔 대기 조금 있어요"></textarea>
       <div class="row2"><input class="in" id="nick" maxlength="20" placeholder="닉네임" aria-label="닉네임"><button class="btn g dice" id="nickDice" type="button" aria-label="다른 이름 뽑기">🎲</button></div>
+      <div id="ugcBox"></div>
       <p style="margin:6px 0 0">🎲를 누르면 다른 이름이 나와요. 직접 고쳐 써도 돼요.</p>
     </div>
     <div class="q">
@@ -297,7 +298,7 @@ textarea:focus,.in:focus{border-color:var(--aqua)}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js" integrity="sha384-uteMfOloLDGt042uDz+xHGF3ym63/WQ6rFq7murQRG8Ih7QrXGEGNtWd8688sb4O" crossorigin="anonymous"></script>
 <script src="../js/config.js?v=20261117"></script>
-<script src="../js/ppx.js?v=20261121a"></script>
+<script src="../js/ppx.js?v=20261124a"></script>
 <script src="../js/ev.js?v=20261123a"></script>
 <script src="../js/install.js?v=20261116e" defer></script>
 <script>
@@ -492,9 +493,12 @@ async function loadComments(id) {
   const box = $('comments'); box.innerHTML = '';
   try {
     const list = await PPX.comments(id, 10);
-    if(!list.length) return;
+    if(!list.length) {   // 다 숨겼을 때도 되돌릴 수 있게
+      if(PPX.hasHides()) { box.innerHTML = '<button class="show-hides" type="button" style="background:none;border:0;color:inherit;opacity:.7;font-size:12px;padding:6px 0;text-decoration:underline;cursor:pointer">🙈 숨긴 작성자 보기</button><div class="hidebox"></div>'; bindHides(box, id); }
+      return;
+    }
     box.innerHTML = `<div class="q" style="margin-bottom:8px"><h2>다른 분들 한마디 💬</h2></div>` +
-      list.map((c, i) => `<div class="cm" data-comment-id="${c.id}">${list.length < 10 && i === list.length - 1 ? '<span class="first">🏁 첫 한마디</span>' : ''}${esc(c.body)}<div class="w">${esc(c.nickname || '익명 세차러')} · ${ago(c.created_at)}<div style="display:flex;gap:6px;margin-top:7px;align-items:center"><select class="in report-reason" aria-label="신고 사유" style="height:36px;min-width:0;flex:1;font-size:12px;padding:0 8px"><option value="">문제 신고</option><option value="abuse">욕설·비방</option><option value="spam">광고·도배</option><option value="privacy">개인정보 노출</option><option value="other">기타</option></select><button class="btn g report-comment" type="button" style="min-height:36px;padding:0 12px;font-size:12px">신고</button></div></div></div>`).join('');
+      list.map((c, i) => `<div class="cm" data-comment-id="${c.id}">${list.length < 10 && i === list.length - 1 ? '<span class="first">🏁 첫 한마디</span>' : ''}${esc(c.body)}<div class="w">${esc(c.nickname || '익명 세차러')} · ${ago(c.created_at)}<div style="display:flex;gap:6px;margin-top:7px;align-items:center"><select class="in report-reason" aria-label="신고 사유" style="height:36px;min-width:0;flex:1;font-size:12px;padding:0 8px"><option value="">문제 신고</option><option value="abuse">욕설·비방</option><option value="spam">광고·도배</option><option value="privacy">개인정보 노출</option><option value="author">이 작성자 신고 (반복·악성)</option><option value="other">기타</option></select><button class="btn g report-comment" type="button" style="min-height:36px;padding:0 12px;font-size:12px">신고</button></div><div style="display:flex;gap:6px;margin-top:6px"><button class="btn g hide-author" type="button" style="flex:1;min-height:36px;font-size:12px">🙈 이 사람 글 숨기기</button><button class="btn g show-hides" type="button" style="min-height:36px;padding:0 10px;font-size:12px">숨긴 작성자</button></div></div></div>`).join('') + (PPX.hasHides() ? '<button class="show-hides" type="button" style="background:none;border:0;color:inherit;opacity:.7;font-size:12px;padding:6px 0;text-decoration:underline;cursor:pointer">🙈 숨긴 작성자 보기</button>' : '') + '<div class="hidebox"></div>';
     box.querySelectorAll('.report-comment').forEach(btn => btn.onclick = async () => {
       const row = btn.closest('[data-comment-id]'), reason = row.querySelector('.report-reason').value;
       if(!reason) return toast('신고 사유를 골라 주세요', true);
@@ -508,7 +512,19 @@ async function loadComments(id) {
         else { btn.disabled = false; btn.textContent = '신고'; }
       }
     });
+    bindHides(box, id);
   } catch(e) {}
+}
+
+// 이용자 숨기기: 이 작성자의 한마디를 나에게만 숨김 (운영자 제재와 별개) / 숨긴 작성자 다시 보기
+function bindHides(box, id) {
+  box.querySelectorAll('.hide-author').forEach(btn => btn.onclick = async () => {
+    if(!(await PPX.ask('이 작성자의 한마디를 내 화면에서 모두 숨길까요? 언제든 ‘숨긴 작성자’에서 다시 볼 수 있어요.', { ok: '숨기기' }))) return;
+    btn.disabled = true;
+    try { await PPX.hideAuthor(Number(btn.closest('[data-comment-id]').dataset.commentId)); toast('숨겼어요. ‘숨긴 작성자’에서 다시 볼 수 있어요.'); loadComments(id); }
+    catch(e) { btn.disabled = false; toast(PPX.koError(e), true); }
+  });
+  box.querySelectorAll('.show-hides').forEach(btn => btn.onclick = () => PPX.renderHides(box.querySelector('.hidebox'), () => loadComments(id)));
 }
 
 function chipHtml(dict, sel, kind) {
@@ -555,10 +571,14 @@ $('photo').onchange = async e => {
   catch(err) { photoBlob = null; $('photoName').textContent = '이 사진은 쓸 수 없어요. 다른 사진을 골라 주세요'; }
 };
 
+// 처음 한마디 전 운영정책 동의 체크칸 (이미 동의한 기기면 안 보임)
+try { $('ugcBox').innerHTML = PPX.ugcConsentHtml('ugcOk', '../privacy.html#community'); } catch(e) {}
+
 $('send').onclick = async () => {
   const p = cur; if(!p) return;
   const memo = $('memo').value.trim(), comment = $('comment').value.trim(), nick = $('nick').value.trim();
   if(comment && nickReserved(nick)) return toast('이 닉네임은 쓸 수 없어요. 🎲를 눌러 다른 이름을 골라 주세요.', true);
+  if(comment && !PPX.ugcConsentOk('ugcOk')) return toast('한마디를 남기려면 커뮤니티 운영정책 동의에 체크해 주세요', true);
   // 바뀐 것만: 종류는 고른 것이 지금과 다를 때, 시설은 '있음'으로 새로 누른 것만
   const suggest = {}, info = {};
   // 종류: 지금 정보에 없는 종류를 골랐을 때만 '추가' 제안 (빼는 건 지도 화면 '달라요'에서)

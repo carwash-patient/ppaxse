@@ -193,7 +193,7 @@ html,body{min-height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backg
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js" integrity="sha384-uteMfOloLDGt042uDz+xHGF3ym63/WQ6rFq7murQRG8Ih7QrXGEGNtWd8688sb4O" crossorigin="anonymous"></script>
 <script src="js/config.js?v=20261117"></script>
-<script src="js/ppx.js?v=20261121a"></script>
+<script src="js/ppx.js?v=20261124a"></script>
 <script>
 const typeLabel={self:'셀프세차',hand:'손세차',detail:'디테일링샵',notouch:'노터치',auto:'자동세차',wash:'종류 확인 중',etc:'정비·기타'};
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -693,7 +693,7 @@ function cardReport(it) {
 }
 
 // 한마디: 바로 보이는 글이라 이상한 글은 숨기기, 반복하면 쓴 사람 막기
-const REPORT_REASONS = { abuse: '욕설·비방', spam: '광고·도배', privacy: '개인정보 노출', other: '기타' };
+const REPORT_REASONS = { abuse: '욕설·비방', spam: '광고·도배', privacy: '개인정보 노출', author: '작성자 신고(반복·악성)', other: '기타' };
 function cardCommentReport(it) {
   const why = Object.entries(it.reasons).sort((a, b) => b[1] - a[1])
     .map(([k, n]) => esc(REPORT_REASONS[k] || '기타') + (n > 1 ? ' ' + n : '')).join(' · ');

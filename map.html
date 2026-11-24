@@ -511,7 +511,7 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js" integrity="sha384-uteMfOloLDGt042uDz+xHGF3ym63/WQ6rFq7murQRG8Ih7QrXGEGNtWd8688sb4O" crossorigin="anonymous"></script>
 <script src="js/config.js?v=20261117"></script>
-<script src="js/ppx.js?v=20261121a"></script>
+<script src="js/ppx.js?v=20261124a"></script>
 <script>setTimeout(() => { if(window.PPX && PPX.thanks) PPX.thanks(); }, 1500);</script>
 <script src="js/ev.js?v=20261123a"></script>
 <script>
@@ -1077,20 +1077,36 @@ async function loadComments(id) {
     box.innerHTML = (list.length ? list.map((c, i) => `
       <div class="review-item" data-cid="${c.id}" ${i >= 3 ? 'data-more hidden' : ''}><div class="ri-text" style="color:#fff">${allShown && i === list.length - 1 ? '<span style="display:inline-block;margin-right:6px;padding:0 7px;border-radius:999px;background:rgba(52,211,153,.16);color:#6ee7b7;font-size:11px;font-weight:900">🏁 첫 한마디</span>' : ''}${esc(c.body)}</div>
       <div class="ri-date" style="margin:4px 0 0;display:flex;justify-content:space-between;align-items:center;gap:8px"><span>${esc(c.nickname || '익명 세차러')} · ${daysAgo(c.created_at)}</span><button class="cm-flag" type="button" style="background:none;border:0;color:#8a8f98;font-size:12px;padding:6px 2px;cursor:pointer">🚩 신고</button></div>
-      <div class="cm-rep" hidden style="margin-top:6px;display:flex;gap:6px;align-items:center">
+      <div class="cm-rep" hidden style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;align-items:center">
         <select aria-label="신고 사유" style="flex:1;min-width:0;height:36px;border-radius:8px;border:1px solid #444;background:#1c1f24;color:#fff;font-size:13px;padding:0 8px">
-          <option value="">신고 사유를 골라 주세요</option><option value="abuse">욕설·비방</option><option value="spam">광고·도배</option><option value="privacy">개인정보 노출</option><option value="other">기타</option>
+          <option value="">신고 사유를 골라 주세요</option><option value="abuse">욕설·비방</option><option value="spam">광고·도배</option><option value="privacy">개인정보 노출</option><option value="author">이 작성자 신고 (반복·악성)</option><option value="other">기타</option>
         </select>
         <button class="cm-send" type="button" style="height:36px;padding:0 12px;border-radius:8px;border:0;background:#ff5a36;color:#fff;font-size:13px;font-weight:700">보내기</button>
+        <div style="flex-basis:100%;display:flex;gap:6px">
+          <button class="cm-hide" type="button" style="flex:1;min-height:36px;border-radius:8px;border:1px solid #444;background:none;color:#cfe8ff;font-size:12px">🙈 이 사람 글 숨기기</button>
+          <button class="cm-hides" type="button" style="min-height:36px;padding:0 10px;border-radius:8px;border:1px solid #444;background:none;color:#8a8f98;font-size:12px">숨긴 작성자</button>
+        </div>
       </div></div>`).join('')
       : '')
+      + (PPX.hasHides() ? '<button class="cm-hides-all" type="button" style="background:none;border:0;color:#8a8f98;font-size:12px;padding:6px 0;cursor:pointer;text-decoration:underline">🙈 숨긴 작성자 보기</button>' : '')
+      + '<div class="cm-hidebox" style="color:#cfe8ff"></div>'
       + (list.length > 3 ? `<button class="cm-more" type="button" style="width:100%;min-height:44px;margin:4px 0 8px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:#cfe8ff;font-size:13px">한마디 ${list.length - 3}개 더 보기${allShown ? '' : '+'}</button>` : '')
       + talkCta(id, list.length > 0);
     const more = box.querySelector('.cm-more');
     if(more) more.onclick = () => { box.querySelectorAll('[data-more]').forEach(el => el.hidden = false); more.remove(); };
+    const hidesAll = box.querySelector('.cm-hides-all');
+    if(hidesAll) hidesAll.onclick = () => PPX.renderHides(box.querySelector('.cm-hidebox'), () => loadComments(id));
     box.querySelectorAll('.review-item[data-cid]').forEach(row => {
       const rep = row.querySelector('.cm-rep'), flag = row.querySelector('.cm-flag'), send = row.querySelector('.cm-send');
       rep.style.display = 'none';
+      // 이 작성자의 한마디를 나에게만 숨김 (운영자 제재와 별개)
+      row.querySelector('.cm-hide').onclick = async (ev) => {
+        if(!(await PPX.ask('이 작성자의 한마디를 내 화면에서 모두 숨길까요? 언제든 ‘숨긴 작성자’에서 다시 볼 수 있어요.', { ok: '숨기기' }))) return;
+        ev.target.disabled = true;
+        try { await PPX.hideAuthor(Number(row.dataset.cid)); toast('숨겼어요. ‘숨긴 작성자’에서 다시 볼 수 있어요.'); loadComments(id); }
+        catch(e) { ev.target.disabled = false; toast(PPX.koError(e), true); }
+      };
+      row.querySelector('.cm-hides').onclick = () => PPX.renderHides(box.querySelector('.cm-hidebox'), () => loadComments(id));
       flag.onclick = () => { const open = rep.style.display === 'none'; rep.style.display = open ? 'flex' : 'none'; flag.textContent = open ? '닫기' : '🚩 신고'; };
       send.onclick = async () => {
         const reason = rep.querySelector('select').value;
@@ -1611,6 +1627,7 @@ function renderReportForm() {
       <div class="rf-cur" style="margin:0 0 6px">다른 분들께 바로 보여요. <b style="color:#fde68a">10자 이상</b> 쓰시면 기프티콘 추첨에 응모돼요.</div>
       <textarea class="af-input" data-in="comment" id="rfComment" maxlength="200" placeholder="예: 수압 최고 💦 주말 오후엔 대기 조금 있어요">${esc(reportForm.comment)}</textarea>
       <div style="display:flex;gap:8px;margin-top:8px"><input class="af-input" data-in="nick" id="rfNick" maxlength="20" placeholder="닉네임" value="${esc(reportForm.nick)}" style="flex:1"><button type="button" class="af-type" id="rfDice" aria-label="다른 이름 뽑기" style="flex:0 0 auto">🎲</button></div>
+      ${PPX.ugcConsentHtml ? PPX.ugcConsentHtml('rfUgcOk', 'privacy.html#community') : ''}
     </div>
     <div class="af-field">
       <div class="af-label">운영자에게만 전할 말 (선택)</div>
@@ -1707,6 +1724,7 @@ async function submitReport() {
   if(!hasReport && !comment)
     return toast('바뀐 내용이 없어요. 그대로 맞다면 ‘정보가 맞아요’를 눌러 주세요', true);
   if(comment && nickReserved(nick)) return toast('이 닉네임은 쓸 수 없어요. 🎲를 눌러 다른 이름을 골라 주세요.', true);
+  if(comment && !PPX.ugcConsentOk('rfUgcOk')) return toast('한마디를 남기려면 아래 커뮤니티 운영정책 동의에 체크해 주세요', true);
   const btn = document.getElementById('rfSubmit');
   btn.disabled = true; btn.textContent = reportPhoto ? '사진 올리는 중…' : '보내는 중…';
   try {
