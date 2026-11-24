@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.ppaxse.app",
+      "sha256_cert_fingerprints": [
+        "5B:AC:45:76:DE:45:2E:31:4F:1E:B5:D0:78:B2:69:7E:28:C9:08:75:5B:34:E0:AC:28:AF:E1:6E:9C:EB:FB:E3"
+      ]
+    }
+  }
+]
