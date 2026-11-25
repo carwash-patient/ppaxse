@@ -830,18 +830,21 @@
   window.PPX = PPX;
 
   // ── 앱 테스터 피드백 버튼 ('💬 피드백') ──
-  // Play 앱(com.ppaxse.app)으로 열었을 때만 화면 오른쪽 아래에 보임. 일반 웹 방문자에게는 안 보임.
+  // 앱으로 열었을 때만 화면 오른쪽 아래에 보임: Play 앱(com.ppaxse.app) 또는 바탕화면에 추가한 빡세(주소창 없는 화면).
+  // 브라우저로 ppaxse.com을 보는 일반 방문자에게는 안 보임.
   // 운영자 미리보기: 주소 끝에 ?fb=1 (끄기 ?fb=0). 운영자 화면(admin)에서는 안 보임.
   // 보내면 ppx_feedback(글, 지금 화면 주소, 휴대폰 기종 요약)으로 저장 → 운영자 화면 '💬 앱 피드백'
   try {
     const APP_KEY = 'ppxApp';
     const q = new URLSearchParams(location.search);
-    if (/^android-app:\/\/com\.ppaxse\.app/.test(document.referrer || '')) { localStorage.setItem(APP_KEY, 'twa'); sessionStorage.setItem(APP_KEY, '1'); }
+    if (/^android-app:\/\//.test(document.referrer || '')) { localStorage.setItem(APP_KEY, 'twa'); sessionStorage.setItem(APP_KEY, '1'); }
     if (q.get('fb') === '1') localStorage.setItem(APP_KEY, 'preview');
-    if (q.get('fb') === '0') localStorage.removeItem(APP_KEY);
+    if (q.get('fb') === '0') localStorage.setItem(APP_KEY, 'off');
     const flag = localStorage.getItem(APP_KEY);
-    const standalone = matchMedia('(display-mode: standalone)').matches;
-    const inApp = flag === 'preview' || sessionStorage.getItem(APP_KEY) === '1' || (flag === 'twa' && standalone);
+    // Play 앱은 처음 열 때만 '앱에서 열림' 표시가 옴 → 한 번 본 기기는 기억(twa). 주소창 없는 화면(바탕화면 추가)도 앱으로 봄
+    // (Play 앱과 휴대폰 크롬은 저장 공간을 같이 써서, 앱을 연 적 있는 휴대폰은 크롬으로 볼 때도 버튼이 보일 수 있음 — 테스트 기간이라 괜찮음)
+    const standalone = matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: fullscreen)').matches || navigator.standalone === true;
+    const inApp = flag !== 'off' && (flag === 'preview' || flag === 'twa' || sessionStorage.getItem(APP_KEY) === '1' || standalone);
     if (ready && inApp && !/admin/.test(location.pathname)) {
       const deviceInfo = async () => {
         const ua = navigator.userAgent;
