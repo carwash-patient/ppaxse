@@ -1,0 +1,62 @@
+{
+ "slug": "ceramic-coating-shop",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "ceramic-coating-shop-01.jpg",
+   "kind": "cover",
+   "head": "유리막코팅 맡기기 전 확인할 것 — 시공 범위·관리 조건 물어보기"
+  },
+  {
+   "file": "ceramic-coating-shop-02.jpg",
+   "kind": "section",
+   "head": "유리막코팅, 맡기면 무엇이 달라질까요?"
+  },
+  {
+   "file": "ceramic-coating-shop-03.jpg",
+   "kind": "section",
+   "head": "자동차유리막코팅가격이 업체마다 다른 이유"
+  },
+  {
+   "file": "ceramic-coating-shop-04.jpg",
+   "kind": "section",
+   "head": "맡기기 전에 물어볼 것"
+  },
+  {
+   "file": "ceramic-coating-shop-05.jpg",
+   "kind": "section",
+   "head": "시공 범위·관리 조건, 이렇게 확인해요"
+  },
+  {
+   "file": "ceramic-coating-shop-06.jpg",
+   "kind": "section",
+   "head": "유리막제거는 언제, 어떻게 하나요?"
+  },
+  {
+   "file": "ceramic-coating-shop-07.jpg",
+   "kind": "section",
+   "head": "받은 날과 그 뒤 며칠"
+  },
+  {
+   "file": "ceramic-coating-shop-08.jpg",
+   "kind": "section",
+   "head": "코팅한 차, 평소 세차는 이렇게"
+  },
+  {
+   "file": "ceramic-coating-shop-09.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "ceramic-coating-shop-10.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "ceramic-coating-shop-11.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}

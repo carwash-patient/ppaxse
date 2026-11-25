@@ -1,0 +1,57 @@
+{
+ "slug": "car-compound",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "car-compound-01.jpg",
+   "kind": "cover",
+   "head": "자동차 컴파운드란? 광택제·광택기와 차이, 셀프로 쓸 때 주의할 점"
+  },
+  {
+   "file": "car-compound-02.jpg",
+   "kind": "section",
+   "head": "자동차 컴파운드는 어떻게 흠집을 줄이나요?"
+  },
+  {
+   "file": "car-compound-03.jpg",
+   "kind": "section",
+   "head": "컴파운드와 자동차광택제, 뭐가 다를까요?"
+  },
+  {
+   "file": "car-compound-04.jpg",
+   "kind": "section",
+   "head": "손으로 쓸 때와 광택기를 쓸 때"
+  },
+  {
+   "file": "car-compound-05.jpg",
+   "kind": "section",
+   "head": "셀프로 컴파운드 쓰는 순서"
+  },
+  {
+   "file": "car-compound-06.jpg",
+   "kind": "section",
+   "head": "이럴 땐 쓰지 마세요"
+  },
+  {
+   "file": "car-compound-07.jpg",
+   "kind": "section",
+   "head": "자주 하는 실수"
+  },
+  {
+   "file": "car-compound-08.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "car-compound-09.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "car-compound-10.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}
