@@ -209,7 +209,7 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
   border:2px solid #22272e;box-shadow:0 6px 20px rgba(0,0,0,.5),inset 0 0 10px rgba(0,0,0,.9)}
 /* 글자 위에 점 그물을 덮어 LED 점으로 보이게 */
 .ww-pill::after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle,transparent .8px,rgba(3,4,5,.8) 1.15px) 0 0/2px 2px}
-.ww-track{position:absolute;top:0;left:0;height:100%;display:flex;align-items:center;white-space:nowrap;will-change:transform;animation:wwLed var(--dur,14s) linear infinite}
+.ww-track{position:absolute;top:0;left:0;height:100%;display:flex;align-items:center;white-space:nowrap;will-change:transform;padding-left:12px;animation:wwLed var(--dur,14s) linear 2s infinite}   /* 2초 동안 지역 이름을 멈춰 보여 준 뒤 흘러감 (지도 들어오자마자 지역이 지나가 버리지 않게, 2026-11-25) */
 .ww-seg{display:inline-flex;align-items:center;gap:14px;padding-right:14px;font-size:18px;font-weight:900;letter-spacing:.5px;line-height:1}
 .ww-seg i{font-style:normal;text-shadow:0 0 5px currentColor}
 .ww-seg .sep{color:#5b5f66;text-shadow:none;font-size:12px}
