@@ -193,7 +193,7 @@ html,body{min-height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backg
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js" integrity="sha384-uteMfOloLDGt042uDz+xHGF3ym63/WQ6rFq7murQRG8Ih7QrXGEGNtWd8688sb4O" crossorigin="anonymous"></script>
 <script src="js/config.js?v=20261117"></script>
-<script src="js/ppx.js?v=20261124a"></script>
+<script src="js/ppx.js?v=20261126a"></script>
 <script>
 const typeLabel={self:'셀프세차',hand:'손세차',detail:'디테일링샵',notouch:'노터치',auto:'자동세차',wash:'종류 확인 중',etc:'정비·기타'};
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -300,6 +300,7 @@ async function init() {
       <button class="tab" data-t="allComments" type="button">📜 전체 한마디</button>
       <button class="tab" data-t="commentReports" type="button">한마디 신고<b id="commentReportsN"></b></button>
       <button class="tab" data-t="abuse" type="button">이상 요청<b id="abuseN"></b></button>
+      <button class="tab" data-t="feedback" type="button">💬 앱 피드백<b id="feedbackN"></b></button>
       <button class="tab" data-t="event" type="button">🎁 추첨</button>
       <button class="tab" data-t="posts" type="button">📣 이벤트 글</button>
       <button class="tab" data-t="visits" type="button">📊 방문자</button>
@@ -319,6 +320,7 @@ async function init() {
     document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x===b));
     load();
   });
+  feedbackCount();
   if(window.naver && naver.maps && !window.__naverAuthFailed) {
     map = new naver.maps.Map('map', { center: new naver.maps.LatLng(37.5, 126.9), zoom: 15, zoomControl: true, mapDataControl: false });
     // 고치기·추가 요청 탭: 지도를 누르면 빨간 핀이 그 자리로 옮겨감
@@ -378,6 +380,7 @@ async function load() {
     allComments: '📜 지금까지 쓰인 한마디 전부 (운영자만 볼 수 있어요) · 날짜를 고르면 그날 것만 · 카드를 누르면 지도에서 위치',
     commentReports: '🚩 신고가 많이 쌓인 한마디부터 보여요',
     abuse: '⚠️ 최근 7일 동안 도배 방지 제한에 걸린 사람(기기)이에요. 많은 순',
+    feedback: '💬 앱 화면의 \'불편한 점 알려주기\'로 들어온 피드백이에요 (운영자만 볼 수 있어요) · 다 본 것은 \'처리함\'으로',
     posts: '📣 이벤트 게시판(events.html)에 올릴 글 · 매주 기프티콘 이벤트와 당첨 발표는 자동이라 여기서 안 써도 돼요',
     event: '🎁 기간 안에 후기(제보·한마디·정보가 맞아요·추가 요청)를 남긴 가입 회원이에요. 가입 전에 남긴 후기도 가입하면 포함돼요.',
     done: '📍 처리한 항목의 위치'
@@ -387,6 +390,7 @@ async function load() {
   if(tab === 'posts') return loadPosts();
   if(tab === 'visits') return loadVisits();
   if(tab === 'allComments') return loadAllComments();
+  if(tab === 'feedback') return loadFeedback();
   document.getElementById('searchBox').innerHTML = tab === 'edit' ? `
     <form class="search" id="searchForm">
       <input id="searchInput" placeholder="세차장 이름, 주소, 지역 (예: 컴인워시, 남동구)" value="${esc(searchTerm)}" maxlength="40">
@@ -933,6 +937,55 @@ function renderAllComments() {
 
 // ── 📊 방문자 ──
 const PAGE_NAMES = { home: '홈', map: '지도', review: '후기 페이지', login: '로그인', join: '가입', mypage: '마이페이지', other: '기타', app: '📲 바탕화면 아이콘으로 열기', seo: '🔎 가이드 글·지역 페이지' };
+// ── 앱 피드백 (테스터가 앱 화면 구석 버튼으로 보낸 것) ──
+let fbAll = [], fbShowDone = false;
+function feedbackCount() {
+  PPX.db.from('app_feedback').select('id', { count: 'exact', head: true }).eq('status', 'new')
+    .then(({ count }) => { const b = document.getElementById('feedbackN'); if(b) b.textContent = count ? ' ' + count : ''; }, () => {});
+}
+async function loadFeedback() {
+  if(reqMarker) reqMarker.setMap(null);
+  nearMarkers.forEach(m => m.setMap(null)); nearMarkers = [];
+  const list = document.getElementById('list');
+  document.getElementById('searchBox').innerHTML = '';
+  list.innerHTML = '<div class="msg">불러오는 중…</div>';
+  try {
+    const { data, error } = await PPX.db.from('app_feedback')
+      .select('id,user_id,message,page,device,status,created_at')
+      .order('created_at', { ascending: false }).limit(300);
+    if(error) throw error;
+    fbAll = data || [];
+  } catch(e) { list.innerHTML = `<div class="msg">${esc(PPX.koError(e))}</div>`; return; }
+  renderFeedback();
+}
+function renderFeedback() {
+  const newN = fbAll.filter(f => f.status === 'new').length;
+  document.getElementById('feedbackN').textContent = newN ? ' ' + newN : '';
+  document.getElementById('searchBox').innerHTML = `
+    <div class="search"><label style="display:flex;align-items:center;gap:8px;font-size:14px">
+      <input type="checkbox" id="fbDone" ${fbShowDone ? 'checked' : ''}> 처리한 것도 보기 (${fbAll.length - newN}개)</label></div>`;
+  document.getElementById('fbDone').onchange = e => { fbShowDone = e.target.checked; renderFeedback(); };
+  const show = fbAll.filter(f => fbShowDone || f.status === 'new');
+  const list = document.getElementById('list');
+  if(!show.length) { list.innerHTML = `<div class="msg">${fbAll.length ? '새 피드백이 없어요 🎉' : '아직 들어온 피드백이 없어요'}</div>`; return; }
+  const who = f => f.user_id ? '보낸 기기 ' + f.user_id.slice(0, 8) : '(탈퇴한 이용자)';
+  list.innerHTML = show.map(f => `
+    <div class="card" data-fb="${f.id}" style="${f.status === 'done' ? 'opacity:.55' : ''}">
+      <div class="c-top"><span class="c-name">${esc(f.page || '(화면 정보 없음)')}</span><span class="c-when">${evMd(kstDay(f.created_at))} ${kstTime(f.created_at)}</span></div>
+      <div class="memo" style="white-space:pre-wrap">💬 ${esc(f.message)}</div>
+      <div class="c-who">${esc(f.device || '기종 정보 없음')} · ${esc(who(f))}</div>
+      <div class="acts" style="margin-top:8px"><button type="button" data-fbact="${f.status === 'new' ? 'done' : 'new'}">${f.status === 'new' ? '✅ 처리함' : '↩️ 다시 새 피드백으로'}</button></div>
+    </div>`).join('');
+  list.querySelectorAll('button[data-fbact]').forEach(b => b.onclick = async () => {
+    const id = +b.closest('.card').dataset.fb, status = b.dataset.fbact;
+    b.disabled = true;
+    const { error } = await PPX.db.from('app_feedback').update({ status }).eq('id', id);
+    if(error) { b.disabled = false; return PPX.ask(PPX.koError(error), { cancel: false }); }
+    const f = fbAll.find(x => x.id === id); if(f) f.status = status;
+    renderFeedback();
+  });
+}
+
 async function loadVisits() {
   if(reqMarker) reqMarker.setMap(null);
   nearMarkers.forEach(m => m.setMap(null)); nearMarkers = [];

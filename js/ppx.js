@@ -829,6 +829,115 @@
 
   window.PPX = PPX;
 
+  // ── 앱 테스터 피드백 버튼 ('💬 피드백') ──
+  // Play 앱(com.ppaxse.app)으로 열었을 때만 화면 오른쪽 아래에 보임. 일반 웹 방문자에게는 안 보임.
+  // 운영자 미리보기: 주소 끝에 ?fb=1 (끄기 ?fb=0). 운영자 화면(admin)에서는 안 보임.
+  // 보내면 ppx_feedback(글, 지금 화면 주소, 휴대폰 기종 요약)으로 저장 → 운영자 화면 '💬 앱 피드백'
+  try {
+    const APP_KEY = 'ppxApp';
+    const q = new URLSearchParams(location.search);
+    if (/^android-app:\/\/com\.ppaxse\.app/.test(document.referrer || '')) { localStorage.setItem(APP_KEY, 'twa'); sessionStorage.setItem(APP_KEY, '1'); }
+    if (q.get('fb') === '1') localStorage.setItem(APP_KEY, 'preview');
+    if (q.get('fb') === '0') localStorage.removeItem(APP_KEY);
+    const flag = localStorage.getItem(APP_KEY);
+    const standalone = matchMedia('(display-mode: standalone)').matches;
+    const inApp = flag === 'preview' || sessionStorage.getItem(APP_KEY) === '1' || (flag === 'twa' && standalone);
+    if (ready && inApp && !/admin/.test(location.pathname)) {
+      const deviceInfo = async () => {
+        const ua = navigator.userAgent;
+        let os = '', model = '';
+        const a = ua.match(/Android ([\d.]+)(?:; ([^;)]+))?/);
+        if (a) { os = 'Android ' + a[1]; model = a[2] && a[2] !== 'K' ? a[2].trim() : ''; }
+        else if (/iPhone|iPad/.test(ua)) { const i = ua.match(/OS (\d+)[_\d]*/); os = (/iPad/.test(ua) ? 'iPad' : 'iPhone') + (i ? ' iOS ' + i[1] : ''); }
+        else os = /Windows/.test(ua) ? 'PC(Windows)' : /Mac/.test(ua) ? 'PC(Mac)' : 'PC';
+        try {
+          if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
+            const h = await navigator.userAgentData.getHighEntropyValues(['model', 'platformVersion']);
+            if (h.model) model = h.model;
+            if (h.platformVersion && /^Android/.test(os)) os = 'Android ' + String(h.platformVersion).split('.')[0];
+          }
+        } catch (e) {}
+        return [os, model, screen.width + '×' + screen.height].filter(Boolean).join(' · ').slice(0, 120);
+      };
+      const css = document.createElement('style');
+      css.textContent = `
+.fb-btn{position:fixed;right:12px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:9000;display:flex;align-items:center;gap:5px;
+  border:1px solid rgba(34,211,238,.55);border-radius:999px;padding:8px 13px;font:inherit;font-size:13px;font-weight:800;color:#e6faff;
+  background:rgba(7,26,44,.92);box-shadow:0 6px 18px rgba(0,0,0,.45);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.fb-ov{position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.55)}
+.fb-sheet{position:fixed;left:0;right:0;bottom:0;z-index:9999;max-width:520px;margin:0 auto;background:#0d1e35;color:#fff;text-align:left;
+  border-radius:24px 24px 0 0;border-top:1px solid rgba(34,211,238,.3);padding:20px 20px calc(22px + env(safe-area-inset-bottom));font-family:inherit}
+.fb-sheet b.t{display:block;font-size:17px;font-weight:900}
+.fb-sheet p{margin:6px 0 12px;color:#94a3b8;font-size:13px;line-height:1.55}
+.fb-sheet textarea{width:100%;box-sizing:border-box;min-height:120px;padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,.2);
+  background:#081626;color:#fff;font:inherit;font-size:15px;line-height:1.5;resize:vertical}
+.fb-sheet .n{text-align:right;color:#64748b;font-size:12px;margin-top:4px}
+.fb-sheet .row{display:flex;gap:8px;margin-top:12px}
+.fb-sheet .row button{flex:1;min-height:46px;border-radius:12px;font:inherit;font-size:15px;font-weight:800;cursor:pointer}
+.fb-sheet .no{border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.8)}
+.fb-sheet .go{border:none;color:#04111e;background:linear-gradient(135deg,#38bdf8,#22d3ee)}
+.fb-sheet .go:disabled{opacity:.45}`;
+      document.head.appendChild(css);
+      const btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'fb-btn'; btn.setAttribute('aria-label', '피드백 보내기');
+      btn.textContent = '💬 피드백';
+      const open = () => {
+        const ov = document.createElement('div'); ov.className = 'fb-ov';
+        const sh = document.createElement('div'); sh.className = 'fb-sheet';
+        sh.setAttribute('role', 'dialog'); sh.setAttribute('aria-modal', 'true');
+        sh.innerHTML = `<b class="t">💬 피드백 보내기</b>
+<p>테스트 중인 앱이에요. 어느 화면에서 무엇이 불편했는지, 있었으면 하는 기능을 편하게 적어 주세요. 운영자만 봐요.</p>
+<textarea maxlength="1000" placeholder="예) 지도에서 내 위치 버튼을 눌러도 반응이 없어요"></textarea>
+<div class="n">0 / 1000</div>
+<p style="margin:8px 0 0;font-size:12px">지금 보고 있던 화면 주소와 휴대폰 기종이 함께 전달돼요. 이름·연락처는 적지 않아도 돼요.</p>
+<div class="row"><button type="button" class="no">닫기</button><button type="button" class="go" disabled>보내기</button></div>`;
+        document.body.appendChild(ov); document.body.appendChild(sh);
+        const ta = sh.querySelector('textarea'), go = sh.querySelector('.go'), n = sh.querySelector('.n');
+        const close = () => { ov.remove(); sh.remove(); btn.focus(); };
+        ta.oninput = () => { n.textContent = ta.value.length + ' / 1000'; go.disabled = ta.value.trim().length < 2; };
+        ov.onclick = close; sh.querySelector('.no').onclick = close;
+        go.onclick = async () => {
+          go.disabled = true; go.textContent = '보내는 중…';
+          try {
+            await PPX.ensureUser();
+            const { error } = await db.rpc('ppx_feedback', {
+              msg: ta.value.trim(), pg: (location.pathname + location.search).replace(/[?&]fb=[01]/, '').slice(0, 200), dev: await deviceInfo() });
+            if (error) throw error;
+            close();
+            await ask('고마워요! 잘 받았어요 🙌\n보내 주신 내용은 운영자가 확인하고 고쳐 나갈게요.', { cancel: false });
+          } catch (e) {
+            go.disabled = false; go.textContent = '보내기';
+            await ask(koError(e), { cancel: false });
+          }
+        };
+        setTimeout(() => ta.focus(), 50);
+      };
+      btn.onclick = open;
+      // 화면 아래에 고정된 메뉴 막대가 있으면 그 위로 올림 (지도·홈의 아래 메뉴를 가리지 않게)
+      const lift = () => {
+        let bar = 0;
+        btn.style.visibility = 'hidden';
+        for (const x of [window.innerWidth - 40, window.innerWidth / 2]) {
+          for (const el of document.elementsFromPoint(x, window.innerHeight - 6)) {
+            if (el === btn || el === document.body || el === document.documentElement) continue;
+            for (let p = el; p && p !== document.body; p = p.parentElement) {
+              const cs = getComputedStyle(p);
+              if (cs.position === 'fixed' || cs.position === 'sticky') {
+                const r = p.getBoundingClientRect();
+                if (r.height < window.innerHeight / 3) bar = Math.max(bar, window.innerHeight - r.top);
+                break;
+              }
+            }
+          }
+        }
+        btn.style.visibility = '';
+        btn.style.bottom = bar ? (bar + 10) + 'px' : '';
+      };
+      const put = () => { document.body.appendChild(btn); lift(); setTimeout(lift, 800); window.addEventListener('resize', lift); };
+      if (document.body) put(); else document.addEventListener('DOMContentLoaded', put);
+    }
+  } catch (e) { /* 저장소를 못 쓰는 환경이면 버튼 없이 */ }
+
   // ── 방문자 수 세기 ──
   // 기기마다 임의 번호 하나(개인을 알 수 있는 정보 아님)로 '오늘 이 화면을 봤다'만 남김.
   // 운영자 기기, 자동 프로그램은 세지 않음. 실패해도 화면에는 영향 없음.
