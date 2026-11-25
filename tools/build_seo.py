@@ -221,7 +221,7 @@ def ww_line(up):
 <a class="ww-guide" id="wwGuide" href="{up}#washWeather"><span class="ww-gq">☀️ 오늘 세차하기 좋은 날일까요?</span>
 <span class="ww-gl" id="wwGuideLine">날씨 보고 세차할 날 고르기</span><span class="ww-gb">10일 달력 보기 ›</span></a>
 <script src="{up}js/ww-regions.js?v=20261120a" defer></script>
-<script src="{up}js/ww-core.js?v=20261120a" defer></script>
+<script src="{up}js/ww-core.js?v=20261125a" defer></script>
 <script>window.addEventListener('load',async function(){{if(!window.WW)return;var r=WW.savedRegion()||WW.find('서울 중구');if(!r)return;var w=await WW.load(r,false);if(!w)return;var s=WW.todayLine(w.d),el=document.getElementById('wwGuide');el.className='ww-guide '+s.j.k;document.getElementById('wwGuideLine').textContent=s.j.icon+' '+r[0]+' · '+s.text}})</script>'''
 
 
@@ -237,7 +237,7 @@ def ww_box(up, where):
 <p class="ww-note">예보 기준이라 바뀔 수 있어요 · 날씨 정보: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a></p>
 </section>
 <script src="{up}js/ww-regions.js?v=20261120a" defer></script>
-<script src="{up}js/ww-core.js?v=20261120a" defer></script>
+<script src="{up}js/ww-core.js?v=20261125a" defer></script>
 <script src="{up}js/wash-weather.js?v=20261120h" defer></script>'''
 
 

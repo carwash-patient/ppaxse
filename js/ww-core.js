@@ -51,6 +51,18 @@
                 skip: '오늘 비추 · ' + j.gap + '일 뒤 비', soso: '오늘 보통 · ' + j.gap + '일 뒤 비' }[j.k];
     return { j, text: t };
   }
+  // 미세먼지 하루 등급 (환경부 기준, 낮 07~20시 평균, PM10·PM2.5 중 나쁜 쪽). day 0=오늘 1=내일. 없으면 null
+  function dustDay(a, day) {
+    if (!a || !a.time) return null;
+    const ymd = (a.time[day * 24] || '').slice(0, 10);
+    const idx = a.time.map((t, i) => [t, i]).filter(([t]) => { const h = +t.slice(11, 13); return t.slice(0, 10) === ymd && h >= 7 && h <= 20; }).map(x => x[1]);
+    const avg = arr => { const v = idx.map(i => arr[i]).filter(x => x != null); return v.length ? v.reduce((s, x) => s + x, 0) / v.length : null; };
+    const p10 = avg(a.pm10), p25 = avg(a.pm2_5);
+    if (p10 == null || p25 == null) return null;
+    const lv = (v, cut) => cut.findIndex(c => v <= c);
+    const n = Math.max(lv(p10, [30, 80, 150, Infinity]), lv(p25, [15, 35, 75, Infinity]));
+    return { n, label: ['좋음', '보통', '나쁨', '매우 나쁨'][n], p10: Math.round(p10), p25: Math.round(p25) };
+  }
   const WD = ['일', '월', '화', '수', '목', '금', '토'];
   function md(t) { const dt = new Date(t + 'T00:00:00+09:00'); return (dt.getMonth() + 1) + '/' + dt.getDate() + '(' + WD[dt.getDay()] + ')'; }
 
@@ -82,7 +94,7 @@
   }
 
   window.WW = {
-    regions: R, judge, todayLine, shortLine, md, nearest, find, load, WD,
+    regions: R, judge, todayLine, shortLine, dustDay, md, nearest, find, load, WD,
     savedRegion: () => find(get('ppx_ww_region') || '') ,
     saveRegion: (name, viaGps) => { put('ppx_ww_region', name); put('ppx_ww_gps', viaGps ? '1' : ''); },
     viaGps: () => get('ppx_ww_gps') === '1'

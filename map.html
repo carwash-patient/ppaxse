@@ -203,12 +203,22 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
 .locate-btn{position:absolute;bottom:150px;right:14px;width:46px;height:46px;border-radius:15px;background:rgba(7,24,40,.95);border:1px solid var(--line);color:var(--aqua);font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.5);z-index:10;backdrop-filter:blur(10px)}
 
 /* 세차하기 좋은 날: 지도 왼쪽 위 '세차장 제보' 옆 작은 띠 (누르면 홈의 10일 달력). 지역은 지도 가운데를 따라감 */
-.ww-pill{position:absolute;top:14px;left:14px;z-index:10;display:flex;align-items:center;gap:5px;max-width:calc(100% - 180px);padding:10px 13px;border-radius:999px;background:rgba(7,24,40,.95);border:1px solid var(--line);box-shadow:0 6px 20px rgba(0,0,0,.45);color:#fff;font-size:12.5px;font-weight:700;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ww-pill{position:absolute;top:14px;left:14px;z-index:10;display:block;width:calc(100% - 184px);max-width:340px;height:40px;border-radius:10px;overflow:hidden;text-decoration:none;
+  /* LED 전광판: 까만 판 위에 꺼진 점(어두운 회색)이 촘촘히 */
+  background:radial-gradient(circle,#1a1d21 .7px,transparent 1px) 0 0/2px 2px,#030405;
+  border:2px solid #22272e;box-shadow:0 6px 20px rgba(0,0,0,.5),inset 0 0 10px rgba(0,0,0,.9)}
+/* 글자 위에 점 그물을 덮어 LED 점으로 보이게 */
+.ww-pill::after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle,transparent .8px,rgba(3,4,5,.8) 1.15px) 0 0/2px 2px}
+.ww-track{position:absolute;top:0;left:0;height:100%;display:flex;align-items:center;white-space:nowrap;will-change:transform;animation:wwLed var(--dur,14s) linear infinite}
+.ww-seg{display:inline-flex;align-items:center;gap:14px;padding-right:14px;font-size:18px;font-weight:900;letter-spacing:.5px;line-height:1}
+.ww-seg i{font-style:normal;text-shadow:0 0 5px currentColor}
+.ww-seg .sep{color:#5b5f66;text-shadow:none;font-size:12px}
+.led-g{color:#39ff7a}.led-r{color:#ff4b3e}.led-y{color:#ffb21e}.led-w{color:#f3efe4}.led-b{color:#4fc3ff}
+@keyframes wwLed{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.ww-track{animation:none}}
 #mapArea.has-hint .ww-pill{top:48px}
 #mapArea:has(.research-btn.show) .ww-pill{display:none}
 .ww-pill[hidden]{display:none}
-.ww-pill.good{border-color:rgba(74,222,128,.55)}.ww-pill.good b{color:#4ade80}
-.ww-pill.skip b,.ww-pill.rain b{color:#fca5a5}
 .picking .ww-pill{display:none}
 
 /* BOTTOM SHEET */
@@ -2008,7 +2018,7 @@ window.addEventListener('load', () => {
 })();
 </script>
 <script src="js/ww-regions.js?v=20261120a" defer></script>
-<script src="js/ww-core.js?v=20261120a" defer></script>
+<script src="js/ww-core.js?v=20261125a" defer></script>
 <script>
 // 세차하기 좋은 날 띠: 지도가 멈출 때마다 가운데에서 가장 가까운 시·군·구의 오늘 판정을 보여 줌 (지역이 바뀔 때만 새로 받음)
 window.addEventListener('load', () => {
@@ -2020,13 +2030,23 @@ window.addEventListener('load', () => {
     const c = naverMap.getCenter(), r = WW.nearest(c.lat(), c.lng());
     if(!r || r[0] === cur) return;
     cur = r[0];
-    const w = await WW.load(r, false);
+    const w = await WW.load(r, true);   // 미세먼지까지
     if(!w || cur !== r[0]) return;
-    const s = WW.shortLine(w.d);
-    pill.className = 'ww-pill ' + s.j.k;
-    pill.innerHTML = s.j.icon + ' <b>' + s.text + '</b> ›';
-    pill.title = r[0] + ' 기준 · 누르면 10일 달력';
+    // LED 전광판처럼 흘러가는 한 줄: 지역 → 오늘 판정 → 다음 추천일 → 미세먼지 → 기온 (운영자 결정 2026-11-25)
+    const s = WW.shortLine(w.d), t = WW.todayLine(w.d), du = WW.dustDay(w.a, 0);
+    const col = { good: 'led-g', skip: 'led-r', rain: 'led-r', soso: 'led-y', cold: 'led-b', clear: 'led-w' }[s.j.k] || 'led-w';
+    const nx = (t.text.match(/다음 추천 (.+)$/) || [])[1];
+    const parts = [`<i class="led-y">${r[0]}</i>`, `<i class="${col}">${s.text}</i>`];
+    if(nx) parts.push(`<i class="led-g">다음 추천 ${nx}</i>`);
+    if(du) parts.push(`<i class="${['led-b', 'led-g', 'led-y', 'led-r'][du.n]}">미세먼지 ${du.label}</i>`);
+    parts.push(`<i class="led-w">기온 ${Math.round(w.d.temperature_2m_min[0])}° / ${Math.round(w.d.temperature_2m_max[0])}°</i>`);
+    parts.push(`<i class="led-b">10일 달력 ▸</i>`);
+    const seg = `<span class="ww-seg">${parts.join('<i class="sep">◆</i>')}<i class="sep">◆</i></span>`;
+    pill.innerHTML = `<span class="ww-track">${seg}${seg}</span>`;   // 같은 줄을 두 번 이어 붙여 끊김 없이 돌게
+    pill.setAttribute('aria-label', `${r[0]} ${s.text}${du ? ', 미세먼지 ' + du.label : ''}. 누르면 10일 달력`);
     pill.hidden = false;
+    const tr = pill.querySelector('.ww-track');
+    tr.style.setProperty('--dur', Math.max(8, Math.round(tr.scrollWidth / 2 / 45)) + 's');   // 초당 약 45px
   }
   pill.addEventListener('click', () => { if(cur) WW.saveRegion(cur, false); });   // 홈 달력도 같은 지역으로
   const wait = setInterval(() => {
