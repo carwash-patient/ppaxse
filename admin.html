@@ -8,7 +8,7 @@
 <link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#04111e">
+<meta name="theme-color" content="#F2F1EC">
 <meta name="apple-mobile-web-app-title" content="빡세">
 <meta name="robots" content="noindex">
 <title>운영자 · 세차장 승인 · 빡세</title>
@@ -16,155 +16,157 @@
 <script>window.navermap_authFailure = function(){ window.__naverAuthFailed = true; };</script>
 <script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=ts4h2dbzz2&submodules=geocoder"></script>
 <style>
-:root{--deep:#04111e;--deep2:#071828;--ocean:#0369a1;--sky:#0ea5e9;--cyan:#06b6d4;--aqua:#22d3ee;--foam:#bae6fd;--line:rgba(14,165,233,.18);--muted:rgba(186,230,253,.6);--card:rgba(7,24,40,.94)}
+:root{--deep:#F2F1EC;--deep2:#FFFFFF;--ocean:#262B33;--sky:#262B33;--cyan:#3A404A;--aqua:#56661A;--foam:#3D434C;--line:rgba(38,43,51,.12);--muted:rgba(38,43,51,.62);--card:#FFFFFF}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{min-height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;background:var(--deep)}
-.topbar{position:sticky;top:0;z-index:50;background:rgba(4,17,30,.96);border-bottom:1px solid var(--line);padding:14px 16px;display:flex;align-items:center;gap:10px}
+html,body{min-height:100%;font-family:'Noto Sans KR',sans-serif;color:#262B33;background:var(--deep)}
+.topbar{position:sticky;top:0;z-index:50;background:rgba(242,241,236,.96);border-bottom:1px solid var(--line);padding:14px 16px;display:flex;align-items:center;gap:10px}
 .topbar a{color:var(--muted);text-decoration:none;font-size:13px;font-weight:700}
 .topbar h1{font-family:'Black Han Sans',sans-serif;font-size:19px;font-weight:400}
 .topbar h1 em{color:var(--aqua);font-style:normal}
 .tabs{display:flex;gap:6px;padding:12px 16px}
-.tab{flex:1;padding:11px 0;border-radius:12px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(255,255,255,.65);font-family:inherit;font-size:14px;font-weight:900;cursor:pointer}
-.tab.on{border-color:var(--sky);background:rgba(14,165,233,.18);color:#fff}
+.tab{flex:1;padding:11px 0;border-radius:12px;border:1.5px solid rgba(38,43,51,.08);background:rgba(38,43,51,.028);color:rgba(38,43,51,.65);font-family:inherit;font-size:14px;font-weight:900;cursor:pointer}
+.tab.on{border-color:var(--sky);background:rgba(181,201,95,.234);color:#262B33}
 .tab b{color:var(--aqua);margin-left:4px}
-#map{height:38vh;min-height:220px;border-radius:18px;overflow:hidden;border:1px solid var(--line);background:#0a1b2e}
+#map{height:38vh;min-height:220px;border-radius:18px;overflow:hidden;border:1px solid var(--line);background:#EBE9E3}
 /* 지도 위: 로드뷰 버튼 · 세차장 전체 표시 안내 · 로드뷰 화면 */
 .map-wrap{position:relative;margin:0 16px}
-.rv-btn{position:absolute;right:10px;top:10px;z-index:5;padding:8px 12px;border-radius:999px;border:1px solid rgba(34,211,238,.45);background:rgba(7,24,40,.92);color:#fff;font-family:inherit;font-size:12.5px;font-weight:900;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.4)}
-.all-note{position:absolute;left:10px;bottom:10px;z-index:5;padding:4px 9px;border-radius:8px;background:rgba(4,17,30,.82);color:rgba(255,255,255,.75);font-size:11px;pointer-events:none}
+.rv-btn{position:absolute;right:10px;top:10px;z-index:5;padding:8px 12px;border-radius:999px;border:1px solid rgba(150,170,60,.45);background:rgba(255,255,255,.92);color:#262B33;font-family:inherit;font-size:12.5px;font-weight:900;cursor:pointer;box-shadow:0 4px 14px rgba(38,43,51,.18)}
+.all-note{position:absolute;left:10px;bottom:10px;z-index:5;padding:4px 9px;border-radius:8px;background:rgba(242,241,236,.82);color:rgba(38,43,51,.75);font-size:11px;pointer-events:none}
 .all-note:empty{display:none}
 /* 지도 위 '세차장 찾아 이동' 검색칸 (등록된 세차장 이름·주소) */
 .map-find{position:absolute;left:58px;right:104px;top:10px;z-index:7}
-.map-find input{width:100%;height:36px;box-sizing:border-box;border-radius:999px;border:1px solid rgba(34,211,238,.45);background:rgba(7,24,40,.94);color:#fff;padding:0 14px;font-family:inherit;font-size:13px;outline:none;box-shadow:0 4px 14px rgba(0,0,0,.4)}
-.mf-list{margin-top:6px;max-height:240px;overflow-y:auto;border-radius:14px;background:rgba(7,24,40,.97);border:1px solid rgba(34,211,238,.35);box-shadow:0 10px 26px rgba(0,0,0,.5)}
+.map-find input{width:100%;height:36px;box-sizing:border-box;border-radius:999px;border:1px solid rgba(150,170,60,.45);background:rgba(255,255,255,.94);color:#262B33;padding:0 14px;font-family:inherit;font-size:13px;outline:none;box-shadow:0 4px 14px rgba(38,43,51,.18)}
+.mf-list{margin-top:6px;max-height:240px;overflow-y:auto;border-radius:14px;background:rgba(255,255,255,.97);border:1px solid rgba(150,170,60,.35);box-shadow:0 10px 26px rgba(38,43,51,.225)}
 .mf-list:empty{display:none}
-.mf-list button{display:block;width:100%;text-align:left;padding:9px 12px;border:none;border-bottom:1px solid rgba(255,255,255,.06);background:none;color:#fff;font-family:inherit;font-size:13px;cursor:pointer}
+.mf-list button{display:block;width:100%;text-align:left;padding:9px 12px;border:none;border-bottom:1px solid rgba(38,43,51,.048);background:none;color:#262B33;font-family:inherit;font-size:13px;cursor:pointer}
 .mf-list button span{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
 .mf-list .mf-none{padding:10px 12px;font-size:12.5px;color:var(--muted)}
 .rv{position:absolute;inset:0;z-index:6;border-radius:18px;overflow:hidden;background:#000;border:1px solid var(--line)}
 .rv[hidden]{display:none}
 #rvPano{position:absolute;inset:0}
-.rv-x{position:absolute;right:10px;top:10px;z-index:3;padding:8px 12px;border-radius:999px;border:none;background:rgba(4,17,30,.9);color:#fff;font-family:inherit;font-size:12.5px;font-weight:900;cursor:pointer}
-.rv-info{position:absolute;left:10px;right:90px;top:10px;z-index:3;padding:6px 10px;border-radius:10px;background:rgba(4,17,30,.82);color:#fff;font-size:11.5px;line-height:1.5;pointer-events:none}
+.rv-x{position:absolute;right:10px;top:10px;z-index:3;padding:8px 12px;border-radius:999px;border:none;background:rgba(242,241,236,.9);color:#262B33;font-family:inherit;font-size:12.5px;font-weight:900;cursor:pointer}
+.rv-info{position:absolute;left:10px;right:90px;top:10px;z-index:3;padding:6px 10px;border-radius:10px;background:rgba(242,241,236,.82);color:#262B33;font-size:11.5px;line-height:1.5;pointer-events:none}
 .rv-info:empty{display:none}
 .map-note{font-size:11px;color:var(--muted);margin:6px 18px 0;line-height:1.6}
 .list{padding:14px 16px 60px}
-.card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px;margin-bottom:12px;cursor:pointer}
-.card.sel{border-color:rgba(34,211,238,.55);background:rgba(14,165,233,.07)}
+.card{background:rgba(38,43,51,.028);border:1px solid rgba(38,43,51,.064);border-radius:18px;padding:16px;margin-bottom:12px;cursor:pointer}
+.card.sel{border-color:rgba(150,170,60,.55);background:rgba(181,201,95,.091)}
 .c-top{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .c-who{font-size:12px;color:var(--muted)}
-.c-when{margin-left:auto;font-size:11px;color:rgba(255,255,255,.4)}
+.c-when{margin-left:auto;font-size:11px;color:rgba(38,43,51,.5)}
 .f{margin-bottom:9px}
 .f label{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px}
-.f textarea{width:100%;border:1.5px solid var(--line);border-radius:11px;background:rgba(255,255,255,.05);color:#fff;padding:10px 12px;font-family:inherit;font-size:13px;line-height:1.6;outline:none;resize:vertical}
-.f input,.f select{width:100%;height:42px;border:1.5px solid var(--line);border-radius:11px;background:rgba(255,255,255,.05);color:#fff;padding:0 12px;font-family:inherit;font-size:14px;outline:none}
+.f textarea{width:100%;border:1.5px solid var(--line);border-radius:11px;background:rgba(38,43,51,.035);color:#262B33;padding:10px 12px;font-family:inherit;font-size:13px;line-height:1.6;outline:none;resize:vertical}
+.f input,.f select{width:100%;height:42px;border:1.5px solid var(--line);border-radius:11px;background:rgba(38,43,51,.035);color:#262B33;padding:0 12px;font-family:inherit;font-size:14px;outline:none}
 .f select option{color:#000}
 .f-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.memo{font-size:13px;color:#e0f2fe;background:rgba(14,165,233,.08);border:1px solid rgba(14,165,233,.2);border-radius:11px;padding:10px 12px;line-height:1.6;margin-bottom:10px;white-space:pre-wrap}
-.near{font-size:12px;color:#fde68a;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:11px;padding:9px 12px;margin-bottom:10px;line-height:1.6}
+.memo{font-size:13px;color:#3D434C;background:rgba(181,201,95,.104);border:1px solid rgba(38,43,51,.12);border-radius:11px;padding:10px 12px;line-height:1.6;margin-bottom:10px;white-space:pre-wrap}
+.near{font-size:12px;color:#9A4F12;background:rgba(229,154,79,.08);border:1px solid rgba(229,154,79,.3);border-radius:11px;padding:9px 12px;margin-bottom:10px;line-height:1.6}
 .acts{display:flex;gap:8px;margin-top:6px}
 .acts button{flex:1;min-height:46px;border-radius:13px;border:none;font-family:inherit;font-size:14px;font-weight:900;cursor:pointer}
-.ok{background:linear-gradient(135deg,#10b981,#34d399);color:#fff}
-.no{background:rgba(239,68,68,.14);color:#fca5a5;border:1px solid rgba(239,68,68,.35)!important}
+.ok{background:linear-gradient(135deg,#10b981,#34d399);color:#262B33}
+.no{background:rgba(239,68,68,.14);color:#C82828;border:1px solid rgba(239,68,68,.35)!important}
 .acts button:disabled{opacity:.5}
 .reject-box{display:none;margin-top:8px;gap:8px}
 .reject-box.open{display:flex}
-.reject-box input{flex:1;height:44px;border:1.5px solid rgba(239,68,68,.4);border-radius:11px;background:rgba(255,255,255,.05);color:#fff;padding:0 12px;font-family:inherit;font-size:13px;outline:none}
-.reject-box button{padding:0 16px;border-radius:11px;border:none;background:#ef4444;color:#fff;font-family:inherit;font-weight:900;cursor:pointer}
+.reject-box input{flex:1;height:44px;border:1.5px solid rgba(239,68,68,.4);border-radius:11px;background:rgba(38,43,51,.035);color:#262B33;padding:0 12px;font-family:inherit;font-size:13px;outline:none}
+.reject-box button{padding:0 16px;border-radius:11px;border:none;background:#ef4444;color:#262B33;font-family:inherit;font-weight:900;cursor:pointer}
 .state{font-size:11px;font-weight:900;padding:3px 9px;border-radius:999px}
-.state.pending{background:rgba(251,191,36,.16);color:#fbbf24}
-.state.approved{background:rgba(16,185,129,.15);color:#34d399}
-.state.rejected{background:rgba(239,68,68,.12);color:#f87171}
+.state.pending{background:rgba(229,154,79,.16);color:#A85A16}
+.state.approved{background:rgba(16,185,129,.15);color:#2E7D4F}
+.state.rejected{background:rgba(239,68,68,.12);color:#C82828}
 .msg{text-align:center;padding:60px 24px;color:var(--muted);line-height:1.9;font-size:14px}
-.msg a{display:inline-block;margin-top:16px;padding:13px 26px;border-radius:14px;background:linear-gradient(135deg,var(--sky),var(--aqua));color:#fff;text-decoration:none;font-weight:900}
+.msg a{display:inline-block;margin-top:16px;padding:13px 26px;border-radius:14px;background:#262B33;color:#F2F1EC;text-decoration:none;font-weight:900}
 .tabs{flex-wrap:wrap}
 .tab{min-width:calc(50% - 3px)}
 .search{display:flex;gap:8px;padding:0 16px 12px}
-.search input{flex:1;height:46px;border:1.5px solid var(--line);border-radius:12px;background:rgba(255,255,255,.05);color:#fff;padding:0 14px;font-family:inherit;font-size:14px;outline:none}
-.search button{padding:0 18px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--sky),var(--aqua));color:#fff;font-family:inherit;font-weight:900;cursor:pointer}
-.diff{border:1px solid rgba(255,255,255,.08);border-radius:12px;overflow:hidden;margin-bottom:10px}
+.search input{flex:1;height:46px;border:1.5px solid var(--line);border-radius:12px;background:rgba(38,43,51,.035);color:#262B33;padding:0 14px;font-family:inherit;font-size:14px;outline:none}
+.search button{padding:0 18px;border-radius:12px;border:none;background:#262B33;color:#F2F1EC;font-family:inherit;font-weight:900;cursor:pointer}
+.diff{border:1px solid rgba(38,43,51,.064);border-radius:12px;overflow:hidden;margin-bottom:10px}
 .diff>label,.diff .drow{display:flex;align-items:center;gap:10px;padding:11px 12px;font-size:13px;cursor:pointer}
-.diff>*+*{border-top:1px solid rgba(255,255,255,.06)}
-.diff>label>input,.diff .dchk>input{width:18px;height:18px;accent-color:#22d3ee;flex-shrink:0}
+.diff>*+*{border-top:1px solid rgba(38,43,51,.048)}
+.diff>label>input,.diff .dchk>input{width:18px;height:18px;accent-color:#262B33;flex-shrink:0}
 /* 제보 값 고치기: 이용자가 보낸 값이 미리 들어 있고, 운영자가 바꿀 수 있음 */
 .diff .drow{flex-wrap:wrap;cursor:default;padding:9px 12px}
 .diff .dchk{display:flex;align-items:center;gap:10px;cursor:pointer}
 .diff .dval{display:flex;align-items:center;gap:8px;flex:1;min-width:220px;flex-wrap:wrap}
 .diff .arr{color:var(--muted)}
-.diff .ded{flex:1;min-width:130px;height:38px;border:1.5px solid rgba(52,211,153,.45);border-radius:10px;background:rgba(52,211,153,.08);color:#fff;padding:0 10px;font-family:inherit;font-size:14px;font-weight:700;outline:none}
+.diff .ded{flex:1;min-width:130px;height:38px;border:1.5px solid rgba(52,211,153,.45);border-radius:10px;background:rgba(52,211,153,.08);color:#262B33;padding:0 10px;font-family:inherit;font-size:14px;font-weight:700;outline:none}
 .diff .ded:focus{border-color:#34d399}
 .diff select.ded option{color:#000}
 .diff .tchips{flex:1}
 .diff .tchips label{padding:6px 10px;min-height:34px;font-size:12px}
-.rmore{border:1px dashed rgba(255,255,255,.15);border-radius:12px;padding:12px 12px 2px;margin-bottom:10px}
+.rmore{border:1px dashed rgba(38,43,51,.12);border-radius:12px;padding:12px 12px 2px;margin-bottom:10px}
 .rmore-t{font-size:12px;color:var(--muted);margin-bottom:10px}
 .diff .k{color:var(--muted);min-width:64px}
-.diff .from{color:rgba(255,255,255,.5);text-decoration:line-through}
-.diff .to{color:#34d399;font-weight:900}
-.diff .warn{color:#fca5a5;font-weight:900}
+.diff .from{color:rgba(38,43,51,.5);text-decoration:line-through}
+.diff .to{color:#2E7D4F;font-weight:900}
+.diff .warn{color:#C82828;font-weight:900}
 .c-name{font-size:15px;font-weight:900}
-.state.closed,.state.dismissed{background:rgba(255,255,255,.08);color:rgba(255,255,255,.6)}
-.state.applied{background:rgba(16,185,129,.15);color:#34d399}
+.state.closed,.state.dismissed{background:rgba(38,43,51,.056);color:rgba(38,43,51,.6)}
+.state.applied{background:rgba(16,185,129,.15);color:#2E7D4F}
 .f select.f-fac{height:40px}
 .tchips{display:flex;flex-wrap:wrap;gap:6px}
-.tchips label{display:flex;align-items:center;gap:6px;padding:8px 11px;border-radius:999px;border:1.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);font-size:13px;font-weight:700;cursor:pointer;min-height:38px}
-.tchips input{width:16px;height:16px;accent-color:#22d3ee}
-.tchips label:has(input:checked){border-color:var(--sky);background:rgba(14,165,233,.2)}
+.tchips label{display:flex;align-items:center;gap:6px;padding:8px 11px;border-radius:999px;border:1.5px solid rgba(38,43,51,.096);background:rgba(38,43,51,.028);font-size:13px;font-weight:700;cursor:pointer;min-height:38px}
+.tchips input{width:16px;height:16px;accent-color:#262B33}
+.tchips label:has(input:checked){border-color:var(--sky);background:rgba(181,201,95,.26)}
 .photo-box{margin-bottom:10px}
-.photo-box img{max-width:100%;border-radius:12px;border:1px solid rgba(255,255,255,.1);display:block}
-.loc-box{margin:4px 0 12px;padding:12px;border-radius:12px;background:rgba(14,165,233,.08);border:1px solid rgba(14,165,233,.3);font-size:12.5px;line-height:1.55}
-.loc-box .lb-st{font-weight:800;color:#fff;margin-bottom:8px}
-.loc-box .lb-st.moved{color:#fde68a}
+.photo-box img{max-width:100%;border-radius:12px;border:1px solid rgba(38,43,51,.08);display:block}
+.loc-box{margin:4px 0 12px;padding:12px;border-radius:12px;background:rgba(181,201,95,.104);border:1px solid rgba(150,170,60,.3);font-size:12.5px;line-height:1.55}
+.loc-box .lb-st{font-weight:800;color:#262B33;margin-bottom:8px}
+.loc-box .lb-st.moved{color:#9A4F12}
 .loc-box .lb-btns{display:flex;flex-wrap:wrap;gap:6px}
 .loc-box .lb-nv{display:flex;gap:6px;margin-bottom:8px}
-.loc-box .lb-nv button{flex:1;padding:11px 8px;border-radius:10px;border:none;background:#03c75a;color:#fff;font-family:inherit;font-size:13px;font-weight:900;cursor:pointer}
+.loc-box .lb-nv button{flex:1;padding:11px 8px;border-radius:10px;border:none;background:#03c75a;color:#262B33;font-family:inherit;font-size:13px;font-weight:900;cursor:pointer}
 .loc-box .lb-nv button.sub{flex:0 0 auto;background:rgba(3,199,90,.15);border:1px solid rgba(3,199,90,.6)}
 .loc-box .lb-res{margin-top:8px;display:flex;flex-direction:column;gap:6px}
-.loc-box .lb-res button{text-align:left;padding:9px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#fff;font-family:inherit;font-size:12.5px;cursor:pointer}
-.loc-box .lb-res small{display:block;color:#94a3b8;font-size:11px}
-.loc-box .lb-hint{color:#94a3b8;font-size:11.5px;margin-top:6px}
-.photo-box button,.mini{padding:9px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#fff;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer}
-.visit{display:inline-block;font-size:11px;font-weight:900;padding:3px 8px;border-radius:999px;background:rgba(16,185,129,.14);color:#34d399;margin-left:6px}
-.blocked{color:#f87171;font-weight:900}
-.ab-ok{font-size:12.5px;color:#6ee7b7;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);border-radius:11px;padding:9px 12px;line-height:1.55;margin-bottom:10px}
-.ab-cm{margin:0 0 10px;padding:12px;border-radius:14px;border:2px solid rgba(251,191,36,.55);background:rgba(251,191,36,.08)}
-.ab-cm .h{font-size:13px;font-weight:900;color:#fde68a;margin-bottom:8px}
-.ab-cm .it{padding:10px 12px;border-radius:11px;background:rgba(4,17,30,.6);margin-top:6px}
-.ab-cm .it .b{font-size:15px;font-weight:700;color:#fff;line-height:1.5;white-space:pre-wrap;word-break:break-all}
+.loc-box .lb-res button{text-align:left;padding:9px 12px;border-radius:10px;border:1px solid rgba(38,43,51,.12);background:rgba(38,43,51,.042);color:#262B33;font-family:inherit;font-size:12.5px;cursor:pointer}
+.loc-box .lb-res small{display:block;color:#6B7078;font-size:11px}
+.loc-box .lb-hint{color:#6B7078;font-size:11.5px;margin-top:6px}
+.photo-box button,.mini{padding:9px 14px;border-radius:10px;border:1px solid rgba(38,43,51,.12);background:rgba(38,43,51,.035);color:#262B33;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer}
+.visit{display:inline-block;font-size:11px;font-weight:900;padding:3px 8px;border-radius:999px;background:rgba(16,185,129,.14);color:#2E7D4F;margin-left:6px}
+.blocked{color:#C82828;font-weight:900}
+.ab-ok{font-size:12.5px;color:#2E7D4F;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);border-radius:11px;padding:9px 12px;line-height:1.55;margin-bottom:10px}
+.ab-cm{margin:0 0 10px;padding:12px;border-radius:14px;border:2px solid rgba(229,154,79,.55);background:rgba(229,154,79,.08)}
+.ab-cm .h{font-size:13px;font-weight:900;color:#9A4F12;margin-bottom:8px}
+.ab-cm .it{padding:10px 12px;border-radius:11px;background:rgba(242,241,236,.6);margin-top:6px}
+.ab-cm .it .b{font-size:15px;font-weight:700;color:#262B33;line-height:1.5;white-space:pre-wrap;word-break:break-all}
 .ab-cm .it .m{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:11.5px;color:var(--muted);margin-top:6px}
 .ab-cm .it.hid .b{opacity:.45;text-decoration:line-through}
-.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(10px);background:rgba(16,185,129,.95);color:#fff;padding:12px 20px;border-radius:14px;font-size:13px;font-weight:700;opacity:0;transition:.25s;z-index:99;pointer-events:none}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(10px);background:rgba(16,185,129,.95);color:#262B33;padding:12px 20px;border-radius:14px;font-size:13px;font-weight:700;opacity:0;transition:.25s;z-index:99;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%)}
 .toast.warn{background:rgba(239,68,68,.95)}
 [hidden]{display:none!important}
 /* 한마디 카드의 세차장 이름 → 누르면 아래에서 지도 창 */
-.pl-go{background:none;border:none;padding:0;font-family:inherit;font-size:15px;font-weight:900;color:#fff;text-align:left;cursor:pointer;text-decoration:underline;text-decoration-color:rgba(34,211,238,.6);text-underline-offset:4px}
+.pl-go{background:none;border:none;padding:0;font-family:inherit;font-size:15px;font-weight:900;color:#262B33;text-align:left;cursor:pointer;text-decoration:underline;text-decoration-color:rgba(86,102,26,.6);text-underline-offset:4px}
 .ms-dim{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:80;opacity:0;transition:opacity .2s;pointer-events:none}
 .ms-dim.open{opacity:1;pointer-events:auto}
 .msheet{position:fixed;left:0;right:0;bottom:0;z-index:81;height:74vh;max-width:720px;margin:0 auto;background:var(--deep2);border-radius:22px 22px 0 0;border-top:1px solid var(--line);transform:translateY(105%);transition:transform .25s ease;display:flex;flex-direction:column}
 .msheet.open{transform:translateY(0)}
 .msheet.drag{transition:none}
 .ms-head{padding:8px 14px 10px;touch-action:none;cursor:grab}
-.ms-grip{width:46px;height:5px;border-radius:3px;background:rgba(255,255,255,.3);margin:0 auto 10px}
+.ms-grip{width:46px;height:5px;border-radius:3px;background:rgba(38,43,51,.21);margin:0 auto 10px}
 .ms-row{display:flex;align-items:flex-start;gap:10px}
 .ms-t{flex:1;min-width:0}
 .ms-t b{display:block;font-size:16px;line-height:1.4}
 .ms-t span{display:block;font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5}
-.ms-x{width:42px;height:42px;border-radius:50%;border:none;background:rgba(255,255,255,.12);color:#fff;font-size:22px;line-height:1;cursor:pointer;flex-shrink:0}
-#msMap{flex:1;margin:0 12px;border-radius:16px;overflow:hidden;background:#0a1b2e}
+.ms-x{width:42px;height:42px;border-radius:50%;border:none;background:rgba(38,43,51,.084);color:#262B33;font-size:22px;line-height:1;cursor:pointer;flex-shrink:0}
+#msMap{flex:1;margin:0 12px;border-radius:16px;overflow:hidden;background:#EBE9E3}
 .ms-foot{display:flex;gap:8px;padding:10px 12px calc(12px + env(safe-area-inset-bottom))}
-.ms-foot a{flex:1;text-align:center;padding:13px 6px;border-radius:13px;font-size:13.5px;font-weight:900;text-decoration:none;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15)}
-.ms-foot a.main{background:linear-gradient(135deg,var(--sky),var(--aqua));border:none}
+.ms-foot a{flex:1;text-align:center;padding:13px 6px;border-radius:13px;font-size:13.5px;font-weight:900;text-decoration:none;color:#262B33;background:rgba(38,43,51,.056);border:1px solid rgba(38,43,51,.12)}
+.ms-foot a.main{background:#262B33;border:none;color:#F2F1EC}
 /* 지도의 파란 점(근처 세차장)을 누르면 뜨는 정보 창 */
-.np{position:fixed;left:12px;right:12px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:90;max-width:520px;margin:0 auto;background:#0b2238;border:1px solid rgba(34,211,238,.45);border-radius:18px;padding:14px 14px 12px;box-shadow:0 10px 30px rgba(0,0,0,.55)}
+.np{position:fixed;left:12px;right:12px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:90;max-width:520px;margin:0 auto;background:#0b2238;border:1px solid rgba(150,170,60,.45);border-radius:18px;padding:14px 14px 12px;box-shadow:0 10px 30px rgba(38,43,51,.248)}
 .np-row{display:flex;gap:10px;align-items:flex-start}
 .np-t{flex:1;min-width:0}
 .np-t b{display:block;font-size:16px;line-height:1.4}
 .np-t span{display:block;font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.5;word-break:keep-all}
-.np-x{width:38px;height:38px;border-radius:50%;border:none;background:rgba(255,255,255,.12);color:#fff;font-size:20px;line-height:1;cursor:pointer;flex-shrink:0}
+.np-x{width:38px;height:38px;border-radius:50%;border:none;background:rgba(38,43,51,.084);color:#262B33;font-size:20px;line-height:1;cursor:pointer;flex-shrink:0}
 .np-btns{display:flex;gap:8px;margin-top:12px}
-.np-btns button,.np-btns a{flex:1;text-align:center;padding:12px 6px;border-radius:12px;font-family:inherit;font-size:13.5px;font-weight:900;text-decoration:none;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);cursor:pointer}
-.np-btns .main{background:linear-gradient(135deg,var(--sky),var(--aqua));border:none}
+.np-btns button,.np-btns a{flex:1;text-align:center;padding:12px 6px;border-radius:12px;font-family:inherit;font-size:13.5px;font-weight:900;text-decoration:none;color:#262B33;background:rgba(38,43,51,.056);border:1px solid rgba(38,43,51,.12);cursor:pointer}
+.np-btns .main{background:#262B33;border:none;color:#F2F1EC}
+.new-head{font-size:16px;font-weight:900;margin-bottom:12px;line-height:1.4}
+.new-head small{display:block;font-size:12px;font-weight:400;color:var(--muted);margin-top:3px}
 </style>
 </head>
 <body>
@@ -198,12 +200,12 @@ html,body{min-height:100%;font-family:'Noto Sans KR',sans-serif;color:#fff;backg
 <script>
 const typeLabel={self:'셀프세차',hand:'손세차',detail:'디테일링샵',notouch:'노터치',auto:'자동세차',wash:'종류 확인 중',etc:'정비·기타'};
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let tab = 'pending', items = [], approved = [], selId = null;
+let tab = 'visits', items = [], approved = [], selId = null;   // 처음 열면 방문자 탭 (운영자 결정 2026-11-27)
 let map = null, reqMarker = null, nearMarkers = [];
 let searchTerm = '';
 // 핀 위치 고치기: 지금 고치는 세차장의 새 좌표 (원래 좌표와 다르면 저장할 때 같이 저장)
 let locEdit = null, editId = null;
-const LOC_TABS = ['edit', 'pending'];
+const LOC_TABS = ['edit', 'pending', 'add'];
 try { const q = new URLSearchParams(location.search).get('edit'); if(q && /^\d+$/.test(q)) { editId = +q; tab = 'edit'; } } catch(e) {}
 const FIELDS = PPX.FIELDS || [], PAY = PPX.PAY || {}, SVC = PPX.SVC || {}, VISIT = PPX.VISIT || {};
 const fieldVal = PPX.fieldVal || ((p, f) => p[f.k] ?? null);
@@ -232,7 +234,7 @@ function voteLine(id) {
   const v = TYPE_VOTES[String(id)];
   if(!v) return '';
   const txt = Object.entries(v).sort((a, b) => b[1] - a[1]).map(([t, n]) => `${typeLabel[t] || t} ${n}`).join(' · ');
-  return `<div class="c-who" style="margin:-2px 0 8px">🗳️ 방문자가 고른 대표 종류: <b style="color:#fff">${esc(txt)}</b></div>`;
+  return `<div class="c-who" style="margin:-2px 0 8px">🗳️ 방문자가 고른 대표 종류: <b style="color:#262B33">${esc(txt)}</b></div>`;
 }
 function typeFields(it) {
   const has = typesOf(it);
@@ -294,9 +296,11 @@ async function init() {
 
   document.getElementById('app').innerHTML = `
     <div class="tabs">
+      <button class="tab ${tab==='visits'?'on':''}" data-t="visits" type="button">📊 방문자</button>
       <button class="tab ${tab==='pending'?'on':''}" data-t="pending" type="button">추가 요청<b id="pendingN"></b></button>
       <button class="tab" data-t="reports" type="button">정보 제보<b id="reportsN"></b></button>
       <button class="tab ${tab==='edit'?'on':''}" data-t="edit" type="button">세차장 고치기</button>
+      <button class="tab" data-t="add" type="button">➕ 새 세차장 추가</button>
       <button class="tab" data-t="comments" type="button">한마디<b id="commentsN"></b></button>
       <button class="tab" data-t="allComments" type="button">📜 전체 한마디</button>
       <button class="tab" data-t="commentReports" type="button">한마디 신고<b id="commentReportsN"></b></button>
@@ -304,7 +308,6 @@ async function init() {
       <button class="tab" data-t="feedback" type="button">💬 앱 피드백<b id="feedbackN"></b></button>
       <button class="tab" data-t="event" type="button">🎁 추첨</button>
       <button class="tab" data-t="posts" type="button">📣 이벤트 글</button>
-      <button class="tab" data-t="visits" type="button">📊 방문자</button>
       <button class="tab" data-t="done" type="button">처리 내역</button>
     </div>
     <div id="searchBox"></div>
@@ -377,6 +380,7 @@ async function load() {
     pending: '📍 빨간 핀 = 요청 위치 · 파란 점 = 근처에 이미 등록된 세차장 (중복 확인용)',
     reports: '📍 빨간 핀 = 제보된 세차장 · 파란 점 = 근처 세차장',
     edit: '📍 빨간 핀 = 고치는 세차장 · 파란 점 = 근처 세차장',
+    add: '📍 빨간 핀 = 새로 넣을 세차장 자리 · 지도를 누르거나 핀을 끌어서 옮겨요 · 파란 점 = 이미 있는 세차장 (중복 확인)',
     comments: '📍 한마디가 달린 세차장',
     allComments: '📜 지금까지 쓰인 한마디 전부 (운영자만 볼 수 있어요) · 날짜를 고르면 그날 것만 · 카드를 누르면 지도에서 위치',
     commentReports: '🚩 신고가 많이 쌓인 한마디부터 보여요',
@@ -414,6 +418,7 @@ async function load() {
       editId = null;
     }
     else if(tab === 'edit') items = searchTerm ? await PPX.adminSearch(searchTerm) : [];
+    else if(tab === 'add') items = [blankPlace()];
     else if(tab === 'comments') {
       cmSeenBefore = cmSeen();
       try { localStorage.setItem(CM_SEEN, new Date().toISOString()); } catch(e) {}
@@ -479,6 +484,15 @@ function moveLoc(lat, lng, how) {
   if(how === 'addr' && map) map.setCenter(new naver.maps.LatLng(lat, lng));
   updLocBox();
   if(how !== 'addr') reverseAddr(lat, lng);
+  fillNewRegion();
+}
+// 새 세차장: 지역칸이 비었거나 자동으로 채운 값이면 주소·핀 자리로 다시 채움 (운영자가 직접 쓴 값은 그대로)
+function fillNewRegion() {
+  if(!locEdit || locEdit.id !== 'new') return;
+  const card = document.querySelector('.card.sel'), rin = card && card.querySelector('[data-k="region"]'), ain = card && card.querySelector('[data-k="addr"]');
+  if(!rin || (rin.value.trim() && rin.dataset.auto !== '1')) return;
+  const r = regionOf(ain ? ain.value : '', locEdit.lat, locEdit.lng);
+  if(r) { rin.value = r; rin.dataset.auto = '1'; }
 }
 function locBox(it) {
   if(!LOC_TABS.includes(tab) || it.id !== selId) return '';
@@ -498,12 +512,14 @@ function updLocBox() {
   }
   const d = Math.round(distM(locEdit, locEdit.orig));
   box.innerHTML = `
-    <div class="lb-st ${locMoved() ? 'moved' : ''}">${locMoved() ? `📍 핀을 옮겼어요 (원래 자리에서 ${d >= 1000 ? (d/1000).toFixed(1) + 'km' : d + 'm'}) · 저장하면 지도에 반영돼요` : '📍 핀 위치: 지금 등록된 그대로'}</div>
+    <div class="lb-st ${locMoved() ? 'moved' : ''}">${locEdit.id === 'new'
+      ? (locMoved() ? '📍 핀 자리를 정했어요 · 아래 등록을 누르면 이 자리로 지도에 올라가요' : '📍 아직 핀 자리를 안 정했어요 · 주소를 쓰고 \'주소칸 주소로 핀 옮기기\'를 누르거나, 위 지도를 눌러 주세요')
+      : locMoved() ? `📍 핀을 옮겼어요 (원래 자리에서 ${d >= 1000 ? (d/1000).toFixed(1) + 'km' : d + 'm'}) · 저장하면 지도에 반영돼요` : '📍 핀 위치: 지금 등록된 그대로'}</div>
     ${nv}
     <div class="lb-btns">
       <button class="mini" type="button" data-loc="addr">🔍 주소칸 주소로 핀 옮기기</button>
       <button class="mini" type="button" data-loc="map">🗺️ 지도에서 직접 찍기</button>
-      ${locMoved() ? '<button class="mini" type="button" data-loc="undo">↩︎ 원래 자리로</button>' : ''}
+      ${locMoved() && locEdit.id !== 'new' ? '<button class="mini" type="button" data-loc="undo">↩︎ 원래 자리로</button>' : ''}
     </div>
     <div class="lb-res" id="locRes">${locEdit.near ? `<button type="button" data-loc="fill">이 자리 주소: <b>${esc(locEdit.near)}</b><small>눌러서 주소칸에 넣기</small></button>` : ''}</div>
     <div class="lb-hint">네이버 지도에서 본 주소(예: 연동로 240)를 주소칸에 고쳐 쓰고 '주소로 핀 옮기기'를 누르세요. 위 지도를 누르거나 빨간 핀을 끌어서 옮겨도 돼요.</div>`;
@@ -566,8 +582,8 @@ async function locAct(what, btn) {
 function pickGeo(a, addrIn) {
   moveLoc(a.lat, a.lng, 'addr');
   if(addrIn && a.road) addrIn.value = a.road;
-  locEdit.near = null; updLocBox();
-  toast('핀을 옮겼어요. 저장을 눌러야 반영돼요');
+  locEdit.near = null; updLocBox(); fillNewRegion();
+  toast(locEdit.id === 'new' ? '핀을 옮겼어요' : '핀을 옮겼어요. 저장을 눌러야 반영돼요');
 }
 
 // 정보 제보·지도에서 바로 '세차장 고치기'로
@@ -594,7 +610,7 @@ function cardPending(it) {
   const who = whoOf(it.submitter, it.submitted_by);
   return `
     <div class="card ${it.id===selId?'sel':''}" data-id="${it.id}">
-      <div class="c-top"><span class="c-who">요청: <b style="color:#fff">${who}</b>${it.submitter && it.submitter.blocked ? ' <span class="blocked">(막힘)</span>' : ''}</span><span class="c-when">${ago(it.created_at)}</span></div>
+      <div class="c-top"><span class="c-who">요청: <b style="color:#262B33">${who}</b>${it.submitter && it.submitter.blocked ? ' <span class="blocked">(막힘)</span>' : ''}</span><span class="c-when">${ago(it.created_at)}</span></div>
       ${it.memo ? `<div class="memo">💬 ${esc(it.memo)}</div>` : ''}
       ${near.length ? `<div class="near">⚠️ 300m 안에 등록된 세차장이 있어요. 중복인지 확인하세요.<br>${near.map(x => `· ${esc(x.p.name)} (${Math.round(x.d)}m)`).join('<br>')}</div>` : ''}
       <div class="f"><label>세차장 이름</label><input data-k="name" value="${esc(it.name)}" maxlength="60"></div>
@@ -680,7 +696,7 @@ function cardReport(it) {
   return `
     <div class="card ${it.id===selId?'sel':''}" data-id="${it.id}">
       <div class="c-top"><span class="c-name">${esc(p.name)}</span><span class="c-when">${ago(it.created_at)}</span></div>
-      <div class="c-who" style="margin-bottom:10px">${esc(p.addr || p.region || '')} · 제보: <b style="color:#fff">${who}</b>${blocked ? ' <span class="blocked">(막힘)</span>' : ''}${it.visit ? `<span class="visit">${esc(VISIT[it.visit] || it.visit)}</span>` : ''}${it.via === 'review' ? '<span class="visit" style="background:rgba(168,85,247,.18);color:#d8b4fe">후기 페이지</span>' : ''}${it.via === 'owner' ? `<span class="visit" style="background:rgba(251,191,36,.18);color:#fde68a">🏪 사장님이라고 함 · 확인 필요${p.tel ? ` <a href="tel:${esc(p.tel)}" style="color:#fff">${esc(p.tel)}</a>` : ''}</span>` : ''}${p.status==='closed' ? ' · <span class="state closed">이미 숨김</span>' : ''}</div>
+      <div class="c-who" style="margin-bottom:10px">${esc(p.addr || p.region || '')} · 제보: <b style="color:#262B33">${who}</b>${blocked ? ' <span class="blocked">(막힘)</span>' : ''}${it.visit ? `<span class="visit">${esc(VISIT[it.visit] || it.visit)}</span>` : ''}${it.via === 'review' ? '<span class="visit" style="background:rgba(168,85,247,.18);color:#d8b4fe">후기 페이지</span>' : ''}${it.via === 'owner' ? `<span class="visit" style="background:rgba(229,154,79,.18);color:#9A4F12">🏪 사장님이라고 함 · 확인 필요${p.tel ? ` <a href="tel:${esc(p.tel)}" style="color:#262B33">${esc(p.tel)}</a>` : ''}</span>` : ''}${p.status==='closed' ? ' · <span class="state closed">이미 숨김</span>' : ''}</div>
       ${voteLine(p.id)}
       ${rows.length ? `<div class="diff">${rows.join('')}</div>` : ''}
       ${it.memo ? `<div class="memo">💬 ${esc(it.memo)}</div>` : ''}
@@ -688,7 +704,7 @@ function cardReport(it) {
       <div style="margin:-4px 0 10px;display:flex;gap:8px;flex-wrap:wrap"><button class="mini" type="button" data-act="rmore">✏️ 다른 칸도 고치기</button><button class="mini" type="button" data-act="goedit">📍 위치·주소가 틀렸으면: 이 세차장 고치기</button></div>
       ${reportMore(p, sg)}
       ${it.photo ? `<div class="photo-box" data-photo="${esc(it.photo)}"><button type="button" data-act="photo">📷 가격표 사진 보기</button></div>` : ''}
-      ${it.via === 'owner' ? `<label style="display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:10px 12px;border-radius:12px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.4);color:#fde68a;font-size:13px;font-weight:700;cursor:pointer"><input type="checkbox" data-ownerok onchange="this.closest('.card').querySelector('[data-act=apply]').disabled=!this.checked">☎️ 매장에 전화해서 사장님 제보가 맞는지 확인했어요 (확인 전에는 반영 버튼이 잠겨요)</label>` : ''}
+      ${it.via === 'owner' ? `<label style="display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:10px 12px;border-radius:12px;background:rgba(229,154,79,.1);border:1px solid rgba(229,154,79,.4);color:#9A4F12;font-size:13px;font-weight:700;cursor:pointer"><input type="checkbox" data-ownerok onchange="this.closest('.card').querySelector('[data-act=apply]').disabled=!this.checked">☎️ 매장에 전화해서 사장님 제보가 맞는지 확인했어요 (확인 전에는 반영 버튼이 잠겨요)</label>` : ''}
       <div class="acts">
         <button class="no" type="button" data-act="dismiss">무시</button>
         <button class="ok" type="button" data-act="apply"${it.via === 'owner' ? ' disabled' : ''}>${rows.length ? '✅ 체크한 내용 반영' : '✅ 확인함'}</button>
@@ -805,14 +821,14 @@ function openPlaceSheet(p) {
   approved.filter(x => x.id !== p.id && Math.abs(x.lat - p.lat) < 0.006 && Math.abs(x.lng - p.lng) < 0.008).forEach(x => msMarkers.push(nearDot(x, msMap, p)));
   if(!msMap.__npClose) msMap.__npClose = naver.maps.Event.addListener(msMap, 'click', () => { if(Date.now() - npAt > 400) closeNearPop(); });
   msMarkers.push(new naver.maps.Marker({ position: pos, map: msMap, zIndex: 100,
-    icon: { content: '<div style="font-size:34px;transform:translate(-50%,-100%);filter:drop-shadow(0 4px 6px rgba(0,0,0,.5))">📍</div>', anchor: new naver.maps.Point(0, 0) } }));
+    icon: { content: '<div style="font-size:34px;transform:translate(-50%,-100%);filter:drop-shadow(0 4px 6px rgba(38,43,51,.225))">📍</div>', anchor: new naver.maps.Point(0, 0) } }));
   // 창이 다 올라온 뒤 크기를 다시 재고 가운데로
   setTimeout(() => { msMap.setSize(new naver.maps.Size(el.clientWidth, el.clientHeight)); msMap.setZoom(17); msMap.setCenter(pos); }, 260);
 }
 // ── 근처 세차장 파란 점: 누르면 아래 정보 창 (이름·주소·종류·전화·거리 + 고치기) ──
 function nearDot(x, onMap, base) {
   const m = new naver.maps.Marker({ position: new naver.maps.LatLng(x.lat, x.lng), map: onMap, clickable: true,
-    icon: { content: `<div style="transform:translate(-11px,-50%);display:flex;align-items:center;gap:4px;white-space:nowrap;cursor:pointer;padding:4px 0"><span style="width:16px;height:16px;border-radius:50%;background:#0ea5e9;border:2px solid #fff;display:inline-block;box-shadow:0 0 0 3px rgba(14,165,233,.3)"></span><span style="font-size:11px;font-weight:700;color:#fff;background:rgba(4,17,30,.9);padding:2px 6px;border-radius:6px">${esc(x.name)}</span></div>`, anchor: new naver.maps.Point(0, 0) } });
+    icon: { content: `<div style="transform:translate(-11px,-50%);display:flex;align-items:center;gap:4px;white-space:nowrap;cursor:pointer;padding:4px 0"><span style="width:16px;height:16px;border-radius:50%;background:#262B33;border:2px solid #FFFFFF;display:inline-block;box-shadow:0 0 0 3px rgba(38,43,51,.09)"></span><span style="font-size:11px;font-weight:700;color:#262B33;background:rgba(242,241,236,.9);padding:2px 6px;border-radius:6px">${esc(x.name)}</span></div>`, anchor: new naver.maps.Point(0, 0) } });
   naver.maps.Event.addListener(m, 'click', e => { npAt = Date.now(); if(e && e.domEvent) e.domEvent.stopPropagation(); openNearPop(x, base); });
   return m;
 }
@@ -917,7 +933,7 @@ function renderAllComments() {
   const show = allCmDay ? [allCmDay] : days;
   list.innerHTML = `<div class="msg" style="padding:8px 0 4px">모두 ${allCm.length}개${hiddenN ? ` · 숨긴 것 ${hiddenN}개 포함` : ''} · 최근 것부터</div>` +
     show.map(d => `
-      <div style="margin:14px 0 6px;font-size:13px;font-weight:900;color:var(--aqua,#22d3ee)">${evMd(d)} · ${cnt(d)}개</div>
+      <div style="margin:14px 0 6px;font-size:13px;font-weight:900;color:var(--aqua,#56661A)">${evMd(d)} · ${cnt(d)}개</div>
       ${allCm.filter(c => kstDay(c.created_at) === d).map(c => `
         <div class="card" data-cm="${c.id}">
           <div class="c-top"><span class="c-name">${plName(c.place_id, c.place, '(지도에서 내려간 세차장)')}</span><span class="c-when">${kstTime(c.created_at)}</span></div>
@@ -999,9 +1015,9 @@ async function loadVisits() {
     const max = Math.max(1, ...days.map(d => d.visitors));
     const wk = ['일','월','화','수','목','금','토'];
     const label = d => { const t = new Date(d + 'T00:00:00'); return `${t.getMonth() + 1}/${t.getDate()}(${wk[t.getDay()]})`; };
-    const box = (t, n, sub) => `<div style="flex:1;min-width:0;padding:12px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)">
-      <div style="font-size:12px;color:rgba(255,255,255,.6)">${t}</div><div style="font-size:22px;font-weight:900;margin:2px 0">${n.toLocaleString()}명</div>
-      <div style="font-size:11px;color:rgba(255,255,255,.5)">${sub}</div></div>`;
+    const box = (t, n, sub) => `<div style="flex:1;min-width:0;padding:12px;border-radius:12px;background:rgba(38,43,51,.035);border:1px solid rgba(38,43,51,.064)">
+      <div style="font-size:12px;color:rgba(38,43,51,.6)">${t}</div><div style="font-size:22px;font-weight:900;margin:2px 0">${n.toLocaleString()}명</div>
+      <div style="font-size:11px;color:rgba(38,43,51,.5)">${sub}</div></div>`;
     list.innerHTML = `
       <div style="display:flex;gap:8px;margin-bottom:8px">
         ${box('오늘', td.visitors || 0, `본 횟수 ${(td.views || 0).toLocaleString()} · 처음 ${td.new_visitors || 0}명`)}
@@ -1017,8 +1033,8 @@ async function loadVisits() {
       </div>
       <div class="memo" style="margin-bottom:6px;font-weight:900">날짜별 방문자</div>
       ${days.map(d => `<div style="display:flex;align-items:center;gap:8px;font-size:13px;margin:5px 0">
-        <span style="width:62px;flex:none;color:rgba(255,255,255,.7)">${label(d.day)}</span>
-        <span style="flex:1;height:10px;border-radius:5px;background:rgba(255,255,255,.06);overflow:hidden"><span style="display:block;height:100%;width:${Math.round(d.visitors / max * 100)}%;background:var(--sky)"></span></span>
+        <span style="width:62px;flex:none;color:rgba(38,43,51,.7)">${label(d.day)}</span>
+        <span style="flex:1;height:10px;border-radius:5px;background:rgba(38,43,51,.042);overflow:hidden"><span style="display:block;height:100%;width:${Math.round(d.visitors / max * 100)}%;background:var(--sky)"></span></span>
         <span style="width:44px;flex:none;text-align:right;font-weight:700">${d.visitors}명</span></div>`).join('')}
       <div class="memo" style="margin:14px 0 6px;font-weight:900">오늘 본 화면</div>
       ${(s.pages_today || []).length ? s.pages_today.map(p => `<div style="display:flex;justify-content:space-between;font-size:13px;margin:5px 0">
@@ -1027,7 +1043,7 @@ async function loadVisits() {
       <div id="chanBox"><div class="msg">불러오는 중…</div></div>
       <div class="memo" style="margin:16px 0 6px;font-weight:900">🔎 가이드 글·지역 페이지 조회수 (최근 30일)</div>
       <div id="seoBox"><div class="msg">불러오는 중…</div></div>
-      <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:14px;line-height:1.6">· 같은 휴대폰·브라우저는 하루 1명으로 세요. 브라우저를 바꾸거나 기록을 지우면 새 사람으로 셀 수 있어요.<br>· 운영자 화면을 연 기기는 세지 않아요. 날짜는 한국 시간 기준이에요.<br>· 📲 아이콘으로 연 사람은 위 방문자 수에 이미 들어가 있어요(따로 더하지 않아요).<br>· 이 숫자는 운영자만 봐요. 홈 화면 등에 공개하지 않아요.</div>`;
+      <div style="font-size:11px;color:rgba(38,43,51,.5);margin-top:14px;line-height:1.6">· 같은 휴대폰·브라우저는 하루 1명으로 세요. 브라우저를 바꾸거나 기록을 지우면 새 사람으로 셀 수 있어요.<br>· 운영자 화면을 연 기기는 세지 않아요. 날짜는 한국 시간 기준이에요.<br>· 📲 아이콘으로 연 사람은 위 방문자 수에 이미 들어가 있어요(따로 더하지 않아요).<br>· 이 숫자는 운영자만 봐요. 홈 화면 등에 공개하지 않아요.</div>`;
   } catch(e) { list.innerHTML = `<div class="msg">${esc(PPX.koError(e))}</div>`; return; }
   // 채널별: 링크 꼬리표(?ref=)로 처음 들어온 기기 → 응모 → 가입
   try {
@@ -1036,10 +1052,10 @@ async function loadVisits() {
     const SRC = { cafe: '네이버 카페', insta: '인스타그램', youtube: '유튜브', search: '검색', friend: '지인 추천', poster: '포스터·QR', other: '기타' };
     const rows = (c.by_ref || []).map(r => `<tr><td style="padding:6px 4px">${esc(r.ref)}</td><td style="text-align:right">${r.visitors}</td><td style="text-align:right">${r.entries}</td><td style="text-align:right">${r.members}</td></tr>`).join('');
     box.innerHTML = (rows ? `<table style="width:100%;border-collapse:collapse;font-size:13px">
-        <tr style="color:rgba(255,255,255,.6);font-size:12px"><th style="text-align:left;padding:4px">꼬리표</th><th style="text-align:right">새 방문 기기</th><th style="text-align:right">응모</th><th style="text-align:right">가입</th></tr>${rows}</table>`
+        <tr style="color:rgba(38,43,51,.6);font-size:12px"><th style="text-align:left;padding:4px">꼬리표</th><th style="text-align:right">새 방문 기기</th><th style="text-align:right">응모</th><th style="text-align:right">가입</th></tr>${rows}</table>`
         : '<div class="msg">아직 데이터가 없어요</div>')
-      + ((c.by_source || []).length ? `<div class="memo" style="margin:12px 0 4px">가입할 때 답한 경로</div>` + c.by_source.map(s => `<div style="display:flex;justify-content:space-between;font-size:13px;margin:4px 0"><span>${esc(SRC[s.source] || s.source)}</span><span>${s.members}명</span></div>${(s.notes || []).length ? `<div style="font-size:12px;color:rgba(255,255,255,.55);margin:-2px 0 6px 8px">└ ${s.notes.map(esc).join(' · ')}</div>` : ''}`).join('') : '')
-      + `<div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:8px;line-height:1.6">· 채널마다 링크 끝에 꼬리표를 붙여 올리세요. 예) ppaxse.com/r<b>?ref=cafe</b>, ?ref=insta, ?ref=qr<br>· 꼬리표는 영어 소문자·숫자·-·_ 로 30자까지. 한 기기는 처음 들어온 꼬리표로만 세요.</div>`;
+      + ((c.by_source || []).length ? `<div class="memo" style="margin:12px 0 4px">가입할 때 답한 경로</div>` + c.by_source.map(s => `<div style="display:flex;justify-content:space-between;font-size:13px;margin:4px 0"><span>${esc(SRC[s.source] || s.source)}</span><span>${s.members}명</span></div>${(s.notes || []).length ? `<div style="font-size:12px;color:rgba(38,43,51,.55);margin:-2px 0 6px 8px">└ ${s.notes.map(esc).join(' · ')}</div>` : ''}`).join('') : '')
+      + `<div style="font-size:11px;color:rgba(38,43,51,.5);margin-top:8px;line-height:1.6">· 채널마다 링크 끝에 꼬리표를 붙여 올리세요. 예) ppaxse.com/r<b>?ref=cafe</b>, ?ref=insta, ?ref=qr<br>· 꼬리표는 영어 소문자·숫자·-·_ 로 30자까지. 한 기기는 처음 들어온 꼬리표로만 세요.</div>`;
   } catch(e) { const box = document.getElementById('chanBox'); if(box) box.innerHTML = `<div class="msg">${esc(PPX.koError(e))}</div>`; }
   loadSeoStats();
 }
@@ -1070,19 +1086,19 @@ async function loadSeoStats() {
       const parts = p.path.split('/').filter(Boolean).slice(1);
       return esc(parts.length ? parts.join(' ') + ' 세차장' : '전국 세차장');
     };
-    const row = p => `<tr><td style="padding:6px 4px"><a href="${esc(p.path)}" target="_blank" rel="noopener" style="color:#fff;text-decoration:none">${name(p)}</a></td>
+    const row = p => `<tr><td style="padding:6px 4px"><a href="${esc(p.path)}" target="_blank" rel="noopener" style="color:#262B33;text-decoration:none">${name(p)}</a></td>
       <td style="text-align:right">${p.today_visitors}</td><td style="text-align:right">${p.week_visitors}</td><td style="text-align:right;font-weight:900">${p.visitors}</td>
-      <td style="text-align:right">${p.views}</td><td style="text-align:right;color:rgba(255,255,255,.6);white-space:nowrap">${p.google}·${p.naver}·${p.etc}</td>
+      <td style="text-align:right">${p.views}</td><td style="text-align:right;color:rgba(38,43,51,.6);white-space:nowrap">${p.google}·${p.naver}·${p.etc}</td>
       <td style="text-align:right;white-space:nowrap">${p.map_clicks || 0}·${p.review_clicks || 0}</td></tr>`;
-    const head = `<tr style="color:rgba(255,255,255,.6);font-size:11px;white-space:nowrap"><th style="text-align:left;padding:4px">페이지</th><th style="text-align:right">오늘</th><th style="text-align:right">7일</th><th style="text-align:right">30일</th><th style="text-align:right">본 횟수</th><th style="text-align:right">구글·네이버·기타</th><th style="text-align:right">지도·한마디</th></tr>`;
+    const head = `<tr style="color:rgba(38,43,51,.6);font-size:11px;white-space:nowrap"><th style="text-align:left;padding:4px">페이지</th><th style="text-align:right">오늘</th><th style="text-align:right">7일</th><th style="text-align:right">30일</th><th style="text-align:right">본 횟수</th><th style="text-align:right">구글·네이버·기타</th><th style="text-align:right">지도·한마디</th></tr>`;
     const table = (t, list, max) => list.length ? `<div class="memo" style="margin:10px 0 4px">${t} (${list.length}개)</div>
       <table style="width:100%;border-collapse:collapse;font-size:12.5px">${head}${list.slice(0, max).map(row).join('')}</table>` : '';
     box.innerHTML = `<div style="display:flex;gap:8px;flex-wrap:wrap;font-size:12.5px;margin-bottom:4px">
         <span>사람 <b>${(s.total_visitors || 0).toLocaleString()}</b>명 · 본 횟수 <b>${(s.total_views || 0).toLocaleString()}</b>회</span>
-        <span style="color:rgba(255,255,255,.6)">구글 ${src.google || 0} · 네이버 ${src.naver || 0} · 다음 ${src.daum || 0} · 빡세 안에서 ${src.ppaxse || 0} · 주소 직접 ${src.direct || 0} · 기타 ${(src.other || 0) + (src.bing || 0)}</span></div>
+        <span style="color:rgba(38,43,51,.6)">구글 ${src.google || 0} · 네이버 ${src.naver || 0} · 다음 ${src.daum || 0} · 빡세 안에서 ${src.ppaxse || 0} · 주소 직접 ${src.direct || 0} · 기타 ${(src.other || 0) + (src.bing || 0)}</span></div>
       ${clickLine('📖 가이드 글에서', 'guide')}${clickLine('📍 지역 페이지에서', 'wash')}
       ${table('📖 세차 가이드 글', guides, 100)}${table('📍 지역별 세차장 페이지 (많이 본 순 30개)', wash, 30)}
-      <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:8px;line-height:1.6">· 숫자는 사람(기기) 수예요. 같은 사람이 같은 날 여러 번 봐도 1명, 대신 '본 횟수'가 올라가요.<br>· 구글·네이버·기타 = 어디서 검색해서 들어왔는지(사람 수). 지도·한마디 = 그 페이지에서 버튼을 누른 사람 수.<br>· 가이드 글은 두 버튼을 같은 모양으로, 지역 페이지는 지도 버튼을 더 눈에 띄게 해 두었어요. 검색 로봇과 운영자 기기는 세지 않아요.</div>`;
+      <div style="font-size:11px;color:rgba(38,43,51,.5);margin-top:8px;line-height:1.6">· 숫자는 사람(기기) 수예요. 같은 사람이 같은 날 여러 번 봐도 1명, 대신 '본 횟수'가 올라가요.<br>· 구글·네이버·기타 = 어디서 검색해서 들어왔는지(사람 수). 지도·한마디 = 그 페이지에서 버튼을 누른 사람 수.<br>· 가이드 글은 두 버튼을 같은 모양으로, 지역 페이지는 지도 버튼을 더 눈에 띄게 해 두었어요. 검색 로봇과 운영자 기기는 세지 않아요.</div>`;
   } catch(e) { box.innerHTML = `<div class="msg">${esc(PPX.koError(e))}</div>`; }
 }
 
@@ -1123,7 +1139,7 @@ function postForm(p) {
 function renderPosts() {
   const list = document.getElementById('list');
   const editing = evEditId === 'new' ? null : evPosts.find(p => p.id === evEditId);
-  list.innerHTML = (evEditId ? postForm(editing) : `<button type="button" class="card" id="evNew" style="width:100%;text-align:center;font:inherit;font-weight:900;color:#22d3ee">＋ 새 이벤트 글 쓰기</button>`)
+  list.innerHTML = (evEditId ? postForm(editing) : `<button type="button" class="card" id="evNew" style="width:100%;text-align:center;font:inherit;font-weight:900;color:#56661A">＋ 새 이벤트 글 쓰기</button>`)
     + (evPosts.length ? evPosts.map(p => `<div class="card" data-ev="${p.id}" style="${p.hidden ? 'opacity:.55' : ''}">
         <div class="c-top"><span class="state ${p.status === 'on' ? 'approved' : p.status === 'win' ? 'pending' : 'closed'}">${EV_ST[p.status]}</span>
           <span class="c-who">${EV_KIND[p.kind]}${p.pinned ? ' · 📌 고정' : ''}${p.hidden ? ' · 🙈 숨김' : ''}</span><span class="c-when">${kstDay(p.created_at)}</span></div>
@@ -1169,7 +1185,7 @@ async function loadEvent() {
   document.getElementById('searchBox').innerHTML = `
     <div class="search" style="align-items:center">
       <button type="button" id="evPrev" aria-label="이전 회차" ${evWeek <= EV_START ? 'disabled' : ''}>◀</button>
-      <div style="flex:1;text-align:center;font-size:14px;font-weight:900">${evMd(evWeek)} ~ ${evMd(evAdd(evWeek, 6))}<div style="font-size:11px;font-weight:400;color:rgba(255,255,255,.6)">발표 ${evMd(evAdd(evWeek, 9))} 17시 자동 추첨 · ${ended ? '응모 마감' : '응모 받는 중'}</div></div>
+      <div style="flex:1;text-align:center;font-size:14px;font-weight:900">${evMd(evWeek)} ~ ${evMd(evAdd(evWeek, 6))}<div style="font-size:11px;font-weight:400;color:rgba(38,43,51,.6)">발표 ${evMd(evAdd(evWeek, 9))} 17시 자동 추첨 · ${ended ? '응모 마감' : '응모 받는 중'}</div></div>
       <button type="button" id="evNext" aria-label="다음 회차" ${evWeek >= evWeekOf(evToday()) ? 'disabled' : ''}>▶</button>
     </div>`;
   document.getElementById('evPrev').onclick = () => { evWeek = evAdd(evWeek, -7); loadEvent(); };
@@ -1206,10 +1222,10 @@ function renderEvent() {
     <div class="card sel">
       <div class="c-top"><span class="c-name">응모 ${evList.length}명 · 추첨 대상 ${valid.length}명 (회원 ${mem.length}명)</span></div>
       <div class="c-who">토요일 17시에 자동으로 추첨돼요(1회차만 11/23 월요일). 17시 전에 미리 뽑아도 이용자 화면에는 17시부터 보여요. 회원 추첨 2명을 먼저 뽑고, 남은 사람 중에서 누구나 추첨 2명을 뽑아요. 응모권(하루 1장, 주 최대 3장)이 많을수록 당첨 확률이 높아요. 성의 없는 글은 그 전에 숨겨 두면 추첨에서 빠져요.</div>
-      ${evWinners.length ? `<div class="diff" style="margin-top:10px">${evWinners.map(w => `<label><span class="k">🎉 ${POOL[w.won]}</span><span class="to" style="letter-spacing:1px">${esc(w.code)}</span><span style="margin-left:auto;color:#fff">${esc(w.is_member ? (w.email || '') : '비회원 · 메일 연락 대기')}</span></label>`).join('')}</div>
+      ${evWinners.length ? `<div class="diff" style="margin-top:10px">${evWinners.map(w => `<label><span class="k">🎉 ${POOL[w.won]}</span><span class="to" style="letter-spacing:1px">${esc(w.code)}</span><span style="margin-left:auto;color:#262B33">${esc(w.is_member ? (w.email || '') : '비회원 · 메일 연락 대기')}</span></label>`).join('')}</div>
         <div class="acts"><button class="ok" type="button" id="evCopy">발표 글 복사</button><button class="no" type="button" id="evRedraw">다시 뽑기</button></div>`
       : (past
-        ? `<div class="c-who" style="color:#fde68a">자동 추첨 결과가 아직 없어요. ${valid.length ? '아래 버튼으로 직접 추첨할 수 있어요.' : '추첨 대상이 없었어요.'}</div>
+        ? `<div class="c-who" style="color:#9A4F12">자동 추첨 결과가 아직 없어요. ${valid.length ? '아래 버튼으로 직접 추첨할 수 있어요.' : '추첨 대상이 없었어요.'}</div>
            ${valid.length ? '<div class="acts"><button class="ok" type="button" id="evDraw">🎲 지금 추첨하기 (자동 추첨 예비용)</button></div>' : ''}`
         : `<div class="c-who">⏰ ${evMd(evAdd(evWeek, 9))} 17시에 자동으로 추첨돼요</div>`)}
     </div>
@@ -1240,12 +1256,14 @@ function cardEdit(it) {
       <div class="c-top"><span class="c-name">${esc(it.name)}</span>${it.status==='closed' ? '<span class="state closed" style="margin-left:auto">숨김</span>' : it.status==='unlocated' ? '<span class="state closed" style="margin-left:auto">위치 확인 필요</span>' : ''}</div>
       <div class="c-who">${esc(typesText(typesOf(it)))} · ${esc(it.addr || it.region || '')}</div>
     </div>`;
+  const isNew = it.id === 'new';
   return `
     <div class="card sel" data-id="${it.id}">
-      <div class="f"><label>세차장 이름</label><input data-k="name" value="${esc(it.name)}" maxlength="60"></div>
+      ${isNew ? `<div class="new-head">➕ 새 세차장 바로 등록<small>운영자가 넣는 곳은 확인 없이 바로 지도에 올라가요. 종류를 고르면 그 종류에 맞는 항목이 모두 나와요.</small></div>` : ''}
+      <div class="f"><label>세차장 이름</label><input data-k="name" value="${esc(it.name)}" maxlength="60"${isNew ? ' placeholder="예: 빡세 셀프세차"' : ''}></div>
       ${typeFields(it)}
-      <div class="f"><label>지역</label><input data-k="region" value="${esc(it.region)}" maxlength="30"></div>
-      <div class="f"><label>주소</label><input data-k="addr" value="${esc(it.addr)}" maxlength="200"></div>
+      <div class="f"><label>지역${isNew ? ' (핀 자리를 정하면 주소로 자동 · 틀리면 고쳐 주세요)' : ''}</label><input data-k="region" value="${esc(it.region)}" maxlength="30"${isNew ? ' placeholder="예: 인천 남동구" oninput="this.dataset.auto=\'\'"' : ''}></div>
+      <div class="f"><label>주소</label><input data-k="addr" value="${esc(it.addr)}" maxlength="200"${isNew ? ' placeholder="도로명 주소 (예: 서울 구로구 연동로 240)"' : ''}></div>
       ${locBox(it)}
       <div class="f-row">
         <div class="f"><label>전화번호</label><input data-k="tel" value="${esc(it.tel||'')}" maxlength="30"></div>
@@ -1267,8 +1285,36 @@ function cardEdit(it) {
         <option value="approved" ${it.status==='approved'?'selected':''}>지도에 표시</option>
         <option value="closed" ${it.status==='closed'?'selected':''}>숨김 (폐업·세차장 아님)</option>
         <option value="unlocated" ${it.status==='unlocated'?'selected':''}>위치 확인 필요 (좌표 오류로 숨김)</option></select></div>
-      <div class="acts"><button class="ok" type="button" data-act="save">💾 저장</button></div>
+      <div class="acts">${isNew ? '<button class="no" type="button" data-act="clear">처음부터</button><button class="ok" type="button" data-act="create">➕ 지도에 바로 등록</button>' : '<button class="ok" type="button" data-act="save">💾 저장</button>'}</div>
     </div>`;
+}
+
+// ── 새 세차장 바로 추가 (운영자, 2026-11-27) ──
+// 빈 카드: 핀은 지금 지도 가운데. 운영자는 서버 권한상 바로 'approved'로 넣을 수 있음 (places 추가 규칙: 운영자 예외)
+function blankPlace() {
+  const c = map ? map.getCenter() : null;
+  return { id: 'new', name: '', addr: '', region: '', type: 'self', types: ['self'], status: 'approved', info: {},
+           lat: c ? c.lat() : 37.5665, lng: c ? c.lng() : 126.978 };
+}
+// 지역 이름: ① 주소에서 (예: '서울특별시 중구 …' → '서울 중구', '경기도 수원시 팔달구 …' → '경기 수원시')
+//  기존 세차장에 있는 지역 이름일 때만 씀. ② 안 되면 핀 자리에서 가장 가까운 세차장의 지역
+const SIDO_SHORT = { '서울특별시':'서울','서울시':'서울','부산광역시':'부산','대구광역시':'대구','인천광역시':'인천','광주광역시':'광주','대전광역시':'대전','울산광역시':'울산',
+  '세종특별자치시':'세종','세종시':'세종','경기도':'경기','강원도':'강원','강원특별자치도':'강원','충청북도':'충북','충청남도':'충남','전라북도':'전북','전북특별자치도':'전북',
+  '전라남도':'전남','전남광주통합특별시':'전남광주','경상북도':'경북','경상남도':'경남','제주특별자치도':'제주','제주도':'제주' };
+function regionFromAddr(addr) {
+  const w = String(addr || '').trim().split(/\s+/);
+  if(!w[0]) return '';
+  const sido = SIDO_SHORT[w[0]] || w[0];
+  const known = new Set(approved.map(p => p.region).filter(Boolean));
+  if(known.has(sido) && !/[시군구]$/.test(w[1] || '')) return sido;          // 세종
+  const cand = sido + ' ' + (w[1] || '');
+  return known.has(cand) ? cand : '';
+}
+function regionOf(addr, lat, lng) { return regionFromAddr(addr) || regionNear(lat, lng); }
+function regionNear(lat, lng) {
+  let best = null, bd = Infinity;
+  approved.forEach(p => { if(p.lat == null || !p.region) return; const d = distM({ lat, lng }, p); if(d < bd) { bd = d; best = p; } });
+  return best && bd < 8000 ? best.region : '';
 }
 
 // 세차장 고치기: 고른 종류(대표 + 함께 있는 종류)에 맞는 항목만 보여 줌
@@ -1310,7 +1356,7 @@ function cardDone(it) {
         <div class="c-top"><span class="state ${it.status}">${it.status==='applied'?'제보 반영':'제보 무시'}</span>
           <b>${esc(p ? p.name : '(삭제된 세차장)')}</b><span class="c-when">${ago(it.reviewed_at)}</span></div>
         <div class="c-who">제보: ${whoOf(it.reporter_p, it.reporter)}${it.memo ? ' · ' + esc(it.memo) : ''}</div>
-        ${it.via === 'owner' ? `<div class="c-who" style="color:#fde68a">🏪 사장님 제보 · ${it.owner_checked_at ? '☎️ 전화 확인 ' + esc(new Date(it.owner_checked_at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })) : '전화 확인 기록 없음'}</div>` : ''}
+        ${it.via === 'owner' ? `<div class="c-who" style="color:#9A4F12">🏪 사장님 제보 · ${it.owner_checked_at ? '☎️ 전화 확인 ' + esc(new Date(it.owner_checked_at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })) : '전화 확인 기록 없음'}</div>` : ''}
       </div>`;
   }
   const who = whoOf(it.submitter, it.submitted_by);
@@ -1337,21 +1383,21 @@ function render() {
     }[tab]}</div>`;
     return;
   }
-  const make = { pending: cardPending, reports: cardReport, edit: cardEdit, done: cardDone, comments: cardComment, commentReports: cardCommentReport, abuse: cardAbuse }[tab];
+  const make = { pending: cardPending, reports: cardReport, edit: cardEdit, add: cardEdit, done: cardDone, comments: cardComment, commentReports: cardCommentReport, abuse: cardAbuse }[tab];
   list.innerHTML = items.map(make).join('');
   list.querySelectorAll('.card').forEach(card => {
-    const id = /^[rcsu]/.test(card.dataset.id) ? card.dataset.id : +card.dataset.id;
+    const id = /^[rcsun]/.test(card.dataset.id) ? card.dataset.id : +card.dataset.id;
     card.addEventListener('click', e => {
       if(e.target.closest('input,select,button,label')) return;
       if(selId === id) return;
       selId = id;
       resetLoc();
-      if(tab === 'edit' || tab === 'pending') render();
+      if(tab === 'edit' || tab === 'pending' || tab === 'add') render();
       else list.querySelectorAll('.card').forEach(c => c.classList.toggle('sel', c===card));
       showOnMap();
     });
     card.querySelectorAll('button[data-act]').forEach(b => b.onclick = () => act(card, id, b.dataset.act, b));
-    if(tab === 'edit') wireTypeVis(card);
+    if(tab === 'edit' || tab === 'add') wireTypeVis(card);
     // 제보 값을 고치면 그 줄은 자동으로 체크
     card.querySelectorAll('.drow').forEach(r => {
       const on = () => { const c = r.querySelector('.dchk input'); if(c) c.checked = true; };
@@ -1374,7 +1420,7 @@ function showOnMap() {
   const ll = editing ? new naver.maps.LatLng(locEdit.lat, locEdit.lng) : new naver.maps.LatLng(loc.lat, loc.lng);
   map.setCenter(ll); map.setZoom(17);
   reqMarker = new naver.maps.Marker({ position: ll, map, zIndex: 100, draggable: !!editing,
-    icon: { content: '<div style="font-size:34px;transform:translate(-50%,-100%);filter:drop-shadow(0 4px 6px rgba(0,0,0,.5))">📍</div>', anchor: new naver.maps.Point(0,0) } });
+    icon: { content: '<div style="font-size:34px;transform:translate(-50%,-100%);filter:drop-shadow(0 4px 6px rgba(38,43,51,.225))">📍</div>', anchor: new naver.maps.Point(0,0) } });
   if(editing) naver.maps.Event.addListener(reqMarker, 'dragend', () => { const p = reqMarker.getPosition(); moveLoc(p.lat(), p.lng(), 'drag'); });
   nearbyOf(loc, loc.id).forEach(({p}) => nearMarkers.push(nearDot(p, map, loc)));
   drawAll();
@@ -1401,7 +1447,7 @@ function drawAll() {
   list.forEach(p => {
     if(z >= 17) { allMarkers.push(nearDot(p, map, base())); return; }   // 많이 확대하면 이름도
     const m = new naver.maps.Marker({ position: new naver.maps.LatLng(p.lat, p.lng), map, clickable: true, zIndex: 0,
-      icon: { content: '<div style="width:11px;height:11px;border-radius:50%;background:#7dd3fc;border:1.5px solid #04111e;box-shadow:0 0 0 1px rgba(255,255,255,.5);transform:translate(-50%,-50%);cursor:pointer"></div>', anchor: new naver.maps.Point(0, 0) } });
+      icon: { content: '<div style="width:11px;height:11px;border-radius:50%;background:#3E7BD6;border:1.5px solid #fff;box-shadow:0 0 0 1px rgba(38,43,51,.25);transform:translate(-50%,-50%);cursor:pointer"></div>', anchor: new naver.maps.Point(0, 0) } });
     naver.maps.Event.addListener(m, 'click', e => { npAt = Date.now(); if(e && e.domEvent) e.domEvent.stopPropagation(); openNearPop(p, base()); });
     allMarkers.push(m);
   });
@@ -1479,8 +1525,15 @@ function setupMapFind() {
     map.setCenter(ll); map.setZoom(17);
     if(addrMarker) addrMarker.setMap(null);   // 찾은 주소 자리 표시 (빨간 핀과 헷갈리지 않게 노란 깃발)
     addrMarker = new naver.maps.Marker({ position: ll, map, zIndex: 90,
-      icon: { content: '<div style="font-size:28px;transform:translate(-20%,-100%);filter:drop-shadow(0 3px 5px rgba(0,0,0,.5))">🚩</div>', anchor: new naver.maps.Point(0, 0) } });
+      icon: { content: '<div style="font-size:28px;transform:translate(-20%,-100%);filter:drop-shadow(0 3px 5px rgba(38,43,51,.225))">🚩</div>', anchor: new naver.maps.Point(0, 0) } });
     toast('📍 ' + (a.road || a.jibun));
+    // '새 세차장 추가' 중이면 찾은 주소 자리로 핀을 옮기고 주소칸도 채움
+    if(tab === 'add' && locEdit && locEdit.id === 'new') {
+      addrMarker.setMap(null);
+      const ain = document.querySelector('.card.sel [data-k="addr"]');
+      if(ain && a.road) ain.value = a.road;
+      moveLoc(a.lat, a.lng, 'addr');
+    }
   };
   q.oninput = find;
   q.onkeydown = e => {
@@ -1515,7 +1568,7 @@ async function orphanBanner() {
   const list = document.getElementById('list');
   const b = document.createElement('div');
   b.className = 'msg';
-  b.style.cssText = 'margin-bottom:10px;padding:12px;border-radius:14px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.4);color:#fde68a';
+  b.style.cssText = 'margin-bottom:10px;padding:12px;border-radius:14px;background:rgba(229,154,79,.1);border:1px solid rgba(229,154,79,.4);color:#9A4F12';
   b.innerHTML = `📷 처리가 끝났거나 저장되지 못한 제보의 사진이 <b>${rows.length}장</b> 남아 있어요 <button class="mini" type="button" style="margin-left:6px">남은 사진 정리</button>`;
   b.querySelector('button').onclick = async () => {
     if(!(await PPX.ask(`남은 사진 ${rows.length}장을 지울까요? 되돌릴 수 없어요.`, { ok: '지우기', danger: true }))) return;
@@ -1694,6 +1747,28 @@ async function act(card, id, what, btn) {
       if(what === 'block' && !(await PPX.ask('이 사람(기기)이 앞으로 제보·요청을 못 보내게 할까요?', { ok: '막기', danger: true }))) { btns.forEach(b => b.disabled = false); return; }
       await PPX.adminBlock(it.reporter, what === 'block');
       toast(what === 'block' ? '막았어요. 이 사람의 새 제보는 들어오지 않아요' : '다시 받을 수 있게 했어요');
+    } else if(what === 'clear') {
+      items = [blankPlace()]; selId = 'new'; resetLoc(); render(); showOnMap();
+      return;
+    } else if(what === 'create') {
+      const fields = readFields(card);
+      const stop = msg => { toast(msg, true); btns.forEach(b => b.disabled = false); };
+      if(!fields.name) return stop('이름을 입력해 주세요');
+      if(!locMoved()) return stop('핀 자리를 먼저 정해 주세요 (주소로 핀 옮기기, 또는 지도 누르기)');
+      fields.lat = +locEdit.lat.toFixed(6); fields.lng = +locEdit.lng.toFixed(6);
+      if(!fields.region) fields.region = regionOf(fields.addr, fields.lat, fields.lng);
+      if(!fields.region) return stop('지역을 입력해 주세요 (예: 인천 남동구)');
+      const near = nearbyOf(fields, null).filter(x => x.d < 50);
+      if(near.length && !(await PPX.ask(`핀에서 ${Math.round(near[0].d)}m 안에 이미 '${near[0].p.name}'이(가) 있어요.\n같은 곳이 아니면 그대로 추가할까요?`, { ok: '추가하기' })))
+        return stop('추가하지 않았어요');
+      const row = { ...fields, source: 'admin' };
+      if(!row.addr) row.addr = '';
+      const { data, error } = await PPX.db.from('places').insert(row).select('id,name,status').single();
+      if(error) throw error;
+      toast(`'${data.name}'을(를) ${data.status === 'approved' ? '지도에 바로 등록했어요 ✅' : '저장했어요 (지도에는 숨김)'}`);
+      try { approved = await PPX.approvedPlaces(); } catch(e) {}
+      items = [blankPlace()]; selId = 'new'; resetLoc(); render(); showOnMap();
+      return;
     } else if(what === 'save') {
       const fields = readFields(card);
       if(!fields.name) { toast('이름을 입력해 주세요', true); btns.forEach(b => b.disabled = false); return; }
