@@ -1,23 +1,23 @@
 /* 세차하기 좋은 날 상자 (홈·지역 페이지 등). 색 이름은 화면마다 달라서 여기서 따로 정함 */
-.ww{--ww-line:rgba(14,165,233,.18);--ww-muted:rgba(186,230,253,.6);--ww-aqua:#22d3ee;--ww-sky:#0ea5e9;color:#fff;font-family:'Noto Sans KR',sans-serif;text-align:left;word-break:keep-all}
-.ww{max-width:560px;margin:0 auto;padding:24px 18px 22px;border-radius:24px;background:rgba(7,24,40,.78);border:1px solid var(--ww-line);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.ww{--ww-line:rgba(38,43,51,.12);--ww-muted:rgba(38,43,51,.62);--ww-aqua:#262B33;--ww-sky:#262B33;color:#262B33;font-family:'Noto Sans KR',sans-serif;text-align:left;word-break:keep-all}
+.ww{max-width:560px;margin:0 auto;padding:24px 18px 22px;border-radius:24px;background:#FFFFFF;border:1px solid var(--ww-line)}
 @media(max-width:600px){.ww{margin:0 16px}}
 .ww-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
-.ww-title{font-weight:900;font-size:19px;letter-spacing:-.3px}
-.ww-where{font-size:12px;color:var(--ww-aqua);font-weight:700}
+.ww-title{font-weight:900;font-size:19px;letter-spacing:-.3px;display:flex;align-items:center;gap:7px}.ww-title .ic{width:20px;height:20px}
+.ww-where{font-size:12px;color:var(--ww-muted);font-weight:700}
 .ww-loc{display:flex;gap:6px;margin:10px 0 12px}
-.ww-sel{flex:1;min-width:0;font-family:inherit;font-size:14px;font-weight:700;color:#fff;background:rgba(14,165,233,.12);border:1px solid var(--ww-line);border-radius:10px;padding:8px 8px}
-.ww-sel option{color:#04111e}
-.ww-gps{flex:none;font-family:inherit;font-size:13px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--ww-sky),var(--ww-aqua));border:none;border-radius:10px;padding:8px 11px;cursor:pointer}
+.ww-sel{flex:1;min-width:0;font-family:inherit;font-size:14px;font-weight:700;color:#262B33;background:#F2F1EC;border:1px solid var(--ww-line);border-radius:10px;padding:8px 8px}
+.ww-sel option{color:#262B33}
+.ww-gps{flex:none;font-family:inherit;font-size:13px;font-weight:700;color:#F2F1EC;background:#262B33;border:none;border-radius:10px;padding:8px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:4px}.ww-gps .ic{width:15px;height:15px;color:#B5C95F}
 .ww-sum{font-size:13px;color:var(--ww-muted);min-height:20px;margin-bottom:14px;line-height:1.6}
-.ww-sum b{color:#fff}.ww-sum b.g{color:#4ade80}
-.ww-day.soso{background:rgba(250,204,21,.08)}
-.ww-day.skip{background:rgba(248,113,113,.10)}
-.ww-day.skip .ww-t{color:#fca5a5}
+.ww-sum b{color:#262B33}.ww-sum b.g{color:#4F5E12}
+.ww-day.soso{background:#EFEDE7}
+.ww-day.skip{background:#F8E1CB}
+.ww-day.skip .ww-t{color:#9A4F12}
 .ww-day.rain{background:rgba(148,163,184,.10);opacity:.7}
-.ww-day.clear{background:rgba(255,255,255,.05)}
+.ww-day.clear{background:rgba(38,43,51,.035)}
 .ww-tp{font-size:11px;font-weight:700;margin-top:3px;white-space:nowrap;letter-spacing:-.5px}
-.ww-lo{color:#93c5fd;font-style:normal}.ww-hi{color:#fca5a5;font-style:normal}
+.ww-lo{color:#56661A;font-style:normal}.ww-hi{color:#C82828;font-style:normal}
 .ww-tp .sl{color:var(--ww-muted);font-weight:400;margin:0 1px}
 .ww-dust{margin-top:14px;padding:12px 0;border-top:1px solid var(--ww-line);border-bottom:1px solid var(--ww-line);display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px}
 .ww-dust:empty{display:none}
@@ -25,37 +25,37 @@
 .ww-dd{font-size:13px;display:flex;align-items:baseline;gap:6px}
 .ww-dl{color:var(--ww-muted);font-weight:700}
 .ww-dd small{font-size:11px;color:var(--ww-muted)}
-.ww-g1{color:#60a5fa}.ww-g2{color:#4ade80}.ww-g3{color:#fbbf24}.ww-g4{color:#f87171}
+.ww-g1{color:#2563EB}.ww-g2{color:#2E7D4F}.ww-g3{color:#A85A16}.ww-g4{color:#C82828}
 .ww-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
 .ww-wd{text-align:center;font-size:11px;font-weight:700;color:var(--ww-muted);padding-bottom:2px}
-.ww-wd.sun{color:#fca5a5}.ww-wd.sat{color:#93c5fd}
-.ww-day{border-radius:11px;padding:6px 1px 6px;text-align:center;background:rgba(255,255,255,.04);border:1px solid transparent;min-height:96px}
+.ww-wd.sun{color:#C82828}.ww-wd.sat{color:#56661A}
+.ww-day{border-radius:11px;padding:6px 1px 6px;text-align:center;background:rgba(38,43,51,.028);border:1px solid transparent;min-height:96px}
 .ww-day.empty{background:none}
-.ww-day.today{border-color:var(--ww-aqua)}
-.ww-day.good{background:rgba(74,222,128,.16)}
-.ww-day.cold{background:rgba(147,197,253,.12)}
+.ww-day.today{border-color:#262B33;border-width:1.5px}
+.ww-day.good{background:#E6EFBE}
+.ww-day.cold{background:#E4EAF2}
 .ww-date{font-size:12px;font-weight:700}
 .ww-day.today .ww-date{color:var(--ww-aqua)}
 .ww-ic{font-size:20px;line-height:1.4}
 .ww-t{font-size:10px;font-weight:700;letter-spacing:-.4px;white-space:nowrap;overflow:hidden}
-.ww-day.good .ww-t{color:#4ade80}
+.ww-day.good .ww-t{color:#4F5E12}
 .ww-p{font-size:9.5px;color:var(--ww-muted);margin-top:1px;white-space:nowrap;letter-spacing:-.7px}
 .ww-msg{grid-column:1/-1;text-align:center;font-size:13px;color:var(--ww-muted);padding:24px 0}
 .ww-legend{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:12px;font-size:11px;color:var(--ww-muted)}
-.ww-legend .good{color:#4ade80}
-.ww-note{margin-top:8px;font-size:11px;color:rgba(186,230,253,.45)}
+.ww-legend .good{color:#4F5E12}
+.ww-note{margin-top:8px;font-size:11px;color:rgba(61,67,76,.65)}
 .ww-note a{color:inherit}
 
 .ww [hidden]{display:none!important}
 .ww{scroll-margin-top:80px}
 /* 가이드 글 끝 한 줄 상자 (tools/build_seo.py ww_line) */
-.ww-guide{display:block;margin:18px 0;padding:14px 16px;border-radius:16px;background:rgba(7,24,40,.78);border:1px solid rgba(14,165,233,.3);color:#fff;text-decoration:none;font-family:'Noto Sans KR',sans-serif}
-.ww-guide.good{border-color:rgba(74,222,128,.55)}
-.ww-guide.skip,.ww-guide.rain{border-color:rgba(248,113,113,.45)}
-.ww-gq{display:block;font-size:13px;color:rgba(186,230,253,.7);font-weight:700}
+.ww-guide{display:block;margin:18px 0;padding:14px 16px;border-radius:16px;background:#FFFFFF;border:1px solid rgba(38,43,51,.12);color:#262B33;text-decoration:none;font-family:'Noto Sans KR',sans-serif}
+.ww-guide.good{border-color:#B5C95F}
+.ww-guide.skip,.ww-guide.rain{border-color:#E59A4F}
+.ww-gq{display:block;font-size:13px;color:rgba(61,67,76,.7);font-weight:700}
 .ww-gl{display:block;font-size:15px;font-weight:900;margin:4px 0 6px}
-.ww-gb{font-size:13px;font-weight:700;color:#22d3ee}
+.ww-gb{font-size:13px;font-weight:700;color:#56661A}
 /* 지역 페이지 안에 들어갈 때 (seo.css 의 h2·여백과 맞춤) */
 .ww.ww-in{margin:18px 0;max-width:none}
 .ww h2.ww-title{margin:0;padding:0;border:0;font-size:19px}
-.ww-note{margin-top:8px;font-size:11px;color:rgba(186,230,253,.45)}
+.ww-note{margin-top:8px;font-size:11px;color:rgba(61,67,76,.65)}

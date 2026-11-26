@@ -46,21 +46,21 @@
     const body = encodeURIComponent(`응모번호: ${m.code}\n한마디를 남긴 세차장 이름: \n`);
     const css = document.createElement('style');
     css.textContent = `.pw-ov{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:22px}
-.pw-box{width:100%;max-width:360px;background:#0d1e35;background-image:linear-gradient(135deg,rgba(245,183,43,.22),rgba(14,165,233,.08));border:1px solid rgba(245,183,43,.6);border-radius:24px;padding:24px 20px 18px;text-align:center;color:#fff;font-family:inherit}
-.pw-code{font-size:28px;font-weight:900;letter-spacing:2px;color:#fbbf24;margin:6px 0;user-select:all}
+.pw-box{width:100%;max-width:360px;background:#FFFFFF;background-image:linear-gradient(135deg,rgba(229,154,79,.22),rgba(181,201,95,.104));border:1px solid rgba(229,154,79,.6);border-radius:24px;padding:24px 20px 18px;text-align:center;color:#262B33;font-family:inherit}
+.pw-code{font-size:28px;font-weight:900;letter-spacing:2px;color:#A85A16;margin:6px 0;user-select:all}
 .pw-b{display:flex;gap:8px;margin-top:14px}.pw-b a,.pw-b button{flex:1;min-height:48px;border:none;border-radius:14px;font:inherit;font-weight:900;font-size:14px;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center}
-.pw-copy{background:rgba(255,255,255,.1);color:#fff}.pw-mail{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#04111e}
-.pw-x{margin-top:12px;background:none;border:none;color:#94a3b8;font:inherit;font-size:13px;min-height:40px;cursor:pointer}`;
+.pw-copy{background:rgba(38,43,51,.07);color:#262B33}.pw-mail{background:linear-gradient(135deg,#E59A4F,#E59A4F);color:#F2F1EC}
+.pw-x{margin-top:12px;background:none;border:none;color:#6B7078;font:inherit;font-size:13px;min-height:40px;cursor:pointer}`;
     document.head.appendChild(css);
     const ov = document.createElement('div');
     ov.className = 'pw-ov';
     ov.innerHTML = `<div class="pw-box" role="dialog" aria-label="당첨 안내">
       <div style="font-size:46px;line-height:1">🎉</div>
       <div style="font-size:21px;font-weight:900;margin-top:8px">기프티콘에 당첨됐어요!</div>
-      <div style="font-size:13px;color:#bae6fd;margin-top:4px">${md(m.week)}~${md(addDays(m.week, 6))} 회차 · ${m.won === 'member' ? '회원 추첨' : '누구나 추첨'}</div>
-      <div style="font-size:12px;color:#94a3b8;margin-top:14px">내 전체 응모번호 (나만 볼 수 있어요)</div>
+      <div style="font-size:13px;color:#3D434C;margin-top:4px">${md(m.week)}~${md(addDays(m.week, 6))} 회차 · ${m.won === 'member' ? '회원 추첨' : '누구나 추첨'}</div>
+      <div style="font-size:12px;color:#6B7078;margin-top:14px">내 전체 응모번호 (나만 볼 수 있어요)</div>
       <div class="pw-code">${esc(m.code)}</div>
-      <div style="font-size:13px;line-height:1.7;color:#e2e8f0"><b>${md(until)}(${wk(until)})까지</b> 이 번호와 한마디를 남긴 세차장 이름을<br><b>ppaxse@gmail.com</b>으로 보내 주세요</div>
+      <div style="font-size:13px;line-height:1.7;color:#3D434C"><b>${md(until)}(${wk(until)})까지</b> 이 번호와 한마디를 남긴 세차장 이름을<br><b>ppaxse@gmail.com</b>으로 보내 주세요</div>
       <div class="pw-b"><button class="pw-copy" type="button">📋 번호 복사</button><a class="pw-mail" href="mailto:ppaxse@gmail.com?subject=${subj}&body=${body}">✉️ 메일 보내기</a></div>
       <button class="pw-x" type="button">닫기 · [내 정보]에서 다시 볼 수 있어요</button></div>`;
     const close = () => { SS('ppxWinSeen_' + m.week, '1'); ov.remove(); };

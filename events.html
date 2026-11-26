@@ -8,18 +8,18 @@
 <link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#04111e">
+<meta name="theme-color" content="#F2F1EC">
 <meta name="apple-mobile-web-app-title" content="빡세">
 <title>이벤트 · 빡세</title>
 <meta name="description" content="빡세 이벤트 — 한마디 남기고 기프티콘 받기, 세차장·세차용품 이벤트, 당첨자 발표">
 <link rel="canonical" href="https://ppaxse.com/events.html">
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;700;900&display=swap" rel="stylesheet">
 <style>
-:root{--deep:#04111e;--sky:#0ea5e9;--aqua:#22d3ee;--foam:#bae6fd;--line:rgba(14,165,233,.18);--muted:rgba(186,230,253,.6);--card:rgba(7,24,40,.88)}
+:root{--deep:#F2F1EC;--sky:#262B33;--aqua:#56661A;--foam:#3D434C;--line:rgba(38,43,51,.12);--muted:rgba(38,43,51,.62);--card:#FFFFFF}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;background:var(--deep);overflow-x:hidden}
-.bg{position:fixed;inset:0;background:radial-gradient(ellipse 60% 45% at 20% 5%,rgba(14,165,233,.18),transparent 55%),radial-gradient(ellipse 50% 40% at 85% 90%,rgba(6,182,212,.14),transparent 50%);pointer-events:none}
-.topbar{position:fixed;top:0;left:0;right:0;z-index:300;backdrop-filter:blur(20px);background:rgba(4,17,30,.92);border-bottom:1px solid var(--line)}
+html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#262B33;background:var(--deep);overflow-x:hidden}
+.bg{position:fixed;inset:0;background:radial-gradient(ellipse 60% 45% at 20% 5%,rgba(181,201,95,.234),transparent 55%),radial-gradient(ellipse 50% 40% at 85% 90%,rgba(181,201,95,.182),transparent 50%);pointer-events:none}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:300;backdrop-filter:blur(20px);background:rgba(242,241,236,.92);border-bottom:1px solid var(--line)}
 .topbar-inner{display:flex;align-items:center;gap:10px;padding:14px 18px;min-height:56px}
 .topbar-title{font-family:'Black Han Sans',sans-serif;font-size:19px;letter-spacing:-.3px}
 .topbar-title em{color:var(--aqua);font-style:normal}
@@ -28,43 +28,45 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
 .sub{color:var(--muted);font-size:13px;margin:2px 0 14px}
 .tabs{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto}
 .tabs button{flex:none;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:none;color:var(--foam);font:inherit;font-size:13px;font-weight:700;cursor:pointer;min-height:36px}
-.tabs .on{background:rgba(34,211,238,.15);border-color:var(--aqua);color:#fff}
+.tabs .on{background:rgba(181,201,95,.195);border-color:var(--aqua);color:#262B33}
 .ev{display:flex;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:12px;cursor:pointer;text-decoration:none;color:inherit}
 .ev.end{opacity:.55}
-.ev .th{width:60px;height:60px;border-radius:14px;flex:none;display:flex;align-items:center;justify-content:center;font-size:28px;background:rgba(14,165,233,.15)}
+.ev .th{width:60px;height:60px;border-radius:14px;flex:none;display:flex;align-items:center;justify-content:center;font-size:28px;background:rgba(181,201,95,.195)}
 .ev .tt{font-size:15px;font-weight:900;line-height:1.4}
 .ev .dl{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.65}
-.ev .now{color:#34d399;font-weight:900}
+.ev .now{color:#2E7D4F;font-weight:900}
 .st{display:inline-block;font-size:11px;font-weight:900;padding:3px 8px;border-radius:999px;margin:0 4px 6px 0}
-.st.on{background:rgba(16,185,129,.18);color:#34d399;border:1px solid rgba(16,185,129,.5)}
-.st.win{background:rgba(245,183,43,.18);color:#fbbf24;border:1px solid rgba(245,183,43,.5)}
-.st.end{background:rgba(148,163,184,.15);color:#94a3b8;border:1px solid rgba(148,163,184,.35)}
+.st.on{background:rgba(16,185,129,.18);color:#2E7D4F;border:1px solid rgba(16,185,129,.5)}
+.st.win{background:rgba(229,154,79,.18);color:#A85A16;border:1px solid rgba(229,154,79,.5)}
+.st.end{background:rgba(148,163,184,.15);color:#6B7078;border:1px solid rgba(148,163,184,.35)}
 .pin{font-size:11px;font-weight:900;color:var(--aqua)}
 .tag{display:inline-block;font-size:10px;font-weight:900;padding:2px 6px;border-radius:6px;vertical-align:middle;margin-left:4px}
-.tag.sp{color:#c4b5fd;border:1px solid rgba(167,139,250,.6);background:rgba(124,58,237,.2)}
-.tag.ad{color:#f5b72b;border:1px solid rgba(245,183,43,.55);background:rgba(245,183,43,.18)}
-.tag.hid{color:#fca5a5;border:1px solid rgba(239,68,68,.5);background:rgba(239,68,68,.12)}
+.tag.sp{color:#6D28D9;border:1px solid rgba(167,139,250,.6);background:rgba(124,58,237,.2)}
+.tag.ad{color:#A85A16;border:1px solid rgba(229,154,79,.55);background:rgba(229,154,79,.18)}
+.tag.hid{color:#C82828;border:1px solid rgba(239,68,68,.5);background:rgba(239,68,68,.12)}
 .empty{text-align:center;color:var(--muted);font-size:13px;padding:40px 0;line-height:1.8}
-.hero{border-radius:20px;padding:18px;background:linear-gradient(135deg,rgba(14,165,233,.22),rgba(124,58,237,.18));border:1px solid rgba(34,211,238,.35);margin-bottom:14px}
-.hero.win{background:linear-gradient(135deg,rgba(245,183,43,.25),rgba(14,165,233,.12));border-color:rgba(245,183,43,.5)}
-.hero.sp{background:linear-gradient(135deg,rgba(124,58,237,.3),rgba(14,165,233,.15));border-color:rgba(167,139,250,.5)}
+.hero{border-radius:20px;padding:18px;background:linear-gradient(135deg,rgba(181,201,95,.286),rgba(124,58,237,.18));border:1px solid rgba(150,170,60,.35);margin-bottom:14px}
+.hero.win{background:linear-gradient(135deg,rgba(229,154,79,.25),rgba(181,201,95,.156));border-color:rgba(229,154,79,.5)}
+.hero.sp{background:linear-gradient(135deg,rgba(124,58,237,.3),rgba(181,201,95,.195));border-color:rgba(167,139,250,.5)}
 .hero h1{font-size:21px;font-weight:900;line-height:1.4;margin-top:4px}
 .hero p{font-size:13px;color:var(--foam);margin-top:8px;line-height:1.6}
 .box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;font-size:14px;line-height:1.75}
 .box h3{font-size:15px;color:var(--aqua);margin-bottom:6px}
 .box .dim{color:var(--muted);font-size:12px}
 .codes{font-size:19px;font-weight:900;letter-spacing:1px}
-.claim{border-color:rgba(245,183,43,.6)}.claim h3{color:#fbbf24}
-.myinfo{margin-top:8px;padding:8px 10px;border-radius:10px;background:rgba(34,211,238,.1);font-size:13px}
-.mine{background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.4);border-radius:14px;padding:12px;font-size:13px;margin-bottom:12px;line-height:1.7}
-.btn{display:block;text-align:center;padding:15px;border-radius:14px;font-weight:900;font-size:15px;color:#04111e;background:linear-gradient(135deg,#38bdf8,#22d3ee);text-decoration:none;margin-top:4px}
+.claim{border-color:rgba(229,154,79,.6)}.claim h3{color:#A85A16}
+.myinfo{margin-top:8px;padding:8px 10px;border-radius:10px;background:rgba(181,201,95,.13);font-size:13px}
+.mine{background:rgba(181,201,95,.13);border:1px solid rgba(150,170,60,.4);border-radius:14px;padding:12px;font-size:13px;margin-bottom:12px;line-height:1.7}
+.btn{display:block;text-align:center;padding:15px;border-radius:14px;font-weight:900;font-size:15px;color:#F2F1EC;background:#262B33;text-decoration:none;margin-top:4px}
 .body{white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere}
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:600;display:flex;background:rgba(4,17,30,.97);border-top:1px solid var(--line);backdrop-filter:blur(20px);padding-bottom:env(safe-area-inset-bottom)}
-.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;text-decoration:none;color:rgba(255,255,255,.35);gap:3px;position:relative}
-.nav-item.active{color:var(--aqua)}
-.nav-item-icon{font-size:22px}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:600;display:flex;background:#FFFFFF;border-top:1px solid var(--line);backdrop-filter:blur(20px);padding-bottom:env(safe-area-inset-bottom)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;text-decoration:none;color:rgba(38,43,51,.5);gap:3px;position:relative}
+.nav-item.active{color:#262B33}
+.nav-item-icon{width:46px;height:28px;border-radius:999px;display:flex;align-items:center;justify-content:center}
+.nav-item-icon .ic{width:22px;height:22px}
+.nav-item.active .nav-item-icon{background:#DCE8A6}
 .nav-item-label{font-size:10px;font-weight:700}
-.nav-item.has-dot::after{content:'';position:absolute;top:8px;left:calc(50% + 8px);width:8px;height:8px;border-radius:50%;background:#f43f5e}
+.nav-item.has-dot::after{content:'';position:absolute;top:8px;left:calc(50% + 8px);width:8px;height:8px;border-radius:50%;background:#E59A4F}
 .claim .steps{margin:8px 0 0;padding-left:20px;line-height:1.65}.claim .steps li{margin-bottom:7px}.claim .steps .dim{font-size:12.5px}
 </style>
 </head>
@@ -78,17 +80,17 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
 <div class="content" id="content"><div class="empty">불러오는 중…</div></div>
 
 <nav class="bottom-nav">
-  <a href="map.html" class="nav-item"><div class="nav-item-icon">🗺️</div><div class="nav-item-label">지도</div></a>
-  <a href="guide/" class="nav-item"><div class="nav-item-icon">📖</div><div class="nav-item-label">세차 가이드</div></a>
-  <a href="events.html" class="nav-item active" data-ev><div class="nav-item-icon">🎁</div><div class="nav-item-label">이벤트</div></a>
-  <a href="mypage.html" class="nav-item"><div class="nav-item-icon">👤</div><div class="nav-item-label">내 정보</div></a>
+  <a href="map.html" class="nav-item"><div class="nav-item-icon"><svg class="ic" aria-hidden="true"><use href="icons/ui.svg#map"/></svg></div><div class="nav-item-label">지도</div></a>
+  <a href="guide/" class="nav-item"><div class="nav-item-icon"><svg class="ic" aria-hidden="true"><use href="icons/ui.svg#guide"/></svg></div><div class="nav-item-label">세차 가이드</div></a>
+  <a href="events.html" class="nav-item active" data-ev><div class="nav-item-icon"><svg class="ic" aria-hidden="true"><use href="icons/ui.svg#event"/></svg></div><div class="nav-item-label">이벤트</div></a>
+  <a href="mypage.html" class="nav-item"><div class="nav-item-icon"><svg class="ic" aria-hidden="true"><use href="icons/ui.svg#user"/></svg></div><div class="nav-item-label">내 정보</div></a>
 </nav>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js" integrity="sha384-uteMfOloLDGt042uDz+xHGF3ym63/WQ6rFq7murQRG8Ih7QrXGEGNtWd8688sb4O" crossorigin="anonymous"></script>
 <script src="js/config.js?v=20261117"></script>
-<script src="js/ppx.js?v=20261126c"></script>
-<script src="js/feedback.js?v=20261126c" defer></script>
-<script src="js/ev.js?v=20261123a"></script>
+<script src="js/ppx.js?v=20261126d"></script>
+<script src="js/feedback.js?v=20261126d" defer></script>
+<script src="js/ev.js?v=20261126a"></script>
 <script>
 const E = window.PPXEV || {};
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -145,7 +147,7 @@ function items() {
 function card(it) {
   if(it.type === 'weekly') {
     const n = st.all_count || 0;
-    return `<a class="ev" href="#weekly"><div class="th" style="background:linear-gradient(135deg,#0ea5e9,#7c3aed)">🎁</div><div>
+    return `<a class="ev" href="#weekly"><div class="th" style="background:linear-gradient(135deg,#262B33,#7c3aed)">🎁</div><div>
       <span class="st on">진행 중</span><span class="pin">📌 매주</span>
       <div class="tt">한마디 남기고 기프티콘 받기</div>
       <div class="dl">기간 : ${md(st.week)} ~ ${md(st.week_end)}<br>추첨 일자, 당첨자 : ${md(st.draw_date)}, ${(st.winners_all || 2) + (st.winners_member || 2)}명<br>
@@ -160,7 +162,7 @@ function card(it) {
   }
   if(it.type === 'round') {
     const r = it.r, w = r.winners || [];
-    return `<a class="ev ${it.status === 'end' ? 'end' : ''}" href="#round=${r.week}"><div class="th" style="background:rgba(245,183,43,.18)">🏆</div><div>
+    return `<a class="ev ${it.status === 'end' ? 'end' : ''}" href="#round=${r.week}"><div class="th" style="background:rgba(229,154,79,.18)">🏆</div><div>
       <span class="st ${it.status}">${it.status === 'win' ? '당첨자 발표' : '마감'}</span>
       <div class="tt">${roundNo(r.week)}회차 기프티콘 당첨번호</div>
       <div class="dl">${md(r.draw_date)} 발표 · ${w.length ? `${esc(w[0].code)}${w.length > 1 ? ` 외 ${w.length - 1}명` : ''}` : '당첨자 없음'}</div></div></a>`;

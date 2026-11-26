@@ -8,7 +8,7 @@
 <link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#04111e">
+<meta name="theme-color" content="#F2F1EC">
 <meta name="apple-mobile-web-app-title" content="빡세">
 <title>세차장지도 빡세</title>
 <meta name="naver-site-verification" content="865dfeb7020d66e3c38eedd45356b9da84554246" />
@@ -25,13 +25,13 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/ww.css?v=20261121a">
+<link rel="stylesheet" href="css/ww.css?v=20261126b">
 <style>
 :root{
-  --deep:#04111e;--deep2:#071828;--water:#0c4a6e;--ocean:#0369a1;
-  --sky:#0ea5e9;--cyan:#06b6d4;--aqua:#22d3ee;--foam:#bae6fd;
-  --mist:#f0f9ff;--white:#fff;
-  --line:rgba(14,165,233,.18);--glass:rgba(7,24,40,.72);--muted:rgba(186,230,253,.6);
+  --deep:#F2F1EC;--deep2:#FFFFFF;--water:#262B33;--ocean:#262B33;
+  --sky:#262B33;--cyan:#3A404A;--aqua:#56661A;--foam:#3D434C;
+  --mist:#262B33;--white:#262B33;
+  --line:rgba(38,43,51,.12);--glass:rgba(255,255,255,.86);--muted:rgba(38,43,51,.62);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{min-height:100%;font-family:'Noto Sans KR',sans-serif;color:var(--white);background:var(--deep);overflow-x:hidden}
@@ -42,25 +42,22 @@ p,.feat-desc,.cta-box-sub{text-wrap:pretty}
 
 /* ── BG MESH ── */
 .bg{position:fixed;inset:0;z-index:0;overflow:hidden}
+/* 2026-11-26 B안: 아이보리 바탕 + 은은한 라임·오렌지 빛 */
 .bg-gradient{position:absolute;inset:0;background:
-  radial-gradient(ellipse 80% 60% at 15% -5%,rgba(6,182,212,.22) 0%,transparent 60%),
-  radial-gradient(ellipse 60% 50% at 90% 95%,rgba(3,105,161,.28) 0%,transparent 55%),
-  radial-gradient(ellipse 40% 40% at 50% 50%,rgba(14,165,233,.07) 0%,transparent 70%),
-  linear-gradient(175deg,#04111e 0%,#071828 50%,#04111e 100%)}
-.bg-grid{position:absolute;inset:0;background-image:
-  linear-gradient(rgba(14,165,233,.04) 1px,transparent 1px),
-  linear-gradient(90deg,rgba(14,165,233,.04) 1px,transparent 1px);
-  background-size:60px 60px}
+  radial-gradient(ellipse 70% 45% at 10% -5%,rgba(181,201,95,.22) 0%,transparent 60%),
+  radial-gradient(ellipse 55% 40% at 95% 100%,rgba(229,154,79,.12) 0%,transparent 60%),
+  #F2F1EC}
+.bg-grid{display:none}
 
-/* 물방울 애니메이션 */
-.drops{position:absolute;inset:0;pointer-events:none}
+/* 물방울 애니메이션 (B안에서는 끔) */
+.drops{display:none}
 .drop{position:absolute;border-radius:50% 50% 50% 0;transform:rotate(-45deg);animation:dropFall linear infinite;opacity:0}
-.drop:nth-child(1){width:6px;height:6px;left:8%;animation-duration:9s;animation-delay:0s;background:rgba(34,211,238,.35)}
-.drop:nth-child(2){width:10px;height:10px;left:22%;animation-duration:13s;animation-delay:2s;background:rgba(14,165,233,.3)}
-.drop:nth-child(3){width:5px;height:5px;left:40%;animation-duration:8s;animation-delay:5s;background:rgba(6,182,212,.4)}
-.drop:nth-child(4){width:8px;height:8px;left:62%;animation-duration:11s;animation-delay:1s;background:rgba(186,230,253,.25)}
-.drop:nth-child(5){width:7px;height:7px;left:80%;animation-duration:10s;animation-delay:3s;background:rgba(34,211,238,.3)}
-.drop:nth-child(6){width:4px;height:4px;left:92%;animation-duration:7s;animation-delay:6s;background:rgba(14,165,233,.4)}
+.drop:nth-child(1){width:6px;height:6px;left:8%;animation-duration:9s;animation-delay:0s;background:rgba(181,201,95,.455)}
+.drop:nth-child(2){width:10px;height:10px;left:22%;animation-duration:13s;animation-delay:2s;background:rgba(181,201,95,.39)}
+.drop:nth-child(3){width:5px;height:5px;left:40%;animation-duration:8s;animation-delay:5s;background:rgba(181,201,95,.52)}
+.drop:nth-child(4){width:8px;height:8px;left:62%;animation-duration:11s;animation-delay:1s;background:rgba(38,43,51,.113)}
+.drop:nth-child(5){width:7px;height:7px;left:80%;animation-duration:10s;animation-delay:3s;background:rgba(181,201,95,.39)}
+.drop:nth-child(6){width:4px;height:4px;left:92%;animation-duration:7s;animation-delay:6s;background:rgba(181,201,95,.52)}
 @keyframes dropFall{
   0%{opacity:0;top:-20px}
   10%{opacity:.8}
@@ -69,15 +66,19 @@ p,.feat-desc,.cta-box-sub{text-wrap:pretty}
 }
 
 /* ── NAV ── */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);background:rgba(4,17,30,.6);border-bottom:1px solid var(--line)}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);background:rgba(242,241,236,.6);border-bottom:1px solid var(--line)}
 .nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none}
-.nav-logo{width:38px;height:38px;border-radius:14px;background:linear-gradient(135deg,var(--ocean),var(--aqua));display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 20px rgba(6,182,212,.35)}
+.nav-logo{width:38px;height:38px;border-radius:12px;background:#262B33;display:flex;align-items:center;justify-content:center;color:#B5C95F}
+.nav-logo svg{width:22px;height:22px}
 .nav-name{font-family:'Noto Sans KR',sans-serif;font-weight:900;font-size:20px;color:var(--white);letter-spacing:-.5px}
-.nav-name em{color:var(--aqua);font-style:normal}
+.nav-name em{color:#E08A3C;font-style:normal}
+.ic{width:18px;height:18px;flex:none;vertical-align:-3px}
 .nav-links{display:flex;gap:8px}
 .nav-btn{padding:8px 18px;border-radius:12px;font-size:13px;font-weight:700;font-family:inherit;text-decoration:none;cursor:pointer;border:none;transition:.2s}
-.nav-btn.ghost{background:rgba(255,255,255,.06);border:1px solid var(--line);color:rgba(255,255,255,.8)}
-.nav-btn.fill{background:linear-gradient(135deg,var(--sky),var(--aqua));color:var(--white);box-shadow:0 4px 16px rgba(14,165,233,.35)}
+.nav-btn.ghost{background:#FFFFFF;border:1px solid var(--line);color:#262B33}
+.nav-btn{border-radius:999px;display:inline-flex;align-items:center;gap:6px}
+.nav-btn.fill{background:#262B33;color:#F2F1EC}
+.nav-btn.fill .ic{color:#B5C95F;width:16px;height:16px}
 
 /* ── MAIN ── */
 main{position:relative;z-index:5}
@@ -86,18 +87,22 @@ main{position:relative;z-index:5}
 .inst-top{max-width:420px;margin:0 auto;padding:80px 20px 0}
 .pi-on .hero{min-height:calc(100vh - 160px);padding-top:30px}
 .hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:110px 24px 60px;text-align:center}
-.hero-eyebrow{display:inline-flex;align-items:center;gap:7px;padding:6px 14px;border-radius:999px;background:rgba(6,182,212,.12);border:1px solid rgba(6,182,212,.35);font-size:12px;font-weight:700;color:var(--aqua);letter-spacing:1.5px;margin-bottom:28px;animation:fadeUp .7s ease both}
-.hero-eyebrow svg{width:14px;height:14px;fill:var(--aqua)}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:7px;padding:6px 14px;border-radius:999px;background:#FFFFFF;border:1px solid var(--line);font-size:12px;font-weight:700;color:#262B33;letter-spacing:.5px;margin-bottom:28px;animation:fadeUp .7s ease both}
+.hero-eyebrow i{width:8px;height:8px;border-radius:50%;background:#B5C95F}
 .hero-title{font-family:'Noto Sans KR',sans-serif;font-weight:900;font-size:clamp(36px,8vw,64px);line-height:1.1;letter-spacing:-1px;margin-bottom:20px;animation:fadeUp .7s .1s ease both}
 .hero-title .t1{display:block;color:var(--white)}
-.hero-title .t2{display:block;background:linear-gradient(90deg,var(--sky),var(--aqua) 50%,var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero-sub{font-size:16px;line-height:1.8;color:var(--muted);max-width:440px;margin:0 auto 40px;font-weight:300;animation:fadeUp .7s .2s ease both}
+.hero-title .t2{display:block;color:#262B33}
+.hero-title .hl{background:linear-gradient(transparent 62%,#DCE8A6 62%);padding:0 2px}
+.hero-sub{font-size:16px;line-height:1.8;color:var(--muted);max-width:440px;margin:0 auto 40px;font-weight:400;animation:fadeUp .7s .2s ease both}
 .hero-sub b{color:var(--foam);font-weight:700}
 .hero-cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;animation:fadeUp .7s .3s ease both}
-.cta-btn{display:flex;align-items:center;gap:9px;padding:16px 30px;border-radius:18px;font-size:15px;font-weight:700;font-family:inherit;text-decoration:none;cursor:pointer;border:none;transition:.25s}
-.cta-btn.primary{background:linear-gradient(135deg,var(--sky),var(--aqua));color:var(--white);box-shadow:0 14px 40px rgba(14,165,233,.38)}
+.cta-btn{display:flex;align-items:center;gap:11px;padding:8px 22px 8px 8px;border-radius:999px;font-size:15px;font-weight:900;font-family:inherit;text-decoration:none;cursor:pointer;border:none;transition:.25s}
+.cta-btn.primary{background:#262B33;color:#F2F1EC;box-shadow:0 12px 30px rgba(38,43,51,.18)}
+.cta-btn .ci{width:40px;height:40px;border-radius:50%;background:#B5C95F;color:#262B33;display:flex;align-items:center;justify-content:center;flex:none}
+.cta-btn .ci .ic{width:20px;height:20px}
+.cta-btn .ca{color:#B5C95F;margin-left:4px}
 .cta-btn.primary:active{transform:scale(.97)}
-.cta-btn.outline{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.16);color:var(--white)}
+.cta-btn.outline{background:rgba(38,43,51,.035);border:1px solid rgba(38,43,51,.128);color:var(--white)}
 
 .hero-kpi{display:flex;gap:28px;justify-content:center;margin-top:56px;animation:fadeUp .7s .45s ease both;flex-wrap:wrap}
 .kpi-item{text-align:center;padding:0 8px}
@@ -109,11 +114,11 @@ main{position:relative;z-index:5}
 .pi-on .hero{padding-top:24px;min-height:auto}
 .odo-title{font-size:14px;color:var(--muted);font-weight:700;margin-bottom:12px}
 .odo{display:inline-flex;gap:4px;align-items:flex-end;min-height:48px}
-.odo-d{width:32px;height:48px;overflow:hidden;background:rgba(14,165,233,.08);border:1px solid var(--line);border-radius:7px}
+.odo-d{width:32px;height:48px;overflow:hidden;background:#FFFFFF;border:1px solid var(--line);border-radius:8px;box-shadow:0 2px 6px rgba(38,43,51,.06)}
 .odo-d>div{transition:transform .8s cubic-bezier(.2,.8,.2,1);will-change:transform}   /* 2026-11-25: 1.6초→0.8초 (다 돌기 전에 지도로 넘어가는 일 줄이기) */
-.odo-d span,.odo-c{display:block;height:48px;line-height:48px;font-family:'Noto Sans KR',sans-serif;font-size:30px;font-weight:900;color:var(--aqua);font-variant-numeric:tabular-nums}
+.odo-d span,.odo-c{display:block;height:48px;line-height:48px;font-family:'Noto Sans KR',sans-serif;font-size:30px;font-weight:900;color:#262B33;font-variant-numeric:tabular-nums}
 .odo-c{display:inline-block;padding:0 1px}
-.odo-live{font-size:12px;color:#4ade80;font-weight:700;margin-top:14px}
+.odo-live{font-size:12px;color:#2E7D4F;font-weight:700;margin-top:14px}
 .odo-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#4ade80;margin-right:6px;vertical-align:1px;animation:odoPulse 1.6s infinite}
 @keyframes odoPulse{0%{box-shadow:0 0 0 0 rgba(74,222,128,.6)}100%{box-shadow:0 0 0 8px rgba(74,222,128,0)}}
 @media (max-width:360px){.odo-d{width:28px;height:42px}.odo-d span,.odo-c{height:42px;line-height:42px;font-size:26px}}
@@ -129,29 +134,31 @@ main{position:relative;z-index:5}
 .feat-grid{display:grid;grid-template-columns:1fr;gap:16px}
 @media(min-width:560px){.feat-grid{grid-template-columns:repeat(2,1fr)}}
 @media(min-width:960px){.feat-grid{grid-template-columns:repeat(4,1fr)}.feat-card{padding:26px 20px}}
-.feat-card{padding:30px 26px;border-radius:24px;background:rgba(7,24,40,.75);border:1px solid var(--line);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);position:relative;overflow:hidden;transition:.3s}
-.feat-card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(14,165,233,.05),transparent 60%);pointer-events:none}
-.feat-card:hover{border-color:rgba(6,182,212,.45);transform:translateY(-4px);box-shadow:0 24px 56px rgba(0,0,0,.4)}
-.feat-icon-wrap{width:56px;height:56px;border-radius:18px;background:linear-gradient(135deg,rgba(14,165,233,.2),rgba(34,211,238,.12));border:1px solid rgba(14,165,233,.22);display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:18px}
+.feat-card{padding:30px 26px;border-radius:24px;background:#FFFFFF;border:1px solid var(--line);position:relative;overflow:hidden;transition:.3s}
+.feat-card:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(38,43,51,.1)}
+.feat-icon-wrap{width:52px;height:52px;border-radius:16px;background:#EBE9E3;color:#262B33;display:flex;align-items:center;justify-content:center;margin-bottom:18px}
+.feat-icon-wrap .ic{width:26px;height:26px}
+.feat-card:nth-child(odd) .feat-icon-wrap{background:#E6EFBE}
+.feat-card:nth-child(even) .feat-icon-wrap{background:#F8E1CB}
 .feat-name{font-family:'Noto Sans KR',sans-serif;font-weight:900;font-size:18px;margin-bottom:9px;letter-spacing:-.1px}
-.feat-desc{font-size:13px;color:var(--muted);line-height:1.7;font-weight:300}
+.feat-desc{font-size:13px;color:var(--muted);line-height:1.7;font-weight:400}
 
 /* ── ROADMAP ── */
 
 /* ── SKILL BADGES ── */
 .skill-section{padding:88px 20px;max-width:960px;margin:0 auto;text-align:center}
 .skill-grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:32px}
-.skill-chip{display:flex;align-items:center;gap:7px;padding:10px 18px;border-radius:999px;background:rgba(7,24,40,.8);border:1px solid var(--line);font-size:13px;font-weight:700;color:var(--foam);backdrop-filter:blur(12px)}
+.skill-chip{display:flex;align-items:center;gap:7px;padding:10px 18px;border-radius:999px;background:rgba(255,255,255,.8);border:1px solid var(--line);font-size:13px;font-weight:700;color:var(--foam);backdrop-filter:blur(12px)}
 .skill-dot{width:8px;height:8px;border-radius:50%;background:var(--aqua)}
 
 /* ── BOTTOM CTA ── */
 .cta-section{padding:88px 20px;text-align:center}
-.cta-box{max-width:580px;margin:0 auto;padding:54px 36px;border-radius:32px;background:linear-gradient(135deg,rgba(14,165,233,.14),rgba(6,182,212,.07));border:1px solid rgba(14,165,233,.3);position:relative;overflow:hidden;backdrop-filter:blur(20px)}
-.cta-box::before{content:'';position:absolute;top:-60%;left:-10%;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(14,165,233,.15),transparent 65%);pointer-events:none}
+.cta-box{max-width:580px;margin:0 auto;padding:48px 30px;border-radius:32px;background:#FFFFFF;border:1px solid var(--line);position:relative;overflow:hidden}
+.cta-box::before{content:'';position:absolute;top:-40%;right:-15%;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(181,201,95,.28),transparent 65%);pointer-events:none}
 .cta-box-title{font-family:'Noto Sans KR',sans-serif;font-weight:900;font-size:26px;letter-spacing:-.5px;margin-bottom:14px}
 .cta-box-sub{font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:30px;font-weight:300}
 
-footer{position:relative;z-index:5;padding:28px 20px;text-align:center;font-size:11px;color:rgba(255,255,255,.25);font-weight:700;letter-spacing:.5px;border-top:1px solid var(--line)}
+footer{position:relative;z-index:5;padding:28px 20px;text-align:center;font-size:11px;color:rgba(38,43,51,.5);font-weight:700;letter-spacing:.5px;border-top:1px solid var(--line)}
 
 @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
 @media(max-width:480px){
@@ -174,12 +181,12 @@ footer{position:relative;z-index:5;padding:28px 20px;text-align:center;font-size
 
 <nav>
   <a href="./" class="nav-brand">
-    <div class="nav-logo">💧</div>
+    <div class="nav-logo"><svg class="ic" aria-hidden="true"><use href="icons/ui.svg#drop-fill"/></svg></div>
     <div class="nav-name">빡<em>세</em></div>
   </a>
   <div class="nav-links" id="navLinks">
     <a href="login.html" class="nav-btn ghost">로그인</a>
-    <a href="map.html" class="nav-btn fill">🗺️ 지도 열기</a>
+    <a href="map.html" class="nav-btn fill"><svg class="ic" aria-hidden="true"><use href="icons/ui.svg#map"/></svg>지도 열기</a>
   </div>
 </nav>
 
@@ -188,12 +195,12 @@ footer{position:relative;z-index:5;padding:28px 20px;text-align:center;font-size
        data-title="바탕화면에 빡세 추가" data-sub="아이콘 한 번에 세차장 지도"></div>
   <section class="hero">
     <div class="hero-eyebrow">
-      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+      <i></i>
       전국 세차장 지도 · 같이 채워가요
     </div>
     <h1 class="hero-title">
       <span class="t1">우리 동네 세차장,</span>
-      <span class="t2">빡세게 정리했어요.</span>
+      <span class="t2"><span class="hl">빡세게</span> 정리했어요.</span>
     </h1>
     <p class="hero-sub">
       셀프세차·노터치·손세차를 <b>지도</b>에서 바로 찾고<br>
@@ -201,25 +208,25 @@ footer{position:relative;z-index:5;padding:28px 20px;text-align:center;font-size
     </p>
     <div class="hero-kpi mid">
       <div class="kpi-item odo-wrap">
-        <div class="odo-title">🚗 빡세 누적 세차장</div>
+        <div class="odo-title">빡세 누적 세차장</div>
         <div class="odo" id="placeCount" role="img" aria-label="지도에 있는 세차장 수"></div>
         <div class="odo-live" id="placeLive" hidden><span class="odo-dot"></span>실시간 업데이트 중</div>
       </div>
     </div>
     <div class="hero-cta">
-      <a href="map.html" class="cta-btn primary" id="heroCta">🗺️ 내 주변 세차장 찾기</a>
+      <a href="map.html" class="cta-btn primary" id="heroCta"><span class="ci"><svg class="ic" aria-hidden="true"><use href="icons/ui.svg#map"/></svg></span><span>내 주변 세차장 찾기</span><span class="ca"><svg class="ic" aria-hidden="true"><use href="icons/ui.svg#arrow"/></svg></span></a>
     </div>
   </section>
 
   <section class="ww" id="washWeather" aria-label="세차하기 좋은 날">
     <div class="ww-head">
-      <h2 class="ww-title">☀️ 세차하기 좋은 날</h2>
+      <h2 class="ww-title"><svg class="ic" aria-hidden="true"><use href="icons/ui.svg#sun"/></svg> 세차하기 좋은 날</h2>
       <span class="ww-where" id="wwWhere"></span>
     </div>
     <div class="ww-loc">
       <select id="wwSido" class="ww-sel" aria-label="시·도 고르기"></select>
       <select id="wwSgg" class="ww-sel" aria-label="시·군·구 고르기"></select>
-      <button type="button" id="wwGps" class="ww-gps">📍 내 위치</button>
+      <button type="button" id="wwGps" class="ww-gps"><svg class="ic" aria-hidden="true"><use href="icons/ui.svg#locate"/></svg> 내 위치</button>
     </div>
     <div class="ww-sum" id="wwSum"></div>
     <div class="ww-grid" id="wwGrid"></div>
@@ -233,22 +240,22 @@ footer{position:relative;z-index:5;padding:28px 20px;text-align:center;font-size
     <h2 class="sec-title">빡세는 <em>이렇게</em> 써요</h2>
     <div class="feat-grid">
       <div class="feat-card">
-        <div class="feat-icon-wrap">🗺️</div>
+        <div class="feat-icon-wrap"><svg class="ic" aria-hidden="true"><use href="icons/ui.svg#map"/></svg></div>
         <div class="feat-name">전국 세차장을 한 지도에</div>
         <div class="feat-desc">브랜드 상관없이 전국 세차장을 네이버 지도에서 한눈에. 셀프·노터치·손세차·디테일링을 여러 개 골라 걸러 보고, 시·군·구로 바로 이동해요.</div>
       </div>
       <div class="feat-card">
-        <div class="feat-icon-wrap">💨</div>
+        <div class="feat-icon-wrap"><svg class="ic" aria-hidden="true"><use href="icons/ui.svg#drop"/></svg></div>
         <div class="feat-name">세차하는 사람이 궁금한 정보</div>
         <div class="feat-desc">폼건 되는지, 온수 나오는지, 하부세차·에어건·실내 베이가 있는지, 기본 요금은 얼마인지. 다녀온 사람들이 알려준 정보로 채워요.</div>
       </div>
       <div class="feat-card">
-        <div class="feat-icon-wrap">👍</div>
+        <div class="feat-icon-wrap"><svg class="ic" aria-hidden="true"><use href="icons/ui.svg#thumb"/></svg></div>
         <div class="feat-name">가입 없이, 버튼 몇 번</div>
         <div class="feat-desc">다녀온 세차장 정보가 맞으면 ‘정보가 맞아요’, 새로 알게 된 건 ‘정보 추가하기’. 아는 것만 누르면 돼요. 가격표 사진 한 장이면 더 좋아요.</div>
       </div>
       <div class="feat-card">
-        <div class="feat-icon-wrap">✅</div>
+        <div class="feat-icon-wrap"><svg class="ic" aria-hidden="true"><use href="icons/ui.svg#check"/></svg></div>
         <div class="feat-name">언제 확인된 정보인지 보여요</div>
         <div class="feat-desc">‘최근 확인 3일 전’처럼 정보가 얼마나 최신인지 함께 보여드려요. 정보 제보는 운영자가 확인한 뒤 반영되고, 한마디는 바로 보여요.</div>
       </div>
@@ -257,21 +264,21 @@ footer{position:relative;z-index:5;padding:28px 20px;text-align:center;font-size
 
   <div class="cta-section">
     <div class="cta-box">
-      <h2 class="cta-box-title">단골 세차장을 알려주세요 💧</h2>
+      <h2 class="cta-box-title">단골 세차장을 알려주세요</h2>
       <p class="cta-box-sub">지도에 없는 세차장은 <b>＋ 세차장 제보</b>로,<br>정보가 다르면 세차장을 눌러 알려주세요.</p>
-      <a href="map.html" class="cta-btn primary" id="bottomCta" style="justify-content:center;max-width:280px;margin:0 auto">🗺️ 지도 열기 →</a>
+      <a href="map.html" class="cta-btn primary" id="bottomCta" style="max-width:240px;margin:0 auto"><span class="ci"><svg class="ic" aria-hidden="true"><use href="icons/ui.svg#map"/></svg></span><span>지도 열기</span><span class="ca"><svg class="ic" aria-hidden="true"><use href="icons/ui.svg#arrow"/></svg></span></a>
     </div>
   </div>
 </main>
 
-<footer><a href="owner/" style="display:inline-block;margin-bottom:12px;padding:8px 14px;border-radius:999px;border:1px solid rgba(251,191,36,.4);color:#fde68a;text-decoration:none;font-size:12px;letter-spacing:0">🏪 세차장 사장님이세요? 매장 정보 직접 알려주기</a><br><a href="wash/" style="color:var(--muted);text-decoration:none">📍 지역별 세차장</a> &nbsp;·&nbsp; <a href="guide/" style="color:var(--muted);text-decoration:none">📖 세차 가이드</a><br>© 2026 빡세(Ppaxse) · <a href="privacy.html" style="color:inherit">개인정보처리방침</a> · <a href="delete-account.html" style="color:inherit">계정 삭제</a><br><span style="opacity:.6">세차장 기본 정보: 행정안전부 전국세차장표준데이터 (공공데이터포털) · 이용자 제보</span></footer>
+<footer><a href="owner/" style="display:inline-block;margin-bottom:12px;padding:8px 14px;border-radius:999px;border:1px solid rgba(229,154,79,.4);color:#9A4F12;text-decoration:none;font-size:12px;letter-spacing:0">🏪 세차장 사장님이세요? 매장 정보 직접 알려주기</a><br><a href="wash/" style="color:var(--muted);text-decoration:none">📍 지역별 세차장</a> &nbsp;·&nbsp; <a href="guide/" style="color:var(--muted);text-decoration:none">📖 세차 가이드</a><br>© 2026 빡세(Ppaxse) · <a href="privacy.html" style="color:inherit">개인정보처리방침</a> · <a href="delete-account.html" style="color:inherit">계정 삭제</a><br><span style="opacity:.6">세차장 기본 정보: 행정안전부 전국세차장표준데이터 (공공데이터포털) · 이용자 제보</span></footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js" integrity="sha384-uteMfOloLDGt042uDz+xHGF3ym63/WQ6rFq7murQRG8Ih7QrXGEGNtWd8688sb4O" crossorigin="anonymous"></script>
 <script src="js/config.js?v=20261117"></script>
-<script src="js/ppx.js?v=20261126c"></script>
-<script src="js/feedback.js?v=20261126c" defer></script>
-<script src="js/ev.js?v=20261123a"></script>
-<script src="js/install.js?v=20261116e" defer></script>
+<script src="js/ppx.js?v=20261126d"></script>
+<script src="js/feedback.js?v=20261126d" defer></script>
+<script src="js/ev.js?v=20261126a"></script>
+<script src="js/install.js?v=20261126a" defer></script>
 <script src="js/ww-regions.js?v=20261120a" defer></script>
 <script src="js/ww-core.js?v=20261125a" defer></script>
 <script src="js/wash-weather.js?v=20261120h" defer></script>
@@ -306,7 +313,7 @@ footer{position:relative;z-index:5;padding:28px 20px;text-align:center;font-size
   else if(live) live.hidden = false;
   // 지도 버튼에도 세차장 수를 바로 보여 줌 (숫자가 다 돌기 전에 눌러도 수를 볼 수 있게)
   const cta = document.getElementById('heroCta');
-  if(cta) cta.innerHTML = '🗺️ <span>전국 <b>' + str + (exact ? '' : '+') + '곳</b>에서 내 주변 찾기</span>';   // 버튼은 칸 사이를 벌리는 모양이라 글을 한 덩어리로
+  if(cta) cta.innerHTML = cta.innerHTML.replace(/<span>내 주변 세차장 찾기<\/span>/, '<span>전국 <b>' + str + (exact ? '' : '+') + '곳</b>에서 내 주변 찾기</span>');   // 버튼은 칸 사이를 벌리는 모양이라 글을 한 덩어리로
   const roll = () => {
     const H = el.querySelector('.odo-d span').offsetHeight || 48;
     cols.forEach(c => c.style.transform = 'translateY(-' + ((+c.dataset.d) * H) + 'px)');
@@ -325,7 +332,7 @@ footer{position:relative;z-index:5;padding:28px 20px;text-align:center;font-size
   if(!me) return;
   document.getElementById('navLinks').innerHTML =
     '<a href="mypage.html" class="nav-btn ghost">내 정보</a>' +
-    '<a href="map.html" class="nav-btn fill">🗺️ 지도 열기</a>';
+    '<a href="map.html" class="nav-btn fill"><svg class="ic" aria-hidden="true"><use href="icons/ui.svg#map"/></svg>지도 열기</a>';
 })();
 </script>
 </body>

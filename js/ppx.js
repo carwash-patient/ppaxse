@@ -219,13 +219,13 @@
       const prev = document.activeElement;
       const wrap = document.createElement('div');
       wrap.setAttribute('role', 'dialog'); wrap.setAttribute('aria-modal', 'true');
-      wrap.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(2,8,18,.72);display:flex;align-items:center;justify-content:center;padding:20px;font-family:inherit';
+      wrap.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(242,241,236,.72);display:flex;align-items:center;justify-content:center;padding:20px;font-family:inherit';
       const box = document.createElement('div');
-      box.style.cssText = 'width:100%;max-width:360px;background:#0f2236;border:1px solid rgba(14,165,233,.35);border-radius:18px;padding:22px 20px 18px;color:#fff;box-shadow:0 20px 50px rgba(0,0,0,.5)';
+      box.style.cssText = 'width:100%;max-width:360px;background:#FFFFFF;border:1px solid rgba(150,170,60,.35);border-radius:18px;padding:22px 20px 18px;color:#262B33;box-shadow:0 20px 50px rgba(38,43,51,.225)';
       const p = document.createElement('div');
       p.style.cssText = 'font-size:15px;line-height:1.6;white-space:pre-line;word-break:keep-all';
       p.textContent = msg; box.appendChild(p);
-      const field = el => { el.style.cssText = 'width:100%;margin-top:14px;padding:11px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.2);background:#081626;color:#fff;font-family:inherit;font-size:15px;box-sizing:border-box'; box.appendChild(el); return el; };
+      const field = el => { el.style.cssText = 'width:100%;margin-top:14px;padding:11px 12px;border-radius:12px;border:1px solid rgba(38,43,51,.16);background:#FFFFFF;color:#262B33;font-family:inherit;font-size:15px;box-sizing:border-box'; box.appendChild(el); return el; };
       let input = null;
       if (o.type) { input = field(document.createElement('input')); input.placeholder = o.type; input.autocomplete = 'off'; }
       if (o.text) { const ta = field(document.createElement('textarea')); ta.readOnly = true; ta.rows = 6; ta.value = o.text; ta.style.fontSize = '13px'; setTimeout(() => ta.select(), 0); }
@@ -234,7 +234,7 @@
       const btn = (label, main) => {
         const b = document.createElement('button'); b.type = 'button'; b.textContent = label;
         b.style.cssText = 'flex:1;min-height:46px;border-radius:12px;font-family:inherit;font-size:15px;font-weight:800;cursor:pointer;' +
-          (main ? `border:none;color:#fff;background:${o.danger ? '#ef4444' : '#0ea5e9'}` : 'border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.8)');
+          (main ? `border:none;color:#F2F1EC;background:${o.danger ? '#C82828' : '#262B33'}` : 'border:1px solid rgba(38,43,51,.16);background:transparent;color:rgba(38,43,51,.8)');
         row.appendChild(b); return b;
       };
       const no = o.cancel === false ? null : btn(o.cancel, false), yes = btn(o.ok, true);
@@ -760,10 +760,10 @@
         el.setAttribute('role', 'status');
         el.style.cssText = 'position:fixed;left:50%;top:max(14px,env(safe-area-inset-top));transform:translateX(-50%);z-index:9999;' +
           'width:min(440px,calc(100% - 32px));box-sizing:border-box;padding:14px 40px 14px 16px;border-radius:16px;' +
-          'background:#0f2a24;border:1.5px solid #34d399;color:#fff;font:14px/1.5 inherit;font-family:inherit;' +
-          'box-shadow:0 10px 30px rgba(0,0,0,.45);cursor:pointer;transition:opacity .3s';
-        el.innerHTML = lines.join('<br>') + '<br><b style="color:#34d399">알려 주셔서 고마워요!</b>' +
-          '<span aria-hidden="true" style="position:absolute;right:14px;top:10px;font-size:20px;color:rgba(255,255,255,.6)">×</span>';
+          'background:#0f2a24;border:1.5px solid #34d399;color:#262B33;font:14px/1.5 inherit;font-family:inherit;' +
+          'box-shadow:0 10px 30px rgba(38,43,51,.203);cursor:pointer;transition:opacity .3s';
+        el.innerHTML = lines.join('<br>') + '<br><b style="color:#2E7D4F">알려 주셔서 고마워요!</b>' +
+          '<span aria-hidden="true" style="position:absolute;right:14px;top:10px;font-size:20px;color:rgba(38,43,51,.6)">×</span>';
         const close = () => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); };
         el.onclick = close;
         document.body.appendChild(el);

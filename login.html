@@ -8,20 +8,17 @@
 <link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#04111e">
+<meta name="theme-color" content="#F2F1EC">
 <meta name="apple-mobile-web-app-title" content="빡세">
 <title>로그인 · 빡세</title>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;700;900&display=swap" rel="stylesheet">
 <style>
-:root{--deep:#04111e;--ocean:#0369a1;--sky:#0ea5e9;--aqua:#22d3ee;--foam:#bae6fd;--line:rgba(14,165,233,.18);--muted:rgba(186,230,253,.6)}
+:root{--deep:#F2F1EC;--ocean:#262B33;--sky:#262B33;--aqua:#56661A;--foam:#3D434C;--line:rgba(38,43,51,.12);--muted:rgba(38,43,51,.62)}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;background:var(--deep);overflow-x:hidden;display:flex;align-items:center;justify-content:center}
-.bg{position:fixed;inset:0;background:
-  radial-gradient(ellipse 65% 50% at 15% 15%,rgba(14,165,233,.2),transparent 55%),
-  radial-gradient(ellipse 50% 40% at 88% 88%,rgba(6,182,212,.18),transparent 50%),
-  linear-gradient(160deg,#04111e,#071828)}
-.bg-ring{position:fixed;width:600px;height:600px;border-radius:50%;border:1px solid rgba(14,165,233,.07);top:50%;left:50%;transform:translate(-50%,-50%);animation:ring 12s linear infinite}
-.bg-ring:nth-child(2){width:900px;height:900px;animation-duration:18s;animation-direction:reverse;border-color:rgba(6,182,212,.05)}
+html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#262B33;background:var(--deep);overflow-x:hidden;display:flex;align-items:center;justify-content:center}
+.bg{position:fixed;inset:0;background:radial-gradient(ellipse 65% 45% at 10% 0%,rgba(181,201,95,.22),transparent 60%),radial-gradient(ellipse 50% 40% at 95% 100%,rgba(229,154,79,.12),transparent 60%),#F2F1EC}
+.bg-ring{position:fixed;width:600px;height:600px;border-radius:50%;border:1px solid rgba(38,43,51,.042);top:50%;left:50%;transform:translate(-50%,-50%);animation:ring 12s linear infinite}
+.bg-ring:nth-child(2){width:900px;height:900px;animation-duration:18s;animation-direction:reverse;border-color:rgba(38,43,51,.03)}
 @keyframes ring{to{transform:translate(-50%,-50%) rotate(360deg)}}
 
 .page{position:relative;z-index:5;width:100%;max-width:420px;padding:24px 20px}
@@ -29,40 +26,40 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
 .back{display:inline-flex;align-items:center;gap:7px;color:var(--muted);font-size:13px;font-weight:700;text-decoration:none;margin-bottom:28px}
 
 .brand{text-align:center;margin-bottom:32px}
-.brand-icon{width:72px;height:72px;border-radius:24px;background:linear-gradient(135deg,var(--ocean),var(--aqua));display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 14px;box-shadow:0 12px 44px rgba(14,165,233,.38),0 0 0 1px rgba(255,255,255,.07) inset}
+.brand-icon{width:72px;height:72px;border-radius:24px;background:#262B33;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 14px;box-shadow:0 10px 30px rgba(38,43,51,.15);color:#B5C95F}
 .brand-name{font-family:'Black Han Sans',sans-serif;font-size:28px;letter-spacing:-.5px}
-.brand-name em{color:var(--aqua);font-style:normal}
+.brand-name em{color:#E08A3C;font-style:normal}
 .brand-sub{font-size:13px;color:var(--muted);margin-top:7px;font-weight:300}
 
-.card{background:rgba(7,24,40,.8);border:1px solid var(--line);border-radius:28px;padding:32px 26px;box-shadow:0 40px 100px rgba(0,0,0,.5);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);animation:popIn .45s ease}
+.card{background:rgba(255,255,255,.8);border:1px solid var(--line);border-radius:28px;padding:32px 26px;box-shadow:0 40px 100px rgba(38,43,51,.225);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);animation:popIn .45s ease}
 @keyframes popIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 
 .field{margin-bottom:14px}
 .field label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:7px;letter-spacing:.3px}
 .pw-wrap{position:relative}
 .pw-wrap input{padding-right:46px}
-.pw-eye{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.35);cursor:pointer;font-size:18px;padding:0}
-.field input{width:100%;min-height:52px;border:1.5px solid rgba(255,255,255,.1);border-radius:14px;background:rgba(4,17,30,.65);color:#fff;padding:0 16px;font-family:inherit;font-size:14px;outline:none;transition:.2s}
-.field input::placeholder{color:rgba(255,255,255,.28)}
-.field input:focus{border-color:rgba(14,165,233,.7);background:rgba(14,165,233,.07);box-shadow:0 0 0 4px rgba(14,165,233,.1)}
+.pw-eye{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(38,43,51,.5);cursor:pointer;font-size:18px;padding:0}
+.field input{width:100%;min-height:52px;border:1.5px solid rgba(38,43,51,.08);border-radius:14px;background:rgba(242,241,236,.65);color:#262B33;padding:0 16px;font-family:inherit;font-size:14px;outline:none;transition:.2s}
+.field input::placeholder{color:rgba(38,43,51,.5)}
+.field input:focus{border-color:rgba(150,170,60,.7);background:rgba(181,201,95,.091);box-shadow:0 0 0 4px rgba(38,43,51,.03)}
 
 .btn{width:100%;min-height:54px;border:none;border-radius:16px;font-family:inherit;font-size:15px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:.2s;letter-spacing:-.2px}
-.btn-primary{background:linear-gradient(135deg,var(--sky),var(--aqua));color:#fff;box-shadow:0 12px 36px rgba(14,165,233,.38);margin-top:4px}
+.btn-primary{background:#262B33;color:#F2F1EC;box-shadow:0 12px 36px rgba(38,43,51,.114);margin-top:4px}
 .btn-primary:active{transform:scale(.98)}
-.btn-guest{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.7);margin-top:10px}
+.btn-guest{background:rgba(38,43,51,.035);border:1px solid rgba(38,43,51,.08);color:rgba(38,43,51,.7);margin-top:10px}
 
-.divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:rgba(255,255,255,.25);font-size:12px}
-.divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.1)}
+.divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:rgba(38,43,51,.5);font-size:12px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(38,43,51,.07)}
 
-.join-btn{width:100%;min-height:50px;border:1.5px solid rgba(14,165,233,.3);border-radius:16px;background:transparent;color:var(--sky);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:.2s}
-.join-btn:hover{background:rgba(14,165,233,.07)}
+.join-btn{width:100%;min-height:50px;border:1.5px solid rgba(150,170,60,.3);border-radius:16px;background:transparent;color:var(--sky);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:.2s}
+.join-btn:hover{background:rgba(181,201,95,.091)}
 
 .links{display:flex;justify-content:center;gap:16px;margin-top:18px;font-size:12px}
-.links a{color:rgba(255,255,255,.5);text-decoration:none;font-weight:700}
-.links a:hover{color:#fff}
-.links span{color:rgba(255,255,255,.2)}
+.links a{color:rgba(38,43,51,.5);text-decoration:none;font-weight:700}
+.links a:hover{color:#262B33}
+.links span{color:rgba(38,43,51,.5)}
 
-.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:rgba(239,68,68,.9);color:#fff;padding:12px 22px;border-radius:14px;font-size:13px;font-weight:700;opacity:0;transition:.3s;z-index:999;backdrop-filter:blur(10px)}
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:rgba(239,68,68,.9);color:#262B33;padding:12px 22px;border-radius:14px;font-size:13px;font-weight:700;opacity:0;transition:.3s;z-index:999;backdrop-filter:blur(10px)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
 </head>
@@ -74,7 +71,7 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
 <div class="page">
   <a href="./" class="back">← 홈으로</a>
   <div class="brand">
-    <div class="brand-icon">💧</div>
+    <div class="brand-icon"><svg class="ic" aria-hidden="true" style="width:1em;height:1em;color:#B5C95F"><use href="icons/ui.svg#drop-fill"/></svg></div>
     <div class="brand-name">빡<em>세</em></div>
     <div class="brand-sub">세차 마니아들의 플랫폼</div>
   </div>
@@ -90,7 +87,7 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
         <button class="pw-eye" onclick="togglePw()">👁</button>
       </div>
     </div>
-    <button class="btn btn-primary" id="loginBtn">💧 빡세 입장</button>
+    <button class="btn btn-primary" id="loginBtn">빡세 입장</button>
     <button class="btn btn-guest" onclick="guestLogin()">가입 없이 지도 보기</button>
     <div class="divider">처음 오셨나요?</div>
     <button class="join-btn" onclick="location.href='join.html'">🫧 무료 회원가입하기</button>
@@ -103,8 +100,8 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js" integrity="sha384-uteMfOloLDGt042uDz+xHGF3ym63/WQ6rFq7murQRG8Ih7QrXGEGNtWd8688sb4O" crossorigin="anonymous"></script>
 <script src="js/config.js?v=20261117"></script>
-<script src="js/ppx.js?v=20261126c"></script>
-<script src="js/feedback.js?v=20261126c" defer></script>
+<script src="js/ppx.js?v=20261126d"></script>
+<script src="js/feedback.js?v=20261126d" defer></script>
 <script>
 // 로그인 후 돌아갈 페이지 (예: login.html?next=map.html)
 const nextPage = (() => {
@@ -136,7 +133,7 @@ btn.onclick = async () => {
   } catch(e) {
     showToast(PPX.koError(e));
   } finally {
-    btn.disabled = false; btn.textContent = '💧 빡세 입장';
+    btn.disabled = false; btn.textContent = '빡세 입장';
   }
 };
 document.getElementById('loginPw').addEventListener('keydown', e => {

@@ -8,51 +8,51 @@
 <link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#04111e">
+<meta name="theme-color" content="#F2F1EC">
 <meta name="apple-mobile-web-app-title" content="빡세">
 <title>마이페이지 · 빡세</title>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;700;900&display=swap" rel="stylesheet">
 <style>
-:root{--deep:#04111e;--ocean:#0369a1;--sky:#0ea5e9;--cyan:#06b6d4;--aqua:#22d3ee;--foam:#bae6fd;--line:rgba(14,165,233,.18);--muted:rgba(186,230,253,.6);--card:rgba(7,24,40,.88)}
+:root{--deep:#F2F1EC;--ocean:#262B33;--sky:#262B33;--cyan:#3A404A;--aqua:#56661A;--foam:#3D434C;--line:rgba(38,43,51,.12);--muted:rgba(38,43,51,.62);--card:#FFFFFF}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;background:var(--deep);overflow-x:hidden}
-.bg{position:fixed;inset:0;background:radial-gradient(ellipse 60% 45% at 20% 5%,rgba(14,165,233,.18),transparent 55%),radial-gradient(ellipse 50% 40% at 85% 90%,rgba(6,182,212,.14),transparent 50%),linear-gradient(170deg,#04111e,#071828);z-index:0}
+html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#262B33;background:var(--deep);overflow-x:hidden}
+.bg{position:fixed;inset:0;background:radial-gradient(ellipse 60% 45% at 20% 5%,rgba(181,201,95,.234),transparent 55%),radial-gradient(ellipse 50% 40% at 85% 90%,rgba(181,201,95,.182),transparent 50%),linear-gradient(170deg,#F2F1EC,#FFFFFF);z-index:0}
 
 /* TOP BAR */
-.topbar{position:fixed;top:0;left:0;right:0;z-index:300;backdrop-filter:blur(20px);background:rgba(4,17,30,.92);border-bottom:1px solid var(--line)}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:300;backdrop-filter:blur(20px);background:rgba(242,241,236,.92);border-bottom:1px solid var(--line)}
 .topbar-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 18px}
 .topbar-title{font-family:'Black Han Sans',sans-serif;font-size:19px;letter-spacing:-.3px}
 .topbar-title em{color:var(--aqua);font-style:normal}
-.logout-btn{padding:7px 14px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid var(--line);color:rgba(255,255,255,.6);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer}
+.logout-btn{padding:7px 14px;border-radius:10px;background:rgba(38,43,51,.042);border:1px solid var(--line);color:rgba(38,43,51,.6);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer}
 
 .content{position:relative;z-index:5;padding:80px 16px 100px}
 
 /* 프로필 카드 */
-.profile-card{background:linear-gradient(135deg,rgba(14,165,233,.15),rgba(6,182,212,.08));border:1px solid rgba(14,165,233,.28);border-radius:24px;padding:24px 20px;margin-bottom:16px;backdrop-filter:blur(16px);position:relative;overflow:hidden}
-.profile-card::before{content:'';position:absolute;top:-30%;right:-10%;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(14,165,233,.12),transparent 65%);pointer-events:none}
+.profile-card{background:linear-gradient(135deg,rgba(181,201,95,.195),rgba(181,201,95,.104));border:1px solid rgba(150,170,60,.28);border-radius:24px;padding:24px 20px;margin-bottom:16px;backdrop-filter:blur(16px);position:relative;overflow:hidden}
+.profile-card::before{content:'';position:absolute;top:-30%;right:-10%;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(181,201,95,.156),transparent 65%);pointer-events:none}
 .profile-top{display:flex;align-items:center;gap:16px;margin-bottom:16px}
-.avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--ocean),var(--aqua));display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;border:3px solid rgba(255,255,255,.2);flex-shrink:0;overflow:hidden}
+.avatar{width:72px;height:72px;border-radius:50%;background:#262B33;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;border:3px solid rgba(38,43,51,.16);flex-shrink:0;overflow:hidden;color:#F2F1EC}
 .avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 .profile-info{flex:1}
 .profile-nick{font-family:'Noto Sans KR',sans-serif;font-weight:700;font-size:22px;letter-spacing:-.3px;line-height:1.3;word-break:break-all}
-.profile-skill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.25);font-size:11px;font-weight:700;color:var(--aqua);margin-top:5px}
+.profile-skill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;background:rgba(181,201,95,.156);border:1px solid rgba(38,43,51,.15);font-size:11px;font-weight:700;color:var(--aqua);margin-top:5px}
 .profile-join{font-size:12px;color:var(--muted);margin-top:5px;font-weight:300}
 .profile-cars{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
-.car-chip{padding:5px 10px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);font-size:12px;font-weight:700;color:rgba(255,255,255,.7)}
+.car-chip{padding:5px 10px;border-radius:8px;background:rgba(38,43,51,.042);border:1px solid rgba(38,43,51,.08);font-size:12px;font-weight:700;color:rgba(38,43,51,.7)}
 
 /* 포인트 카드 */
-.point-card{background:linear-gradient(135deg,rgba(251,191,36,.14),rgba(245,158,11,.07));border:1px solid rgba(251,191,36,.25);border-radius:22px;padding:22px 20px;margin-bottom:16px;backdrop-filter:blur(12px)}
+.point-card{background:linear-gradient(135deg,rgba(229,154,79,.14),rgba(229,154,79,.07));border:1px solid rgba(229,154,79,.25);border-radius:22px;padding:22px 20px;margin-bottom:16px;backdrop-filter:blur(12px)}
 .point-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .point-title{font-family:'Black Han Sans',sans-serif;font-size:17px}
-.point-badge{padding:5px 11px;border-radius:8px;background:rgba(251,191,36,.15);border:1px solid rgba(251,191,36,.3);font-size:11px;font-weight:700;color:#fbbf24}
+.point-badge{padding:5px 11px;border-radius:8px;background:rgba(229,154,79,.15);border:1px solid rgba(229,154,79,.3);font-size:11px;font-weight:700;color:#A85A16}
 .point-main{display:flex;align-items:baseline;gap:6px;margin-bottom:14px}
-.point-num{font-family:'Black Han Sans',sans-serif;font-size:44px;color:#fbbf24;letter-spacing:-2px}
-.point-unit{font-size:16px;color:#fbbf24;font-weight:700}
-.point-desc{font-size:12px;color:rgba(255,255,255,.5);font-weight:300}
+.point-num{font-family:'Black Han Sans',sans-serif;font-size:44px;color:#A85A16;letter-spacing:-2px}
+.point-unit{font-size:16px;color:#A85A16;font-weight:700}
+.point-desc{font-size:12px;color:rgba(38,43,51,.5);font-weight:300}
 .earn-list{display:flex;flex-direction:column;gap:7px;margin-bottom:16px}
-.earn-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}
-.earn-left{display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.75);font-weight:400}
-.earn-pts{font-size:13px;font-weight:900;color:#fbbf24}
+.earn-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:12px;background:rgba(38,43,51,.028);border:1px solid rgba(38,43,51,.048)}
+.earn-left{display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(38,43,51,.75);font-weight:400}
+.earn-pts{font-size:13px;font-weight:900;color:#A85A16}
 
 /* 포인트 교환소 */
 .reward-section{margin-bottom:16px}
@@ -64,24 +64,24 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
 .reward-item:active{transform:scale(.98)}
 .reward-icon{font-size:30px;margin-bottom:8px}
 .reward-name{font-size:13px;font-weight:700;margin-bottom:4px}
-.reward-pts{font-size:12px;color:#fbbf24;font-weight:700;margin-bottom:10px}
-.reward-btn{width:100%;padding:8px 0;border-radius:10px;border:none;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,var(--sky),var(--aqua));color:#fff;transition:.2s}
-.reward-btn.disabled{background:rgba(255,255,255,.07);color:rgba(255,255,255,.35);cursor:not-allowed}
+.reward-pts{font-size:12px;color:#A85A16;font-weight:700;margin-bottom:10px}
+.reward-btn{width:100%;padding:8px 0;border-radius:10px;border:none;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;background:#262B33;color:#F2F1EC;transition:.2s}
+.reward-btn.disabled{background:rgba(38,43,51,.049);color:rgba(38,43,51,.5);cursor:not-allowed}
 
 /* 활동 섹션 */
 .activity-section{margin-bottom:16px}
-.activity-tabs{display:flex;gap:0;margin-bottom:14px;background:rgba(255,255,255,.05);border-radius:12px;padding:4px}
-.at-btn{flex:1;padding:8px;border:none;border-radius:9px;background:none;color:rgba(255,255,255,.45);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:.2s}
-.at-btn.active{background:rgba(14,165,233,.2);color:var(--aqua)}
+.activity-tabs{display:flex;gap:0;margin-bottom:14px;background:rgba(38,43,51,.035);border-radius:12px;padding:4px}
+.at-btn{flex:1;padding:8px;border:none;border-radius:9px;background:none;color:rgba(38,43,51,.5);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:.2s}
+.at-btn.active{background:rgba(181,201,95,.26);color:var(--aqua)}
 .activity-item{display:flex;align-items:center;gap:12px;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:16px;margin-bottom:8px;backdrop-filter:blur(10px)}
-.ai-icon{width:40px;height:40px;border-radius:12px;background:rgba(14,165,233,.12);border:1px solid rgba(14,165,233,.2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.ai-icon{width:40px;height:40px;border-radius:12px;background:rgba(181,201,95,.156);border:1px solid rgba(38,43,51,.12);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
 .ai-info{flex:1}
 .ai-title{font-size:13px;font-weight:700;margin-bottom:3px}
 .ai-sub{font-size:12px;color:var(--muted);font-weight:300}
-.ai-date{font-size:11px;color:rgba(255,255,255,.35);font-weight:300;white-space:nowrap}
+.ai-date{font-size:11px;color:rgba(38,43,51,.5);font-weight:300;white-space:nowrap}
 
 /* 빈 상태 */
-.empty{text-align:center;padding:40px 20px;color:rgba(255,255,255,.35)}
+.empty{text-align:center;padding:40px 20px;color:rgba(38,43,51,.5)}
 .empty-icon{font-size:44px;margin-bottom:12px}
 .empty-txt{font-size:14px;font-weight:700}
 .empty-sub{font-size:12px;margin-top:6px;font-weight:300}
@@ -93,30 +93,32 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
 .guest-sub{font-size:14px;color:var(--muted);margin-bottom:24px;font-weight:300;line-height:1.7}
 .guest-btns{display:flex;gap:10px}
 .g-btn{flex:1;min-height:50px;border-radius:15px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;text-decoration:none;border:none;transition:.2s}
-.g-btn.primary{background:linear-gradient(135deg,var(--sky),var(--aqua));color:#fff}
-.g-btn.ghost{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#fff}
+.g-btn.primary{background:#262B33;color:#F2F1EC}
+.g-btn.ghost{background:rgba(38,43,51,.042);border:1px solid rgba(38,43,51,.08);color:#262B33}
 
 /* BOTTOM NAV */
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:600;display:flex;background:rgba(4,17,30,.97);border-top:1px solid var(--line);backdrop-filter:blur(20px)}
-.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;text-decoration:none;color:rgba(255,255,255,.35);transition:.15s;gap:3px}
-.nav-item.active{color:var(--aqua)}
-.nav-item-icon{font-size:22px}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:600;display:flex;background:#FFFFFF;border-top:1px solid var(--line);backdrop-filter:blur(20px)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;text-decoration:none;color:rgba(38,43,51,.5);transition:.15s;gap:3px}
+.nav-item.active{color:#262B33}
+.nav-item-icon{width:46px;height:28px;border-radius:999px;display:flex;align-items:center;justify-content:center}
+.nav-item-icon .ic{width:22px;height:22px}
+.nav-item.active .nav-item-icon{background:#DCE8A6}
 .nav-item-label{font-size:10px;font-weight:700}
 .nav-item{position:relative}
-.nav-item.has-dot::after{content:'';position:absolute;top:8px;left:calc(50% + 8px);width:8px;height:8px;border-radius:50%;background:#f43f5e}
+.nav-item.has-dot::after{content:'';position:absolute;top:8px;left:calc(50% + 8px);width:8px;height:8px;border-radius:50%;background:#E59A4F}
 .nav-item.dim{opacity:.35;pointer-events:none}
 
 .req-section{margin:0 16px 18px}
-.req-item{display:flex;align-items:center;gap:10px;padding:13px 14px;border-radius:15px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);margin-bottom:8px}
+.req-item{display:flex;align-items:center;gap:10px;padding:13px 14px;border-radius:15px;background:rgba(38,43,51,.028);border:1px solid rgba(38,43,51,.056);margin-bottom:8px}
 .req-name{font-size:14px;font-weight:900}
 .req-sub{font-size:11px;color:var(--muted);font-weight:300;margin-top:2px}
 .req-state{margin-left:auto;font-size:11px;font-weight:900;padding:4px 9px;border-radius:999px;white-space:nowrap}
-.req-state.pending{background:rgba(251,191,36,.14);color:#fbbf24}
-.req-state.approved{background:rgba(16,185,129,.14);color:#34d399}
-.req-state.rejected{background:rgba(239,68,68,.12);color:#f87171}
-.req-empty{font-size:12px;color:var(--muted);padding:14px;text-align:center;border:1px dashed rgba(255,255,255,.12);border-radius:15px;line-height:1.7}
-.admin-link{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 16px 18px;padding:15px;border-radius:16px;background:linear-gradient(135deg,rgba(168,85,247,.25),rgba(14,165,233,.2));border:1px solid rgba(168,85,247,.4);color:#fff;font-weight:900;text-decoration:none;font-size:14px}
-.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(12px);background:rgba(16,185,129,.9);color:#fff;padding:11px 20px;border-radius:13px;font-size:13px;font-weight:700;opacity:0;transition:.3s;z-index:999}
+.req-state.pending{background:rgba(229,154,79,.14);color:#A85A16}
+.req-state.approved{background:rgba(16,185,129,.14);color:#2E7D4F}
+.req-state.rejected{background:rgba(239,68,68,.12);color:#C82828}
+.req-empty{font-size:12px;color:var(--muted);padding:14px;text-align:center;border:1px dashed rgba(38,43,51,.096);border-radius:15px;line-height:1.7}
+.admin-link{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 16px 18px;padding:15px;border-radius:16px;background:linear-gradient(135deg,rgba(168,85,247,.25),rgba(181,201,95,.26));border:1px solid rgba(168,85,247,.4);color:#262B33;font-weight:900;text-decoration:none;font-size:14px}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(12px);background:rgba(16,185,129,.9);color:#262B33;padding:11px 20px;border-radius:13px;font-size:13px;font-weight:700;opacity:0;transition:.3s;z-index:999}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.warn{background:rgba(239,68,68,.9)}
 </style>
@@ -134,19 +136,19 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
 <div class="content" id="content"></div>
 
 <nav class="bottom-nav">
-  <a href="map.html" class="nav-item"><div class="nav-item-icon">🗺️</div><div class="nav-item-label">지도</div></a>
-  <a href="guide/" class="nav-item"><div class="nav-item-icon">📖</div><div class="nav-item-label">세차 가이드</div></a>
-  <a href="events.html" class="nav-item" data-ev><div class="nav-item-icon">🎁</div><div class="nav-item-label">이벤트</div></a>
-  <a href="mypage.html" class="nav-item active"><div class="nav-item-icon">👤</div><div class="nav-item-label">내 정보</div></a>
+  <a href="map.html" class="nav-item"><div class="nav-item-icon"><svg class="ic" aria-hidden="true"><use href="icons/ui.svg#map"/></svg></div><div class="nav-item-label">지도</div></a>
+  <a href="guide/" class="nav-item"><div class="nav-item-icon"><svg class="ic" aria-hidden="true"><use href="icons/ui.svg#guide"/></svg></div><div class="nav-item-label">세차 가이드</div></a>
+  <a href="events.html" class="nav-item" data-ev><div class="nav-item-icon"><svg class="ic" aria-hidden="true"><use href="icons/ui.svg#event"/></svg></div><div class="nav-item-label">이벤트</div></a>
+  <a href="mypage.html" class="nav-item active"><div class="nav-item-icon"><svg class="ic" aria-hidden="true"><use href="icons/ui.svg#user"/></svg></div><div class="nav-item-label">내 정보</div></a>
 </nav>
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js" integrity="sha384-uteMfOloLDGt042uDz+xHGF3ym63/WQ6rFq7murQRG8Ih7QrXGEGNtWd8688sb4O" crossorigin="anonymous"></script>
 <script src="js/config.js?v=20261117"></script>
-<script src="js/ppx.js?v=20261126c"></script>
-<script src="js/feedback.js?v=20261126c" defer></script>
+<script src="js/ppx.js?v=20261126d"></script>
+<script src="js/feedback.js?v=20261126d" defer></script>
 <script>setTimeout(() => { if(window.PPX && PPX.thanks) PPX.thanks(); }, 1500);</script>
-<script src="js/ev.js?v=20261123a"></script>
+<script src="js/ev.js?v=20261126a"></script>
 <script>
 const escHTML = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const skillLabel={beginner:'🌱 세린이',mid:'💨 폼건은 기본이죠',pro:'✨ 디테일링 직접 함',maniac:'🫧 3시간은 기본 아닌가?'};
@@ -180,13 +182,13 @@ async function render() {
   if(!me) {
     content.innerHTML = `
       <div class="guest-box">
-        <div class="guest-icon">💧</div>
+        <div class="guest-icon"><svg class="ic" aria-hidden="true" style="width:1em;height:1em;color:#B5C95F"><use href="icons/ui.svg#drop-fill"/></svg></div>
         <div class="guest-title">${anon ? '가입 없이 쓰는 중이에요' : '빡세는 가입 없이도 쓸 수 있어요'}</div>
         <div class="guest-sub">${anon
           ? '이 기기로 보낸 요청·제보를 아래에서 볼 수 있어요.<br>가입하거나 로그인하면 이 기록이 계정으로 옮겨져서<br>다른 기기에서도 볼 수 있어요.'
           : '지도에서 세차장을 눌러 정보를 알려주거나<br>없는 세차장을 추가해 주세요. 가입은 원할 때만 하면 돼요.'}</div>
         <div class="guest-btns">
-          <a href="login.html" class="g-btn primary">💧 로그인</a>
+          <a href="login.html" class="g-btn primary">로그인</a>
           <a href="join.html" class="g-btn ghost">가입하기</a>
         </div>
       </div>
@@ -209,12 +211,12 @@ async function render() {
       ${me.car_model ? `<div class="profile-skill" style="margin-top:10px">🚗 ${escHTML(me.car_model)}</div>` : ''}
       ${carChips ? `<div class="profile-cars">${carChips}</div>` : ''}
       <details style="margin-top:12px">
-        <summary style="cursor:pointer;min-height:40px;display:flex;align-items:center;font-size:13px;color:#bae6fd">✏️ 아이콘 · 차 모델 바꾸기</summary>
+        <summary style="cursor:pointer;min-height:40px;display:flex;align-items:center;font-size:13px;color:#3D434C">✏️ 아이콘 · 차 모델 바꾸기</summary>
         <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
           <div style="display:flex;align-items:center;gap:12px"><div id="avPrev"></div><div id="avColors" style="display:flex;flex-wrap:wrap;gap:8px"></div></div>
           <div id="avTypes" style="display:flex;flex-wrap:wrap;gap:6px"></div>
-          <input id="avModel" maxlength="40" placeholder="제조사 · 모델 (예: 기아 쏘렌토)" aria-label="제조사와 모델" value="${escHTML(me.car_model || '')}" style="min-height:44px;border-radius:12px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:#fff;padding:0 12px;font-size:14px">
-          <button type="button" id="avSave" style="min-height:44px;border-radius:12px;border:0;background:#22d3ee;color:#04111e;font-weight:900;font-size:14px">저장하기</button>
+          <input id="avModel" maxlength="40" placeholder="제조사 · 모델 (예: 기아 쏘렌토)" aria-label="제조사와 모델" value="${escHTML(me.car_model || '')}" style="min-height:44px;border-radius:12px;border:1.5px solid rgba(38,43,51,.08);background:rgba(38,43,51,.028);color:#262B33;padding:0 12px;font-size:14px">
+          <button type="button" id="avSave" style="min-height:44px;border-radius:12px;border:0;background:#262B33;color:#F2F1EC;font-weight:900;font-size:14px">저장하기</button>
         </div>
       </details>
     </div>
@@ -222,7 +224,7 @@ async function render() {
     <div id="mkCard" style="background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:16px"></div>
     ${evSec}
     ${lists}
-    ${me.role === 'admin' ? '' : `<div style="margin:28px 0 8px;text-align:center"><button type="button" id="withdrawBtn" style="min-height:44px;padding:0 14px;background:none;border:0;color:rgba(255,255,255,.45);font-size:12px;text-decoration:underline;cursor:pointer">회원 탈퇴</button></div>`}`;
+    ${me.role === 'admin' ? '' : `<div style="margin:28px 0 8px;text-align:center"><button type="button" id="withdrawBtn" style="min-height:44px;padding:0 14px;background:none;border:0;color:rgba(38,43,51,.5);font-size:12px;text-decoration:underline;cursor:pointer">회원 탈퇴</button></div>`}`;
   setupAvatarEditor(me);
   drawMarketing(me.marketing_email_at, me.marketing_email_off_at);
   const wb = document.getElementById('withdrawBtn');
@@ -243,11 +245,11 @@ function drawMarketing(at, offAt) {
         <div style="font-size:12px;color:var(--muted);margin-top:4px;line-height:1.6">빡세의 혜택·이벤트 등 광고성 정보를 가입한 이메일로 보내 드려요. (선택)</div>
       </div>
       <button type="button" id="mkToggle" role="switch" aria-checked="${on}" aria-label="혜택·이벤트 소식 이메일 받기"
-        style="flex-shrink:0;width:56px;height:32px;border-radius:999px;border:0;padding:3px;cursor:pointer;background:${on ? '#22d3ee' : 'rgba(255,255,255,.18)'};transition:.2s;display:flex;justify-content:${on ? 'flex-end' : 'flex-start'}">
-        <span style="width:26px;height:26px;border-radius:50%;background:#fff;display:block"></span>
+        style="flex-shrink:0;width:56px;height:32px;border-radius:999px;border:0;padding:3px;cursor:pointer;background:${on ? '#9DB43F' : 'rgba(38,43,51,.18)'};transition:.2s;display:flex;justify-content:${on ? 'flex-end' : 'flex-start'}">
+        <span style="width:26px;height:26px;border-radius:50%;background:#FFFFFF;display:block"></span>
       </button>
     </div>
-    <div style="font-size:12px;margin-top:10px;color:${on ? '#22d3ee' : 'rgba(255,255,255,.55)'}">
+    <div style="font-size:12px;margin-top:10px;color:${on ? '#4F5E12' : 'rgba(38,43,51,.6)'}">
       ${on ? `✅ ${koDate(at)}에 동의했어요` : (offAt ? `받지 않는 중이에요 · ${koDate(offAt)}에 동의를 철회했어요` : '받지 않는 중이에요')}
     </div>`;
   document.getElementById('mkToggle').onclick = async (ev) => {
@@ -268,7 +270,7 @@ function setupAvatarEditor(me) {
   const draw = () => {
     document.getElementById('avPrev').innerHTML = PPX.carAvatar(type, color, 52);
     document.getElementById('avColors').innerHTML = AV_COLORS.map(c => `<button type="button" aria-label="색 ${c}" aria-pressed="${c === color}" data-c="${c}" style="width:30px;height:30px;border-radius:50%;padding:0;background:${c};border:${c === color ? '3px solid #0ea5e9' : '2px solid rgba(255,255,255,.35)'};box-shadow:${c === color ? '0 0 0 2px #fff' : 'none'}"></button>`).join('');
-    document.getElementById('avTypes').innerHTML = Object.entries(AV_TYPES).map(([k, l]) => `<button type="button" data-t="${k}" aria-pressed="${k === type}" style="min-height:36px;padding:0 12px;border-radius:999px;font-size:12px;font-weight:700;color:#fff;background:${k === type ? 'rgba(14,165,233,.25)' : 'rgba(255,255,255,.04)'};border:1.5px solid ${k === type ? '#0ea5e9' : 'rgba(255,255,255,.1)'}">${l}</button>`).join('');
+    document.getElementById('avTypes').innerHTML = Object.entries(AV_TYPES).map(([k, l]) => `<button type="button" data-t="${k}" aria-pressed="${k === type}" style="min-height:36px;padding:0 12px;border-radius:999px;font-size:12px;font-weight:700;color:#262B33;background:${k === type ? 'rgba(14,165,233,.25)' : 'rgba(255,255,255,.04)'};border:1.5px solid ${k === type ? '#0ea5e9' : 'rgba(255,255,255,.1)'}">${l}</button>`).join('');
     document.querySelectorAll('#avColors button').forEach(b => b.onclick = () => { color = b.dataset.c; draw(); });
     document.querySelectorAll('#avTypes button').forEach(b => b.onclick = () => { type = b.dataset.t; draw(); });
   };
@@ -305,7 +307,7 @@ async function loadMyEvents(isMember) {
   if(!mine.length) {
     if(!isMember) return;
     sec.hidden = false;
-    box.innerHTML = '<div class="req-empty">아직 응모 내역이 없어요.<br>다녀온 세차장에 한마디를 남기면 매주 기프티콘 추첨에 응모돼요.<br><a href="events.html#weekly" style="color:#22d3ee">이벤트 보기 →</a></div>';
+    box.innerHTML = '<div class="req-empty">아직 응모 내역이 없어요.<br>다녀온 세차장에 한마디를 남기면 매주 기프티콘 추첨에 응모돼요.<br><a href="events.html#weekly" style="color:#56661A">이벤트 보기 →</a></div>';
     return;
   }
   sec.hidden = false;
@@ -314,10 +316,10 @@ async function loadMyEvents(isMember) {
     const published = Date.now() >= Date.parse(draw + 'T08:00:00Z');   // 발표일 17시(한국)
     let state;
     if(m.won) state = today <= until
-      ? `<a class="req-state approved" style="text-decoration:none;background:rgba(245,183,43,.18);color:#fbbf24" href="mailto:ppaxse@gmail.com?subject=${encodeURIComponent('[빡세 당첨] 응모번호 ' + m.code)}&body=${encodeURIComponent('응모번호: ' + m.code + '\n한마디를 남긴 세차장 이름: \n')}">🎉 당첨 · ${md(until)}까지 메일</a>`
+      ? `<a class="req-state approved" style="text-decoration:none;background:rgba(229,154,79,.18);color:#A85A16" href="mailto:ppaxse@gmail.com?subject=${encodeURIComponent('[빡세 당첨] 응모번호 ' + m.code)}&body=${encodeURIComponent('응모번호: ' + m.code + '\n한마디를 남긴 세차장 이름: \n')}">🎉 당첨 · ${md(until)}까지 메일</a>`
       : '<span class="req-state rejected">🎉 당첨 · 연락 기한 지남</span>';
     else if(!published) state = `<span class="req-state pending">응모 중 · ${md(draw)} 17시 발표</span>`;
-    else state = '<span class="req-state" style="background:rgba(255,255,255,.08);color:rgba(255,255,255,.6)">당첨 안 됨</span>';
+    else state = '<span class="req-state" style="background:rgba(38,43,51,.056);color:rgba(38,43,51,.6)">당첨 안 됨</span>';
     return `<div class="req-item"><div><div class="req-name" style="letter-spacing:1px">${escHTML(m.code)}</div>
       <div class="req-sub">${md(m.week)}~${md(add(m.week, 6))} 회차 · 응모권 ${m.tickets || 0}/${mx}장${m.valid === false ? ' · 추첨 제외' : ''}</div></div>${state}</div>`;
   }).join('') + (isMember ? '' : '<div class="req-sub" style="padding:4px 4px 0;line-height:1.7">가입 없이 응모한 기록은 응모한 이 휴대폰·브라우저에서만 보여요. 가입하면 다른 기기에서도 볼 수 있어요.</div>')

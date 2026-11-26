@@ -8,33 +8,33 @@
 <link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#04111e">
+<meta name="theme-color" content="#F2F1EC">
 <meta name="apple-mobile-web-app-title" content="빡세">
 <title>회원가입 · 빡세</title>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;700;900&display=swap" rel="stylesheet">
 <style>
-:root{--deep:#04111e;--deep2:#071828;--ocean:#0369a1;--sky:#0ea5e9;--cyan:#06b6d4;--aqua:#22d3ee;--foam:#bae6fd;--line:rgba(14,165,233,.18);--glass:rgba(7,24,40,.72);--muted:rgba(186,230,253,.6)}
+:root{--deep:#F2F1EC;--deep2:#FFFFFF;--ocean:#262B33;--sky:#262B33;--cyan:#3A404A;--aqua:#56661A;--foam:#3D434C;--line:rgba(38,43,51,.12);--glass:rgba(255,255,255,.86);--muted:rgba(38,43,51,.62)}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;background:var(--deep);overflow-x:hidden}
-.bg{position:fixed;inset:0;background:radial-gradient(ellipse 70% 50% at 20% 10%,rgba(6,182,212,.2),transparent 55%),radial-gradient(ellipse 50% 40% at 85% 90%,rgba(3,105,161,.22),transparent 50%),linear-gradient(170deg,#04111e,#071828)}
+html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#262B33;background:var(--deep);overflow-x:hidden}
+.bg{position:fixed;inset:0;background:radial-gradient(ellipse 70% 50% at 20% 10%,rgba(181,201,95,.26),transparent 55%),radial-gradient(ellipse 50% 40% at 85% 90%,rgba(181,201,95,.286),transparent 50%),linear-gradient(170deg,#F2F1EC,#FFFFFF)}
 .page{position:relative;z-index:5;padding:28px 20px 60px;max-width:500px;margin:0 auto}
 .back{display:inline-flex;align-items:center;gap:7px;color:var(--muted);font-size:13px;font-weight:700;text-decoration:none;margin-bottom:28px}
 
 .brand{text-align:center;margin-bottom:32px}
-.brand-icon{width:68px;height:68px;border-radius:22px;background:linear-gradient(135deg,var(--ocean),var(--aqua));display:flex;align-items:center;justify-content:center;font-size:34px;margin:0 auto 14px;box-shadow:0 12px 40px rgba(6,182,212,.35)}
+.brand-icon{width:68px;height:68px;border-radius:22px;background:#262B33;display:flex;align-items:center;justify-content:center;font-size:34px;margin:0 auto 14px;box-shadow:0 12px 40px rgba(38,43,51,.105);color:#F2F1EC}
 .brand-name{font-family:'Black Han Sans',sans-serif;font-size:26px;letter-spacing:-.5px}
-.brand-name em{color:var(--aqua);font-style:normal}
+.brand-name em{color:#E08A3C;font-style:normal}
 .brand-sub{font-size:13px;color:var(--muted);margin-top:6px;font-weight:300}
 
-.card{background:rgba(7,24,40,.78);border:1px solid var(--line);border-radius:28px;padding:28px 24px;box-shadow:0 32px 80px rgba(0,0,0,.45);backdrop-filter:blur(20px)}
+.card{background:rgba(255,255,255,.78);border:1px solid var(--line);border-radius:28px;padding:28px 24px;box-shadow:0 32px 80px rgba(38,43,51,.203);backdrop-filter:blur(20px)}
 
 .step-bar{display:flex;align-items:center;gap:0;margin-bottom:28px}
 .step-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0;transition:.3s}
-.step-dot.done{background:linear-gradient(135deg,var(--sky),var(--aqua));color:#fff}
-.step-dot.active{background:var(--sky);color:#fff;box-shadow:0 0 0 3px rgba(14,165,233,.25)}
-.step-dot.todo{background:rgba(255,255,255,.08);border:1px solid var(--line);color:rgba(255,255,255,.3)}
-.step-line{flex:1;height:2px;background:rgba(255,255,255,.08);margin:0 4px}
-.step-line.done{background:linear-gradient(90deg,var(--sky),var(--aqua))}
+.step-dot.done{background:#262B33;color:#F2F1EC}
+.step-dot.active{background:var(--sky);color:#262B33;box-shadow:0 0 0 3px rgba(38,43,51,.075)}
+.step-dot.todo{background:rgba(38,43,51,.056);border:1px solid var(--line);color:rgba(38,43,51,.5)}
+.step-line{flex:1;height:2px;background:rgba(38,43,51,.056);margin:0 4px}
+.step-line.done{background:#262B33;color:#F2F1EC}
 
 /* 단계 패널 */
 .step-panel{display:none}.step-panel.active{display:block}
@@ -43,7 +43,7 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
 
 /* 프로필 이미지 업로더 */
 .avatar-upload{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:22px}
-.avatar-circle{width:90px;height:90px;border-radius:50%;background:rgba(14,165,233,.12);border:2px dashed rgba(14,165,233,.35);display:flex;align-items:center;justify-content:center;font-size:36px;cursor:pointer;overflow:hidden;position:relative;transition:.2s}
+.avatar-circle{width:90px;height:90px;border-radius:50%;background:rgba(181,201,95,.156);border:2px dashed rgba(150,170,60,.35);display:flex;align-items:center;justify-content:center;font-size:36px;cursor:pointer;overflow:hidden;position:relative;transition:.2s}
 .avatar-circle:hover{border-color:var(--sky)}
 .avatar-circle img{width:100%;height:100%;object-fit:cover;display:none;border-radius:50%}
 .avatar-label{font-size:12px;color:var(--muted);font-weight:700}
@@ -52,58 +52,58 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
 /* 필드 */
 .field{margin-bottom:14px}
 .field-label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:7px;letter-spacing:.3px}
-.field-label span{color:#f87171;margin-left:2px}
-.field input,.field select{width:100%;min-height:50px;border:1.5px solid rgba(255,255,255,.1);border-radius:14px;background:rgba(4,17,30,.6);color:#fff;padding:0 16px;font-family:inherit;font-size:14px;outline:none;transition:.2s;appearance:none;-webkit-appearance:none}
-.field input::placeholder{color:rgba(255,255,255,.28)}
-.field input:focus,.field select:focus{border-color:rgba(14,165,233,.7);background:rgba(14,165,233,.07);box-shadow:0 0 0 4px rgba(14,165,233,.1)}
+.field-label span{color:#C82828;margin-left:2px}
+.field input,.field select{width:100%;min-height:50px;border:1.5px solid rgba(38,43,51,.08);border-radius:14px;background:rgba(242,241,236,.6);color:#262B33;padding:0 16px;font-family:inherit;font-size:14px;outline:none;transition:.2s;appearance:none;-webkit-appearance:none}
+.field input::placeholder{color:rgba(38,43,51,.5)}
+.field input:focus,.field select:focus{border-color:rgba(150,170,60,.7);background:rgba(181,201,95,.091);box-shadow:0 0 0 4px rgba(38,43,51,.03)}
 .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .pw-wrap{position:relative}
 .pw-wrap input{padding-right:44px}
-.pw-eye{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:18px;padding:0}
+.pw-eye{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(38,43,51,.5);cursor:pointer;font-size:18px;padding:0}
 
 /* 숙련도 선택 */
 .skill-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:0}
-.skill-card{padding:16px 14px;border-radius:16px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);cursor:pointer;transition:.25s;position:relative}
-.skill-card.selected{border-color:var(--sky);background:rgba(14,165,233,.12)}
+.skill-card{padding:16px 14px;border-radius:16px;border:1.5px solid rgba(38,43,51,.08);background:rgba(38,43,51,.028);cursor:pointer;transition:.25s;position:relative}
+.skill-card.selected{border-color:var(--sky);background:rgba(181,201,95,.156)}
 .skill-card input[type=radio]{position:absolute;opacity:0;pointer-events:none}
 .skill-emoji{font-size:22px;margin-bottom:7px}
 .skill-level{font-size:11px;font-weight:700;color:var(--aqua);letter-spacing:.5px;margin-bottom:4px}
-.skill-name{font-size:13px;font-weight:700;color:#fff;line-height:1.3}
+.skill-name{font-size:13px;font-weight:700;color:#262B33;line-height:1.3}
 .skill-desc{font-size:11px;color:var(--muted);margin-top:3px;font-weight:300}
 .skill-check{position:absolute;top:10px;right:10px;width:20px;height:20px;border-radius:50%;background:var(--sky);display:flex;align-items:center;justify-content:center;font-size:11px;opacity:0;transition:.2s}
 .skill-card.selected .skill-check{opacity:1}
 
 /* 차종 칩 */
 .cartype-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:0}
-.cartype-chip{padding:8px 14px;border-radius:999px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);font-size:12px;font-weight:700;color:rgba(255,255,255,.7);cursor:pointer;transition:.2s}
-.cartype-chip.on{border-color:var(--sky);background:rgba(14,165,233,.15);color:#fff}
+.cartype-chip{padding:8px 14px;border-radius:999px;border:1.5px solid rgba(38,43,51,.08);background:rgba(38,43,51,.028);font-size:12px;font-weight:700;color:rgba(38,43,51,.7);cursor:pointer;transition:.2s}
+.cartype-chip.on{border-color:var(--sky);background:rgba(181,201,95,.195);color:#262B33}
 
 /* 동의 */
 .agree-list{display:flex;flex-direction:column;gap:10px;margin-top:4px}
-.agree-item{display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03)}
+.agree-item{display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 12px;border-radius:12px;border:1px solid rgba(38,43,51,.056);background:rgba(38,43,51,.021)}
 .agree-item input[type=checkbox]{display:none}
-.agree-box{width:22px;height:22px;border-radius:7px;border:1.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.2s;font-size:12px}
+.agree-box{width:22px;height:22px;border-radius:7px;border:1.5px solid rgba(38,43,51,.16);background:rgba(38,43,51,.035);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.2s;font-size:12px}
 .agree-item input:checked ~ .agree-box{background:var(--sky);border-color:var(--sky)}
-.agree-text{font-size:13px;color:rgba(255,255,255,.75)}
+.agree-text{font-size:13px;color:rgba(38,43,51,.75)}
 .agree-text b{color:var(--aqua)}
 
 /* 버튼 */
 .btn{width:100%;min-height:54px;border:none;border-radius:16px;font-family:inherit;font-size:15px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:.2s;letter-spacing:-.2px;margin-top:6px}
-.btn-primary{background:linear-gradient(135deg,var(--sky),var(--aqua));color:#fff;box-shadow:0 12px 32px rgba(14,165,233,.35)}
+.btn-primary{background:#262B33;color:#F2F1EC;box-shadow:0 12px 32px rgba(38,43,51,.105)}
 .btn-primary:active{transform:scale(.98)}
-.btn-back{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.7)}
+.btn-back{background:rgba(38,43,51,.042);border:1px solid rgba(38,43,51,.08);color:rgba(38,43,51,.7)}
 .btn-row{display:grid;grid-template-columns:1fr 2fr;gap:10px;margin-top:6px}
 
-.divider{text-align:center;margin:18px 0;color:rgba(255,255,255,.25);font-size:12px;position:relative}
-.divider::before,.divider::after{content:'';position:absolute;top:50%;width:40%;height:1px;background:rgba(255,255,255,.1)}
+.divider{text-align:center;margin:18px 0;color:rgba(38,43,51,.5);font-size:12px;position:relative}
+.divider::before,.divider::after{content:'';position:absolute;top:50%;width:40%;height:1px;background:rgba(38,43,51,.07)}
 .divider::before{left:0}.divider::after{right:0}
 
 .login-link{text-align:center;margin-top:18px;font-size:13px;color:var(--muted)}
 .login-link a{color:var(--sky);font-weight:700;text-decoration:none}
 
-.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:rgba(239,68,68,.9);color:#fff;padding:12px 22px;border-radius:14px;font-size:13px;font-weight:700;opacity:0;transition:.3s;z-index:999;white-space:nowrap;backdrop-filter:blur(10px)}
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:rgba(239,68,68,.9);color:#262B33;padding:12px 22px;border-radius:14px;font-size:13px;font-weight:700;opacity:0;transition:.3s;z-index:999;white-space:nowrap;backdrop-filter:blur(10px)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-#carMaker option{background:#0f2236;color:#fff}
+#carMaker option{background:#FFFFFF;color:#262B33}
 </style>
 </head>
 <body>
@@ -112,7 +112,7 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
   <a href="./" class="back">← 돌아가기</a>
 
   <div class="brand">
-    <div class="brand-icon">💧</div>
+    <div class="brand-icon"><svg class="ic" aria-hidden="true" style="width:1em;height:1em;color:#B5C95F"><use href="icons/ui.svg#drop-fill"/></svg></div>
     <div class="brand-name">빡<em>세</em></div>
     <div class="brand-sub">세차 마니아들의 플랫폼 — 함께 즐깁시다</div>
   </div>
@@ -187,7 +187,7 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
       <div class="field">
         <label class="field-label" for="carMaker">제조사 · 모델 (선택)</label>
         <div style="display:flex;gap:8px">
-          <select id="carMaker" style="flex:0 0 42%;min-height:44px;border-radius:12px;border:1.5px solid rgba(255,255,255,.1);background:#0f2236;color:#fff;padding:0 10px;font-size:14px;color-scheme:dark">
+          <select id="carMaker" style="flex:0 0 42%;min-height:44px;border-radius:12px;border:1.5px solid rgba(38,43,51,.08);background:#FFFFFF;color:#262B33;padding:0 10px;font-size:14px;color-scheme:dark">
             <option value="">제조사</option>
             <option>현대</option><option>기아</option><option>제네시스</option><option>KG모빌리티</option><option>르노코리아</option><option>쉐보레</option>
             <option>BMW</option><option>벤츠</option><option>아우디</option><option>폭스바겐</option><option>볼보</option><option>테슬라</option>
@@ -288,10 +288,10 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
             <div style="font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5">동의하지 않아도 가입할 수 있어요. 마이페이지에서 언제든 끌 수 있어요.</div></div>
         </label>
       </div>
-      <div style="margin-top:10px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);font-size:12px;line-height:1.7;color:var(--muted)">
-        <b style="color:#fff">받는 정보</b> 이메일, 비밀번호(암호화), 닉네임 · 선택: 차종·숙련도·제조사/모델·아이콘 색·알게 된 경로<br>
-        <b style="color:#fff">쓰는 곳</b> 로그인·본인 확인, 문의 응대, 기프티콘 추첨 · 동의한 분께만 혜택·이벤트 소식 메일<br>
-        <b style="color:#fff">보관</b> 탈퇴할 때까지 (마이페이지에서 언제든 탈퇴하면 바로 삭제)
+      <div style="margin-top:10px;padding:12px 14px;border-radius:12px;background:rgba(38,43,51,.021);border:1px solid rgba(38,43,51,.056);font-size:12px;line-height:1.7;color:var(--muted)">
+        <b style="color:#262B33">받는 정보</b> 이메일, 비밀번호(암호화), 닉네임 · 선택: 차종·숙련도·제조사/모델·아이콘 색·알게 된 경로<br>
+        <b style="color:#262B33">쓰는 곳</b> 로그인·본인 확인, 문의 응대, 기프티콘 추첨 · 동의한 분께만 혜택·이벤트 소식 메일<br>
+        <b style="color:#262B33">보관</b> 탈퇴할 때까지 (마이페이지에서 언제든 탈퇴하면 바로 삭제)
       </div>
 
       <div class="btn-row" style="margin-top:20px">
@@ -308,8 +308,8 @@ html,body{min-height:100vh;font-family:'Noto Sans KR',sans-serif;color:#fff;back
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js" integrity="sha384-uteMfOloLDGt042uDz+xHGF3ym63/WQ6rFq7murQRG8Ih7QrXGEGNtWd8688sb4O" crossorigin="anonymous"></script>
 <script src="js/config.js?v=20261117"></script>
-<script src="js/ppx.js?v=20261126c"></script>
-<script src="js/feedback.js?v=20261126c" defer></script>
+<script src="js/ppx.js?v=20261126d"></script>
+<script src="js/feedback.js?v=20261126d" defer></script>
 <script>
 let curStep = 0;
 let selectedCars = [];
@@ -373,7 +373,7 @@ function renderAvatar() {
   const rr = document.getElementById('repRow');
   if(selectedCars.length > 1) {
     rr.style.display = 'block';
-    rr.innerHTML = '대표 차종: ' + selectedCars.map(c => `<button type="button" data-r="${c}" aria-pressed="${c === repCar}" style="min-height:34px;margin:4px 4px 0 0;padding:0 12px;border-radius:999px;font-size:12px;font-weight:700;color:#fff;background:${c === repCar ? 'rgba(14,165,233,.25)' : 'rgba(255,255,255,.04)'};border:1.5px solid ${c === repCar ? '#0ea5e9' : 'rgba(255,255,255,.12)'}">${CAR_NAMES[c] || c}</button>`).join('');
+    rr.innerHTML = '대표 차종: ' + selectedCars.map(c => `<button type="button" data-r="${c}" aria-pressed="${c === repCar}" style="min-height:34px;margin:4px 4px 0 0;padding:0 12px;border-radius:999px;font-size:12px;font-weight:700;color:#262B33;background:${c === repCar ? 'rgba(14,165,233,.25)' : 'rgba(255,255,255,.04)'};border:1.5px solid ${c === repCar ? '#0ea5e9' : 'rgba(255,255,255,.12)'}">${CAR_NAMES[c] || c}</button>`).join('');
     rr.querySelectorAll('button').forEach(b => b.onclick = () => { repCar = b.dataset.r; renderAvatar(); });
   } else { rr.style.display = 'none'; rr.innerHTML = ''; }
   document.getElementById('avatarPrev').innerHTML = PPX.carAvatar ? PPX.carAvatar(repCar || 'sedan', avatarColor, 56) : '';

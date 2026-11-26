@@ -9,7 +9,7 @@
 // - js/ppx.js 가 없는 화면(가이드·지역 페이지 등)은 '보내기'를 누를 때만 config.js·supabase·ppx.js 를 불러옴
 //   (이때 ppx.js 의 방문자 세기는 끔: PPX_NO_TRACK). ppx.js 버전을 올리면 아래 PPX_SRC 도 같이 올릴 것
 (function () {
-  const PPX_SRC = 'ppx.js?v=20261126c';
+  const PPX_SRC = 'ppx.js?v=20261126d';
   const CFG_SRC = 'config.js?v=20261117';
   const SUPA_SRC = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js';
   const me = document.currentScript;
@@ -67,21 +67,21 @@
     const css = document.createElement('style');
     css.textContent = `
 .fb-btn{position:fixed;right:12px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:9000;display:flex;align-items:center;gap:5px;
-  border:1px solid rgba(34,211,238,.55);border-radius:999px;padding:8px 13px;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:800;color:#e6faff;
-  background:rgba(7,26,44,.92);box-shadow:0 6px 18px rgba(0,0,0,.45);cursor:pointer;-webkit-tap-highlight-color:transparent;line-height:1.2}
+  border:1px solid rgba(150,170,60,.55);border-radius:999px;padding:8px 13px;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:800;color:#F2F1EC;
+  background:#262B33;box-shadow:0 6px 18px rgba(38,43,51,.203);cursor:pointer;-webkit-tap-highlight-color:transparent;line-height:1.2}
 .fb-ov{position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.55)}
-.fb-sheet{position:fixed;left:0;right:0;bottom:0;z-index:9999;max-width:520px;margin:0 auto;background:#0d1e35;color:#fff;text-align:left;
-  border-radius:24px 24px 0 0;border-top:1px solid rgba(34,211,238,.3);padding:20px 20px calc(22px + env(safe-area-inset-bottom));
+.fb-sheet{position:fixed;left:0;right:0;bottom:0;z-index:9999;max-width:520px;margin:0 auto;background:#FFFFFF;color:#262B33;text-align:left;
+  border-radius:24px 24px 0 0;border-top:1px solid rgba(150,170,60,.3);padding:20px 20px calc(22px + env(safe-area-inset-bottom));
   font-family:'Noto Sans KR',sans-serif;box-sizing:border-box}
 .fb-sheet b.t{display:block;font-size:17px;font-weight:900}
-.fb-sheet p{margin:6px 0 12px;color:#94a3b8;font-size:13px;line-height:1.55}
-.fb-sheet textarea{width:100%;box-sizing:border-box;min-height:120px;padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,.2);
-  background:#081626;color:#fff;font:inherit;font-size:16px;line-height:1.5;resize:vertical}
-.fb-sheet .n{text-align:right;color:#64748b;font-size:12px;margin-top:4px}
+.fb-sheet p{margin:6px 0 12px;color:#6B7078;font-size:13px;line-height:1.55}
+.fb-sheet textarea{width:100%;box-sizing:border-box;min-height:120px;padding:12px;border-radius:14px;border:1px solid rgba(38,43,51,.16);
+  background:#FFFFFF;color:#262B33;font:inherit;font-size:16px;line-height:1.5;resize:vertical}
+.fb-sheet .n{text-align:right;color:#6B7078;font-size:12px;margin-top:4px}
 .fb-sheet .row{display:flex;gap:8px;margin-top:12px}
 .fb-sheet .row button{flex:1;min-height:46px;border-radius:12px;font:inherit;font-size:15px;font-weight:800;cursor:pointer}
-.fb-sheet .no{border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.8)}
-.fb-sheet .go{border:none;color:#04111e;background:linear-gradient(135deg,#38bdf8,#22d3ee)}
+.fb-sheet .no{border:1px solid rgba(38,43,51,.16);background:transparent;color:rgba(38,43,51,.8)}
+.fb-sheet .go{border:none;color:#F2F1EC;background:#262B33}
 .fb-sheet .go:disabled{opacity:.45}`;
     document.head.appendChild(css);
 

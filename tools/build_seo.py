@@ -118,11 +118,11 @@ def split_region(r):
 # ── 페이지 틀 ───────────────────────────────────────
 def bottom_nav(up):
     """지도·이벤트·내 정보 화면과 같은 아래 메뉴 (세차 가이드 페이지용, '세차 가이드' 칸이 켜짐)"""
-    items = [('map.html', '🗺️', '지도', False), ('guide/', '📖', '세차 가이드', True),
-             ('events.html', '🎁', '이벤트', False), ('mypage.html', '👤', '내 정보', False)]
+    items = [('map.html', 'map', '지도', False), ('guide/', 'guide', '세차 가이드', True),
+             ('events.html', 'event', '이벤트', False), ('mypage.html', 'user', '내 정보', False)]   # 2026-11-26 B안: icons/ui.svg 선 아이콘
     on_cls = ' class="on"'
     return '<nav class="bnav">' + ''.join(
-        f'<a href="{up}{h}"{on_cls if on else ""}><i>{ic}</i><span>{t}</span></a>' for h, ic, t, on in items) + '</nav>'
+        f'<a href="{up}{h}"{on_cls if on else ""}><i><svg class="ic" aria-hidden="true"><use href="{up}icons/ui.svg#{ic}"/></svg></i><span>{t}</span></a>' for h, ic, t, on in items) + '</nav>'
 
 
 def page(path, title, desc, body, crumbs=(), jsonld=None, bnav=False, og_image=None):
@@ -151,16 +151,16 @@ def page(path, title, desc, body, crumbs=(), jsonld=None, bnav=False, og_image=N
 <meta property="og:description" content="{esc(desc)}">
 <meta property="og:url" content="{esc(url)}">
 <meta property="og:image" content="{esc(og_image or SITE + '/icons/og.png?v=20261111')}">
-<meta name="theme-color" content="#04111e">
+<meta name="theme-color" content="#F2F1EC">
 <link rel="icon" href="{up}icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="{up}icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="icon" href="{up}icons/icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="{up}icons/apple-touch-icon.png">
-<link rel="stylesheet" href="{up}css/seo.css?v=20261121a">
+<link rel="stylesheet" href="{up}css/seo.css?v=20261126b">
 {ld}
 </head>
 <body{' class="has-bnav"' if bnav else ''}>
-<header class="top"><a class="brand" href="{up}">💧 빡<em>세</em></a><a class="go" href="{up}map.html">🗺️ 세차장 지도</a></header>
+<header class="top"><a class="brand" href="{up}"><span class="bm"><svg class="ic" aria-hidden="true"><use href="{up}icons/ui.svg#drop-fill"/></svg></span><span>빡<em>세</em></span></a><a class="go" href="{up}map.html"><svg class="ic" aria-hidden="true"><use href="{up}icons/ui.svg#map"/></svg>세차장 지도</a></header>
 <main>
 {crumb_html}
 {body}
@@ -173,7 +173,7 @@ def page(path, title, desc, body, crumbs=(), jsonld=None, bnav=False, og_image=N
 </footer>
 {bottom_nav(up) if bnav else ''}
 {track_script()}
-<script src="{up}js/feedback.js?v=20261126c" defer></script>
+<script src="{up}js/feedback.js?v=20261126d" defer></script>
 </body>
 </html>
 '''
@@ -218,7 +218,7 @@ def cta(up, where, equal=False):
 def ww_line(up):
     """가이드 글 끝 '세차하기 좋은 날' 한 줄 상자. 지역은 홈 달력에서 고른 곳(없으면 서울 중구)
     날씨 받기·판정은 js/ww-core.js (홈 달력·지도 띠와 같은 기준). 글을 못 불러와도 링크는 그대로 보임"""
-    return f'''<link rel="stylesheet" href="{up}css/ww.css?v=20261121a">
+    return f'''<link rel="stylesheet" href="{up}css/ww.css?v=20261126b">
 <a class="ww-guide" id="wwGuide" href="{up}#washWeather"><span class="ww-gq">☀️ 오늘 세차하기 좋은 날일까요?</span>
 <span class="ww-gl" id="wwGuideLine">날씨 보고 세차할 날 고르기</span><span class="ww-gb">10일 달력 보기 ›</span></a>
 <script src="{up}js/ww-regions.js?v=20261120a" defer></script>
@@ -230,7 +230,7 @@ def ww_box(up, where):
     """지역 페이지의 '세차하기 좋은 날' 10일 달력 (그 지역으로 고정). 그리는 일은 js/wash-weather.js
     지역 대표 좌표는 js/ww-regions.js — 거기 없는 새 지역이면 상자가 저절로 숨음"""
     short = where.split(' ', 1)[-1]
-    return f'''<link rel="stylesheet" href="{up}css/ww.css?v=20261121a">
+    return f'''<link rel="stylesheet" href="{up}css/ww.css?v=20261126b">
 <section class="ww ww-in" id="washWeather" data-region="{esc(where)}" aria-label="{esc(short)} 세차하기 좋은 날">
 <div class="ww-head"><h2 class="ww-title">☀️ {esc(short)} 세차하기 좋은 날</h2></div>
 <div class="ww-sum" id="wwSum"></div><div class="ww-grid" id="wwGrid"></div><div class="ww-dust" id="wwDust"></div>

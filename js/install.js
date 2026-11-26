@@ -40,26 +40,26 @@
   const css = document.createElement('style');
   css.textContent = `
 .pi-card{position:relative;display:flex;align-items:center;gap:12px;padding:14px;border-radius:18px;text-align:left;
-  background:linear-gradient(135deg,rgba(14,165,233,.16),rgba(34,211,238,.06));border:1px solid rgba(34,211,238,.35)}
+  background:linear-gradient(135deg,rgba(181,201,95,.208),rgba(181,201,95,.078));border:1px solid rgba(150,170,60,.35)}
 .pi-card img{width:46px;height:46px;border-radius:12px;flex:none}
-.pi-t{flex:1;min-width:0}.pi-t b{display:block;color:#fff;font-size:15px;font-weight:900}
-.pi-t span{display:block;color:#94a3b8;font-size:12px;margin-top:2px}
-.pi-go{flex:none;border:none;border-radius:999px;padding:10px 14px;font:inherit;font-weight:900;font-size:14px;color:#04111e;
-  background:linear-gradient(135deg,#38bdf8,#22d3ee);cursor:pointer}
-.pi-x{position:absolute;top:2px;right:4px;width:28px;height:28px;border:none;background:none;color:#64748b;font-size:14px;cursor:pointer}
+.pi-t{flex:1;min-width:0}.pi-t b{display:block;color:#262B33;font-size:15px;font-weight:900}
+.pi-t span{display:block;color:#6B7078;font-size:12px;margin-top:2px}
+.pi-go{flex:none;border:none;border-radius:999px;padding:10px 14px;font:inherit;font-weight:900;font-size:14px;color:#F2F1EC;
+  background:#262B33;cursor:pointer}
+.pi-x{position:absolute;top:2px;right:4px;width:28px;height:28px;border:none;background:none;color:#6B7078;font-size:14px;cursor:pointer}
 .pi-ov{position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.55)}
-.pi-sheet{position:fixed;left:0;right:0;bottom:0;z-index:9999;background:#0d1e35;border-radius:24px 24px 0 0;
-  border-top:1px solid rgba(34,211,238,.3);padding:20px 22px calc(28px + env(safe-area-inset-bottom));color:#fff;text-align:left;
+.pi-sheet{position:fixed;left:0;right:0;bottom:0;z-index:9999;background:#FFFFFF;border-radius:24px 24px 0 0;
+  border-top:1px solid rgba(150,170,60,.3);padding:20px 22px calc(28px + env(safe-area-inset-bottom));color:#262B33;text-align:left;
   max-width:520px;margin:0 auto;animation:piUp .25s ease}
 @keyframes piUp{from{transform:translateY(100%)}to{transform:none}}
 .pi-sheet .h{display:flex;gap:12px;align-items:center;margin-bottom:16px}
 .pi-sheet .h img{width:48px;height:48px;border-radius:12px}
-.pi-sheet .h b{display:block;font-size:17px;font-weight:900}.pi-sheet .h span{color:#94a3b8;font-size:12px}
-.pi-step{background:rgba(255,255,255,.05);border-radius:14px;padding:13px;margin-bottom:10px;font-size:15px;line-height:1.5}
-.pi-step em{font-style:normal;font-weight:900;color:#22d3ee}
-.pi-share{display:inline-block;border:2px solid #22d3ee;border-radius:5px;padding:0 5px;font-size:12px;line-height:1.3}
+.pi-sheet .h b{display:block;font-size:17px;font-weight:900}.pi-sheet .h span{color:#6B7078;font-size:12px}
+.pi-step{background:rgba(38,43,51,.035);border-radius:14px;padding:13px;margin-bottom:10px;font-size:15px;line-height:1.5}
+.pi-step em{font-style:normal;font-weight:900;color:#56661A}
+.pi-share{display:inline-block;border:2px solid #96AA3C;border-radius:5px;padding:0 5px;font-size:12px;line-height:1.3}
 .pi-ok{display:block;width:100%;margin-top:6px;min-height:48px;border:none;border-radius:14px;font:inherit;font-weight:900;font-size:15px;
-  color:#fff;background:rgba(255,255,255,.08);cursor:pointer}`;
+  color:#262B33;background:rgba(38,43,51,.056);cursor:pointer}`;
   document.head.appendChild(css);
 
   let deferred = null;
@@ -70,7 +70,7 @@
   function show() {
     if(!box.hidden) return;
     box.hidden = false; document.body.classList.add('pi-on');
-    if(fromApp) { box.scrollIntoView({block:'center'}); box.firstElementChild.style.boxShadow = '0 0 0 3px #22d3ee'; }
+    if(fromApp) { box.scrollIntoView({block:'center'}); box.firstElementChild.style.boxShadow = '0 0 0 3px #B5C95F'; }
   }
   function hide(save) {
     box.hidden = true; document.body.classList.remove('pi-on');
@@ -122,7 +122,7 @@
     sh.innerHTML = `<div class="h"><img src="${esc(d.icon)}" alt=""><div><b>${target}에서 열어야 추가돼요</b><span>${where} 안에서는 바탕화면 추가가 안 돼요</span></div></div>`
       + (canJump
         ? `<button class="pi-go pi-jump" type="button" style="width:100%;min-height:52px;font-size:16px;margin-bottom:10px">🌐 ${ro} 열어서 추가하기</button>`
-          + `<div class="pi-step" style="font-size:13px;color:#94a3b8">${ga} 열리면 화면의 <em>📲 추가</em>를 한 번 더 눌러 주세요</div>`
+          + `<div class="pi-step" style="font-size:13px;color:#6B7078">${ga} 열리면 화면의 <em>📲 추가</em>를 한 번 더 눌러 주세요</div>`
         : `<div class="pi-step">① 오른쪽 위나 아래 <em>메뉴(⋯ 또는 ⋮)</em> 누르기</div>`
           + `<div class="pi-step">② <em>'${isIOS ? 'Safari로 열기' : '다른 브라우저로 열기'}'</em> 누르기</div>`
           + `<div class="pi-step">③ 열린 화면에서 <em>📲 추가</em> 누르기</div>`)
