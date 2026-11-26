@@ -150,7 +150,7 @@ def page(path, title, desc, body, crumbs=(), jsonld=None, bnav=False, og_image=N
 <meta property="og:title" content="{esc(title)}">
 <meta property="og:description" content="{esc(desc)}">
 <meta property="og:url" content="{esc(url)}">
-<meta property="og:image" content="{esc(og_image or SITE + '/icons/og.png?v=20261111')}">
+<meta property="og:image" content="{esc(og_image or SITE + '/icons/og.png?v=20261126')}">
 <meta name="theme-color" content="#F2F1EC">
 <link rel="icon" href="{up}icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="{up}icons/favicon-32.png" sizes="32x32" type="image/png">

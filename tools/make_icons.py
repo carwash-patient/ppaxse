@@ -1,5 +1,5 @@
 """
-빡세 앱 아이콘 만들기 (D2안: 밝은 물빛 바탕의 반짝이는 차)
+빡세 앱 아이콘 만들기 (B안 2026-11-26: 차콜 + 라임 물방울. 예전 D2안은 git 기록에)
 
 사용법:  python3 tools/make_icons.py
 결과:    icons/ 폴더에 브라우저·휴대폰 홈 화면용 아이콘들
@@ -14,32 +14,21 @@ OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "icons")
 
 
 def svg(rounded=True, scale=1.0):
-    """D2안: 밝은 물빛 바탕 + 흰 차 + 큰 반짝임
+    """B안(2026-11-26): 차콜 바탕 + 라임 물방울 + 오렌지·아이보리 반짝임 (사이트 로고와 같은 물방울)
     rounded=False 는 꽉 찬 정사각형 (휴대폰이 알아서 모양을 깎는 용도)
-    scale 은 그림 크기 비율 (가장자리가 잘리는 아이콘용으로 조금 작게)"""
+    scale 은 그림 크기 비율 (가장자리가 잘리는 아이콘용으로 조금 작게)
+    ※ 이 PC에는 cairosvg가 없어 2026-11-26 파일은 브라우저로 그려 넣음 (같은 그림)"""
     r = 112 if rounded else 0
     t = f"translate(256 256) scale({scale}) translate(-256 -256)"
+    def spark(x, y, k, c):
+        return (f'<path fill="{c}" d="M{x} {y-k}Q{x+k*.15:g} {y-k*.15:g} {x+k} {y}Q{x+k*.15:g} {y+k*.15:g} {x} {y+k}'
+                f'Q{x-k*.15:g} {y+k*.15:g} {x-k} {y}Q{x-k*.15:g} {y-k*.15:g} {x} {y-k}Z"/>')
     return f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#0369a1"/>
-      <stop offset="1" stop-color="#22d3ee"/>
-    </linearGradient>
-  </defs>
-  <rect width="512" height="512" rx="{r}" fill="url(#bg)"/>
+  <rect width="512" height="512" rx="{r}" fill="#262B33"/>
   <g transform="{t}">
-    <!-- 반짝임 -->
-    <circle cx="392" cy="128" r="70" fill="#ffffff" fill-opacity="0.2"/>
-    <path d="M392 50 Q404 116 470 128 Q404 140 392 206 Q380 140 314 128 Q380 116 392 50 Z" fill="#ffffff"/>
-    <path d="M290 72 Q296 98 322 104 Q296 110 290 136 Q284 110 258 104 Q284 98 290 72 Z" fill="#ffffff" fill-opacity="0.85"/>
-    <!-- 차 -->
-    <g transform="translate(0 34)">
-      <path d="M86 340 L86 298 Q90 268 122 262 L186 252 L238 202 Q250 192 268 192 L340 192 Q358 192 370 204 L412 254 L432 260 Q450 266 450 288 L450 340 Z" fill="#ffffff"/>
-      <path d="M250 212 L218 252 L300 252 L300 212 Z" fill="#0369a1"/>
-      <path d="M316 212 L316 252 L398 252 L366 212 Z" fill="#0369a1"/>
-      <circle cx="164" cy="342" r="38" fill="#04111e" stroke="#ffffff" stroke-width="14"/>
-      <circle cx="372" cy="342" r="38" fill="#04111e" stroke="#ffffff" stroke-width="14"/>
-    </g>
+    <path fill="#B5C95F" transform="translate(256 262) scale(.92) translate(-256 -256)" d="M256 70s150 156 150 262a150 150 0 0 1-300 0c0-106 150-262 150-262z"/>
+    <ellipse cx="214" cy="310" rx="24" ry="40" fill="#ffffff" fill-opacity=".35" transform="rotate(-20 214 310)"/>
+    {spark(388, 128, 58, '#E59A4F')}{spark(318, 92, 22, '#F2F1EC')}
   </g>
 </svg>'''
 
