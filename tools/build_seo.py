@@ -173,6 +173,7 @@ def page(path, title, desc, body, crumbs=(), jsonld=None, bnav=False, og_image=N
 </footer>
 {bottom_nav(up) if bnav else ''}
 {track_script()}
+<script src="{up}js/feedback.js?v=20261126c" defer></script>
 </body>
 </html>
 '''
