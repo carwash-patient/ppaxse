@@ -1,0 +1,52 @@
+{
+ "slug": "wet-coating",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "wet-coating-01.jpg",
+   "kind": "cover",
+   "head": "습식코팅제 쓰는 법 — 물기 있을 때 뿌리는 코팅, 왁스·QD와 차이"
+  },
+  {
+   "file": "wet-coating-02.jpg",
+   "kind": "section",
+   "head": "습식코팅제는 어떤 자동차 코팅제인가요?"
+  },
+  {
+   "file": "wet-coating-03.jpg",
+   "kind": "section",
+   "head": "헹굼형과 닦음형, 무엇이 다른가요?"
+  },
+  {
+   "file": "wet-coating-04.jpg",
+   "kind": "section",
+   "head": "습식코팅제 뿌리는 순서"
+  },
+  {
+   "file": "wet-coating-05.jpg",
+   "kind": "section",
+   "head": "왁스·퀵디테일러와 함께 쓸 때"
+  },
+  {
+   "file": "wet-coating-06.jpg",
+   "kind": "section",
+   "head": "얼룩 없이 쓰는 요령"
+  },
+  {
+   "file": "wet-coating-07.jpg",
+   "kind": "section",
+   "head": "자주 하는 실수"
+  },
+  {
+   "file": "wet-coating-08.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "wet-coating-09.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}

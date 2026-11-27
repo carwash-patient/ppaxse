@@ -1,0 +1,52 @@
+{
+ "slug": "motorcycle-wash",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "motorcycle-wash-01.jpg",
+   "kind": "cover",
+   "head": "셀프세차장에서 오토바이 세차하는 법 — 고압수 피할 곳과 순서"
+  },
+  {
+   "file": "motorcycle-wash-02.jpg",
+   "kind": "section",
+   "head": "먼저 확인할 것 — 오토바이를 받는 세차장인가요?"
+  },
+  {
+   "file": "motorcycle-wash-03.jpg",
+   "kind": "section",
+   "head": "오토바이 세차 전 준비"
+  },
+  {
+   "file": "motorcycle-wash-04.jpg",
+   "kind": "section",
+   "head": "고압수를 피해야 할 곳"
+  },
+  {
+   "file": "motorcycle-wash-05.jpg",
+   "kind": "section",
+   "head": "셀프세차장 오토바이 세차 순서"
+  },
+  {
+   "file": "motorcycle-wash-06.jpg",
+   "kind": "section",
+   "head": "세차 뒤에 꼭 할 일"
+  },
+  {
+   "file": "motorcycle-wash-07.jpg",
+   "kind": "section",
+   "head": "자주 하는 실수"
+  },
+  {
+   "file": "motorcycle-wash-08.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "motorcycle-wash-09.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}

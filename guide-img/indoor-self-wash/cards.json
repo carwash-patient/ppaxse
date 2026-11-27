@@ -1,0 +1,52 @@
+{
+ "slug": "indoor-self-wash",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "indoor-self-wash-01.jpg",
+   "kind": "cover",
+   "head": "실내 셀프세차장 이용법 — 겨울·비 오는 날 좋은 점과 확인할 것"
+  },
+  {
+   "file": "indoor-self-wash-02.jpg",
+   "kind": "section",
+   "head": "실내 셀프세차장은 무엇이 다른가요?"
+  },
+  {
+   "file": "indoor-self-wash-03.jpg",
+   "kind": "section",
+   "head": "겨울·비 오는 날 좋은 점"
+  },
+  {
+   "file": "indoor-self-wash-04.jpg",
+   "kind": "section",
+   "head": "실내세차장 이용할 때 조심할 점"
+  },
+  {
+   "file": "indoor-self-wash-05.jpg",
+   "kind": "section",
+   "head": "실내 베이에서 하기 좋은 작업"
+  },
+  {
+   "file": "indoor-self-wash-06.jpg",
+   "kind": "section",
+   "head": "실내라서 더 지켜 주면 좋은 매너"
+  },
+  {
+   "file": "indoor-self-wash-07.jpg",
+   "kind": "section",
+   "head": "실내 베이가 있는지 확인하는 법"
+  },
+  {
+   "file": "indoor-self-wash-08.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "indoor-self-wash-09.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}

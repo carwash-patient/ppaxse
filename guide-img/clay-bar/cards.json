@@ -1,0 +1,57 @@
+{
+ "slug": "clay-bar",
+ "width": 1080,
+ "height": 1080,
+ "cards": [
+  {
+   "file": "clay-bar-01.jpg",
+   "kind": "cover",
+   "head": "클레이바 쓰는 법 — 도장면이 까끌까끌할 때"
+  },
+  {
+   "file": "clay-bar-02.jpg",
+   "kind": "section",
+   "head": "도장면이 까끌까끌한 이유"
+  },
+  {
+   "file": "clay-bar-03.jpg",
+   "kind": "section",
+   "head": "손으로 확인하는 법 — 비닐 테스트"
+  },
+  {
+   "file": "clay-bar-04.jpg",
+   "kind": "section",
+   "head": "클레이바 작업 순서"
+  },
+  {
+   "file": "clay-bar-05.jpg",
+   "kind": "section",
+   "head": "윤활제를 꼭 써야 하는 이유"
+  },
+  {
+   "file": "clay-bar-06.jpg",
+   "kind": "section",
+   "head": "떨어뜨린 클레이는 버리세요"
+  },
+  {
+   "file": "clay-bar-07.jpg",
+   "kind": "section",
+   "head": "클레이바 대신 쓰는 도구도 있어요"
+  },
+  {
+   "file": "clay-bar-08.jpg",
+   "kind": "section",
+   "head": "이럴 땐 피하거나 조심하세요"
+  },
+  {
+   "file": "clay-bar-09.jpg",
+   "kind": "tip",
+   "head": ""
+  },
+  {
+   "file": "clay-bar-10.jpg",
+   "kind": "end",
+   "head": ""
+  }
+ ]
+}
