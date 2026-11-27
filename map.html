@@ -88,7 +88,7 @@ html,body{height:100%;font-family:'Noto Sans KR',sans-serif;color:#262B33;backgr
 .picking .pick-banner{top:auto;bottom:calc(150px + env(safe-area-inset-bottom))}
 .add-btn{position:absolute;top:14px;right:14px;z-index:10;display:flex;align-items:center;gap:6px;padding:10px 15px;border-radius:12px;border:none;background:#E59A4F;color:#262B33;font-family:inherit;font-size:13px;font-weight:900;box-shadow:0 6px 20px rgba(38,43,51,.203);cursor:pointer}
 .add-btn .ic{width:17px;height:17px}
-.pick-pin{display:none;position:absolute;left:50%;top:50%;z-index:20;pointer-events:none;transform:translate(-50%,-100%);font-size:40px;filter:drop-shadow(0 6px 8px rgba(38,43,51,.225))}
+.pick-pin{display:none;position:absolute;left:50%;top:50%;z-index:20;pointer-events:none;transform:translate(-50%,-100%);filter:drop-shadow(0 6px 8px rgba(38,43,51,.225))}
 .pick-pin::after{content:'';position:absolute;left:50%;bottom:-4px;width:10px;height:4px;margin-left:-5px;border-radius:50%;background:rgba(0,0,0,.45)}
 .pick-banner{display:none;position:absolute;top:14px;left:14px;right:14px;z-index:20;padding:13px 16px;border-radius:15px;background:rgba(255,255,255,.96);border:1px solid rgba(150,170,60,.4);font-size:13px;font-weight:700;line-height:1.6;text-align:center;box-shadow:0 8px 24px rgba(38,43,51,.203)}
 .pick-bar{display:none;position:fixed;left:14px;right:14px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:460;gap:10px}
@@ -108,7 +108,7 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
 .af-types{display:flex;flex-wrap:wrap;gap:7px}
 .af-type{padding:9px 13px;border-radius:999px;border:1.5px solid rgba(38,43,51,.096);background:rgba(38,43,51,.028);color:rgba(38,43,51,.75);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer}
 .af-type.on{border-color:var(--sky);background:rgba(181,201,95,.26);color:#262B33}
-.af-loc{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:13px;background:rgba(181,201,95,.104);border:1px solid rgba(38,43,51,.15);font-size:13px}
+.af-loc{display:flex;align-items:center;gap:8px;padding:12px 14px;border-radius:13px;background:rgba(181,201,95,.104);border:1px solid rgba(38,43,51,.15);font-size:13px}
 .af-loc button{margin-left:auto;background:none;border:none;color:var(--aqua);font-family:inherit;font-weight:900;font-size:12px;cursor:pointer}
 .af-near{padding:12px 14px;border-radius:13px;background:rgba(229,154,79,.08);border:1px solid rgba(229,154,79,.3);font-size:12px;color:#9A4F12;line-height:1.6;margin-bottom:14px}
 .af-near a{display:block;color:#262B33;font-weight:700;text-decoration:underline;cursor:pointer;margin-top:4px}
@@ -132,9 +132,9 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
 .rf-check{display:flex;align-items:center;gap:10px;padding:13px 14px;border-radius:13px;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.25);font-size:13px;font-weight:700;cursor:pointer}
 .rf-check input{width:20px;height:20px;accent-color:#ef4444}
 .rf-cur{font-size:11px;color:var(--muted);font-weight:400;margin-left:6px}
-.ppx-toast{position:fixed;left:50%;bottom:calc(150px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(10px);z-index:900;background:rgba(16,185,129,.95);color:#262B33;padding:12px 20px;border-radius:14px;font-size:13px;font-weight:700;opacity:0;transition:.25s;pointer-events:none;max-width:calc(100% - 40px);text-align:center;line-height:1.5}
+.ppx-toast{position:fixed;left:50%;bottom:calc(150px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(10px);z-index:900;background:#262B33;color:#F2F1EC;padding:12px 20px;border-radius:14px;font-size:13px;font-weight:700;opacity:0;transition:.25s;pointer-events:none;max-width:calc(100% - 40px);text-align:center;line-height:1.5}
 .ppx-toast.show{opacity:1;transform:translateX(-50%)}
-.ppx-toast.warn{background:rgba(239,68,68,.95)}
+.ppx-toast.warn{background:#C82828}
 .er-ov{position:fixed;inset:0;z-index:950;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:24px}
 .er-box{width:100%;max-width:340px;background:linear-gradient(180deg,#FFFFFF,#FFFFFF);border:1px solid rgba(150,170,60,.35);border-radius:22px;padding:24px 20px 18px;text-align:center;color:#262B33;animation:slideUp .25s ease}
 .er-icon{font-size:40px;line-height:1}.er-title{font-size:18px;font-weight:900;margin:10px 0 8px}
@@ -463,17 +463,17 @@ textarea.af-input{height:74px;padding:11px 14px;resize:none;line-height:1.5}
     <div class="sh-title">내 주변 세차장을 볼까요?</div>
     <div class="sh-sub">위치를 허용하면 다음부터 지금 있는 곳의 지도가 바로 열려요.<br>위치는 화면에서만 쓰고 저장하지 않아요.</div>
     <div class="sh-btns">
-      <button class="g" id="shHome" type="button">⭐ 기본 지역 정하기</button>
+      <button class="g" id="shHome" type="button">기본 지역 정하기</button>
       <button class="p" id="shLocate" type="button">내 위치로 보기</button>
     </div>
   </div>
   <button class="add-btn" id="addBtn" type="button"><svg class="ic" aria-hidden="true"><use href="icons/ui.svg#plus"/></svg> 세차장 제보</button>
-  <div class="pick-pin" aria-hidden="true">📍</div>
+  <div class="pick-pin" aria-hidden="true"><svg width="40" height="51" viewBox="0 0 32 41" style="display:block"><path d="M16 39.5S29 27.6 29 16.6A13 13 0 0 0 3 16.6C3 27.6 16 39.5 16 39.5z" fill="#E59A4F" stroke="#fff" stroke-width="2.2"/><circle cx="16" cy="16.5" r="5.6" fill="#262B33"/></svg></div>
   <div class="pick-search">
     <div class="ps-row"><input id="pickQ" type="search" maxlength="60" placeholder="주소나 세차장 이름으로 찾기" enterkeyhint="search"><button id="pickGo" type="button">찾기</button></div>
     <div class="ps-results" id="pickResults"></div>
   </div>
-  <div class="pick-banner">찾은 뒤 지도를 살짝 움직여 <b style="color:var(--aqua)">📍 핀</b>을 입구에 맞춰주세요</div>
+  <div class="pick-banner">찾은 뒤 지도를 살짝 움직여 <b style="color:#C77420">주황 핀</b>을 입구에 맞춰주세요</div>
 </div>
 
 <div class="pick-bar">
@@ -1203,8 +1203,9 @@ function locateMe(quiet) {
           position: ll,
           map: naverMap,
           icon: {
-            content: `<div style="width:18px;height:18px;border-radius:50%;background:#262B33;border:3px solid #FFFFFF;box-shadow:0 0 0 6px rgba(38,43,51,.075)"></div>`,
-            anchor: new naver.maps.Point(9, 9)
+            // 내 위치: 오른쪽 아래 '내 위치' 버튼과 같은 모양(◎), 파란색 (운영자 요청 2026-11-27)
+            content: `<div style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.92);box-shadow:0 0 0 6px rgba(37,99,235,.18),0 2px 6px rgba(38,43,51,.3);display:flex;align-items:center;justify-content:center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22"/></svg></div>`,
+            anchor: new naver.maps.Point(17, 17)
           },
           zIndex: 99
         });
@@ -1273,7 +1274,7 @@ function renderRegionPanel() {
   document.querySelectorAll('.rp-item[data-empty]').forEach(b => b.onclick = () => addInEmptyRegion(b.dataset.empty));
   document.querySelectorAll('.rp-item[data-region]').forEach(b => b.onclick = () => {
     const key = b.dataset.region;
-    if(saveAsHome) { homeRegion = key; saveAsHome = false; PPX.setHome && PPX.setHome(key); toast(`⭐ 기본 지역을 ‘${key}’(으)로 정했어요`); }
+    if(saveAsHome) { homeRegion = key; saveAsHome = false; PPX.setHome && PPX.setHome(key); toast(`기본 지역을 ‘${key}’(으)로 정했어요`); }
     selectRegion(key);
   });
   renderHomeRow();
@@ -1284,7 +1285,7 @@ let homeRegion = null, saveAsHome = false;
 function renderHomeRow() {
   const el = document.getElementById('regionHome');
   el.innerHTML = `
-    <span>⭐ 기본 지역: <b>${homeRegion ? esc(homeRegion) : '없음'}</b></span>
+    <span>기본 지역: <b>${homeRegion ? esc(homeRegion) : '없음'}</b></span>
     ${homeRegion ? '<button type="button" id="homeClear">지우기</button>' : ''}
     <label style="width:100%"><input type="checkbox" id="homeSave" ${saveAsHome?'checked':''}> 이번에 고르는 지역을 기본 지역으로 저장</label>`;
   document.getElementById('homeSave').onchange = e => { saveAsHome = e.target.checked; };
@@ -1424,11 +1425,11 @@ async function pickSearch() {
   pickFound = addrs;
   let html = '';
   if(addrs.length) html += '<div class="ps-sec">주소</div>' + addrs.map((a, i) =>
-    `<button class="ps-item" type="button" data-a="${i}">📍 ${esc(a.road || a.jibun)}${a.road && a.jibun ? `<small>${esc(a.jibun)}</small>` : ''}</button>`).join('');
+    `<button class="ps-item" type="button" data-a="${i}"><svg class="ic" aria-hidden="true"><use href="icons/ui.svg#pin"/></svg> ${esc(a.road || a.jibun)}${a.road && a.jibun ? `<small>${esc(a.jibun)}</small>` : ''}</button>`).join('');
   if(own.length) html += '<div class="ps-sec">이미 빡세에 있는 세차장</div>' + own.map(p =>
     `<button class="ps-item" type="button" data-p="${p.id}">💧 ${esc(p.name)}<small>${esc(p.addr || p.region || '')}</small></button>`).join('');
   if(!html) html = geoFail
-    ? '<div class="ps-msg">주소 검색을 잠시 쓸 수 없어요. 지도를 움직여 📍 핀을 맞춰주세요.</div>'
+    ? '<div class="ps-msg">주소 검색을 잠시 쓸 수 없어요. 지도를 움직여 주황 핀을 맞춰주세요.</div>'
     : '<div class="ps-msg">찾는 결과가 없어요. 도로명 주소(예: 테크노파크로111번길 7)로 찾아보거나, 지도를 움직여 핀을 맞춰주세요.</div>';
   box.innerHTML = html;
   box.querySelectorAll('[data-a]').forEach(b => b.onclick = () => pickAddress(pickFound[+b.dataset.a]));
@@ -1475,7 +1476,7 @@ function renderAddForm() {
       ${near.map(x => `<a onclick="closeAddPanel();openDetail(${x.p.id})">${esc(x.p.name)} · ${fmtDist(x.d)}</a>`).join('')}</div>` : ''}
     <div class="af-field">
       <div class="af-label">위치</div>
-      <div class="af-loc">📍 ${esc(nearestRegion(pickLatLng.lat, pickLatLng.lng) || '선택한 위치')} <button type="button" onclick="saveAddForm();closeAddPanel();startAddPlace()">다시 정하기</button></div>
+      <div class="af-loc"><svg class="ic" aria-hidden="true"><use href="icons/ui.svg#pin"/></svg> ${esc(nearestRegion(pickLatLng.lat, pickLatLng.lng) || '선택한 위치')} <button type="button" onclick="saveAddForm();closeAddPanel();startAddPlace()">다시 정하기</button></div>
     </div>
     <div class="af-field">
       <div class="af-label">세차장 이름 <b>*</b></div>
@@ -1593,7 +1594,7 @@ function renderReportForm() {
   openAddPanel(`
     <div class="af-field">
       <div class="af-label">세차장</div>
-      <div class="af-loc">📍 ${esc(p.name)}</div>
+      <div class="af-loc"><svg class="ic" aria-hidden="true"><use href="icons/ui.svg#pin"/></svg> ${esc(p.name)}</div>
     </div>
     <div class="af-field">
       <div class="af-label">언제 가보셨어요? (선택)</div>
@@ -1906,14 +1907,14 @@ async function decideStart0() {
   // 0-1) 방금 보던 지도 자리가 있으면 그대로
   if(restoreView()) return 'restore';
   try { homeRegion = PPX.getHome ? await PPX.getHome() : null; } catch(e) { homeRegion = null; }
-  // ① 기본 지역을 정한 사람: 그 지역 먼저 (지금 위치는 📍 버튼으로)
+  // ① 기본 지역을 정한 사람: 그 지역 먼저 (지금 위치는 오른쪽 아래 내 위치 버튼으로)
   if(homeRegion) {
     const [sido, ...rest] = homeRegion.split(' ');
     const sgg = rest.join(' ');
     const ok = sgg ? (regionIndex[sido] || {})[sgg] : regionIndex[sido];
     if(ok) {
       selectRegion(homeRegion);
-      toast(`⭐ 기본 지역 ‘${homeRegion}’을 보여드려요 · 지금 위치는 📍 버튼`, false, 4000);
+      toast(`기본 지역 ‘${homeRegion}’을 보여드려요 · 지금 위치는 오른쪽 아래 ◎ 버튼`, false, 4000);
       return 'home';
     }
   }
